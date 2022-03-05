@@ -137,6 +137,9 @@ def static_analyzer_ios(request, api=False):
                         app_dict['md5_hash'],
                         app_dict['bin_dir'],
                         infoplist_dict.get('bin'))
+
+                    ### TODO Potentially update DB here with limited information (only if new??? !rescan) would need Save option, adn below would need to be adjusted to update
+
                     # IPA URL and Email Extract
                     recon = extract_urls_n_email(app_dict['bin_dir'],
                                                  all_files['files_long'],
@@ -232,6 +235,9 @@ def static_analyzer_ios(request, api=False):
                     app_dict['icon_found'] = get_icon_source(
                         app_dict['md5_hash'],
                         app_dict['app_dir'])
+                    
+                    ### TODO Potentially update DB here with limited information (only if new??? !rescan) would need Save option, adn below would need to be adjusted to update                        
+                    
                     # Firebase DB Check
                     code_analysis_dic['firebase'] = firebase_analysis(
                         list(set(code_analysis_dic['urls_list'])))

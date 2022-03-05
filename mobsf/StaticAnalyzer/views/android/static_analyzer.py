@@ -195,6 +195,7 @@ def static_analyzer(request, api=False):
                             app_dic['icon_found'] = bool(icon_dic['path'])
                             app_dic['icon_path'] = icon_dic['path']
 
+                    ### TODO Potentially update DB here with limited information (only if new??? !rescan) would need Save option, adn below would need to be adjusted to update
                     # Set Manifest link
                     app_dic['mani'] = ('../manifest_view/?md5='
                                        + app_dic['md5']
@@ -444,6 +445,7 @@ def static_analyzer(request, api=False):
                                     os.path.join(
                                         settings.DWD_DIR,
                                         app_dic['md5'] + '-icon.png'))
+                    ### TODO Potentially update DB here with limited information (only if new??? !rescan) would need Save option, adn below would need to be adjusted to update
 
                         code_an_dic = code_analysis(
                             app_dic['app_dir'],
