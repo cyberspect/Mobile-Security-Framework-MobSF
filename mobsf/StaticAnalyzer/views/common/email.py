@@ -12,13 +12,9 @@ from botocore.exceptions import ClientError
 # This address must be verified with Amazon SES.
 SENDER = 'Sender Name <sender@example.com>'
 
-# Replace recipient@example.com with a "To" address. If your account 
+# Replace recipient@example.com with a "To" address. If your account
 # is still in the sandbox, this address must be verified.
 RECIPIENT = 'recipient@example.com'
-
-# Specify a configuration set. If you do not want to use a configuration
-# set, comment the following variable.
-# CONFIGURATION_SET = "ConfigSet"
 
 # Replace us-west-2 with the AWS Region you're using for Amazon SES.
 AWS_REGION = 'us-west-2'
@@ -77,9 +73,6 @@ try:
             },
         },
         Source=SENDER,
-        # If you are not using a configuration set, comment or delete the
-        # following line
-        # ConfigurationSetName=CONFIGURATION_SET,
     )
 # Display an error if something goes wrong.
 except ClientError as e:
@@ -87,4 +80,3 @@ except ClientError as e:
 else:
     print('Email sent! Message ID:'),
     print(response['MessageId'])
-    
