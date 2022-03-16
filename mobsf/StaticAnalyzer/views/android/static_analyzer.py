@@ -279,7 +279,7 @@ def static_analyzer(request, api=False):
                             update_scan_timestamp(app_dic['md5'])
                         else:
                             logger.info('Saving to Database')
-                            save_or_update(                              
+                            save_or_update(
                                 'save',
                                 app_dic,
                                 man_data_dic,
