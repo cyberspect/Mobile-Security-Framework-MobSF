@@ -26,8 +26,8 @@ SUBJECT = 'Amazon SES Test (SDK for Python)'
 BODY_TEXT = ('Amazon SES Test (Python)\r\n'
              'This email was sent with Amazon SES using the '
              'AWS SDK for Python (Boto).'
-            )
-            
+             )
+
 # The HTML body of the email.
 BODY_HTML = """<html>
 <head></head>
@@ -45,11 +45,11 @@ BODY_HTML = """<html>
 CHARSET = 'UTF-8'
 
 # Create a new SES resource and specify a region.
-client = boto3.client('ses',region_name=AWS_REGION)
+client = boto3.client('ses', region_name=AWS_REGION)
 
 # Try to send the email.
 try:
-    #Provide the contents of the email.
+    # Provide the contents of the email.
     response = client.send_email(
         Destination={
             'ToAddresses': [
@@ -78,5 +78,5 @@ try:
 except ClientError as e:
     print(e.response['Error']['Message'])
 else:
-    print('Email sent! Message ID:'),
+    print('Email sent! Message ID:')
     print(response['MessageId'])
