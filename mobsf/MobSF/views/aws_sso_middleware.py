@@ -73,7 +73,6 @@ class JWTIdentifier:
 
     def verify(self, data: str) -> dict:
         jwt_headers = extract_headers(data)
-        # logger.debug('aws_sso_middleware: %s', jwt_headers)
         return verify(data, self.region, jwt_headers['kid'],
                       jwt_headers['alg'])
 
