@@ -1,6 +1,0 @@
-doubleclick
-dout
-ne
-upto
-BA
-FO
