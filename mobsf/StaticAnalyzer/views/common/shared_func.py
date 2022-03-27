@@ -244,7 +244,7 @@ def scan_complete(md5_hash):
         lambda_client.invoke(
             FunctionName=settings.AWS_LAMBDA_NOTIFY,
             InvocationType='Event',
-            Payload={'hash':md5_hash},
+            Payload={'hash': md5_hash},
         )
     except ClientError:
         logging.error('Unable to invoke AWS Lambda')

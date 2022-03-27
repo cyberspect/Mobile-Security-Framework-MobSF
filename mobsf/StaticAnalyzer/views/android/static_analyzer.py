@@ -64,7 +64,7 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     scan_complete,
     unzip,
-    update_scan_timestamp,    
+    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
