@@ -38,6 +38,7 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
     update_scan_timestamp,
+    scan_complete,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,
@@ -183,7 +184,7 @@ def static_analyzer_ios(request, api=False):
                         bin_analysis_dict,
                         all_files)
 
-                    # SEND EMAIL NOTIFICATION
+                    scan_complete(app_dict['md5_hash'])
 
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
@@ -275,6 +276,7 @@ def static_analyzer_ios(request, api=False):
                         code_analysis_dic,
                         fake_bin_dict,
                         all_files)
+                    scan_complete(app_dict['md5_hash'])
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])

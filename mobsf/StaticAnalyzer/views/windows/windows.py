@@ -34,6 +34,7 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
     update_scan_timestamp,
+    scan_complete,
 )
 from mobsf.StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_analysis,
@@ -125,6 +126,7 @@ def staticanalyzer_windows(request, api=False):
                     context = get_context_from_analysis(app_dic,
                                                         xml_dic,
                                                         bin_an_dic)
+                    scan_complete(app_dic['md5'])
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
