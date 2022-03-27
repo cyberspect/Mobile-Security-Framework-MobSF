@@ -36,9 +36,9 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
     get_avg_cvss,
     hash_gen,
-    unzip,
-    update_scan_timestamp,
     scan_complete,
+    unzip,
+    update_scan_timestamp,    
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,

@@ -32,9 +32,9 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
 from mobsf.StaticAnalyzer.tools.strings import strings_util
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
+    scan_complete,
     unzip,
     update_scan_timestamp,
-    scan_complete,
 )
 from mobsf.StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_analysis,
