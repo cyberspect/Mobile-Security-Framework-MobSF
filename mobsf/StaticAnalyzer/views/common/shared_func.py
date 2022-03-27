@@ -240,6 +240,8 @@ def is_secret(inp):
 def scan_complete(md5_hash):
     try:
         # TEMPORARY: INVOKE LAMBDA
+        if (not settings.AWS_LAMBDA_NOTIFY):
+            return
         lambda_client = boto3.client('lambda')
         lambda_client.invoke(
             FunctionName=settings.AWS_LAMBDA_NOTIFY,
