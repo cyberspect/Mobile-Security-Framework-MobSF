@@ -294,13 +294,12 @@ def recent_scans(request):
     return render(request, template, context)
 
 
-def scan_metadata(hash):
+def scan_metadata(md5):
     """Get scan metadata."""
-    if re.match('[0-9a-f]{32}', hash):
-        db_obj = RecentScansDB.objects.filter(MD5=hash)        
+    if re.match('[0-9a-f]{32}', md5):
+        db_obj = RecentScansDB.objects.filter(MD5=md5)
         if db_obj.exists():
-            print (db_obj[0])
-            return db_obj[0]        
+            return db_obj[0]
     return None
 
 
