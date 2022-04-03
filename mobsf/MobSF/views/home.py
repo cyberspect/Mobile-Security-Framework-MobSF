@@ -27,6 +27,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_safe_path,
     print_n_send_error_response,
+    is_admin,
 )
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
@@ -211,14 +212,15 @@ class Upload(object):
     def validate_extradata(self):
         # If upload is performed manually be web user,
         # use their username instead of supplied email
-        if 'REMOTE_USER' in self.request.META:
-            self.email = self.request.META['REMOTE_USER']
+        if (self.request.headers.get('email')):
+            self.email = self.request.headers.get('email')
         return None
 
 
 def api_docs(request):
     """Api Docs Route."""
-    # TODO: perform admin authorization check
+    if (not is_admin(request)):
+        return print_n_send_error_response(request, 'Unauthorized')
 
     context = {
         'title': 'REST API Docs',
@@ -273,12 +275,17 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP').values()
+    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP')
+    if (not is_admin(request)):
+        email = request.headers.get('email', '@@')
+        db_obj = db_obj.filter(EMAIL__contains=email)
+    
+    recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
     for item in android:
         package_mapping[item.MD5] = item.PACKAGE_NAME
-    for entry in db_obj:
+    for entry in recentscans:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
@@ -290,6 +297,7 @@ def recent_scans(request):
         'title': 'Recent Scans',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
     }
     template = 'general/recent.html'
@@ -428,7 +436,7 @@ class RecentScans(object):
     def recent_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
+        result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')        
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)
