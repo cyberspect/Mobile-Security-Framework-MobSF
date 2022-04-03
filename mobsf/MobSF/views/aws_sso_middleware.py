@@ -78,9 +78,9 @@ class JWTIdentifier:
     def identify(self, request) -> dict:
         if DATA_HEADER not in request.META:
             return
-        logger.debug(request.META[ACCESS_TOKEN_HEADER]);
-        logger.debug(request.META[IDENTITY_HEADER]);
-        logger.debug(request.META[DATA_HEADER]);
+        logger.debug(request.META[ACCESS_TOKEN_HEADER])
+        logger.debug(request.META[IDENTITY_HEADER])
+        logger.debug(request.META[DATA_HEADER])
         data = request.META[DATA_HEADER]
         info = self.verify(data)
         return info
