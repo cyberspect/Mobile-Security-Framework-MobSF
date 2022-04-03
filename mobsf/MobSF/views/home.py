@@ -22,12 +22,13 @@ from django.forms.models import model_to_dict
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
-    api_key,
+    api_key,    
     is_admin,
     is_dir_exists,
     is_file_exists,
     is_safe_path,
     print_n_send_error_response,
+    sso_email,
 )
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
@@ -61,7 +62,7 @@ def index(request):
         'mimes': mimes,
         'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
         'divisions': os.getenv('DIVISIONS'),
-        'email': request.headers.get('email'),
+        'email': sso_email(request),
     }
     template = 'general/home.html'
     return render(request, template, context)
@@ -212,8 +213,9 @@ class Upload(object):
     def validate_extradata(self):
         # If upload is performed manually be web user,
         # use their username instead of supplied email
-        if (self.request.headers.get('email')):
-            self.email = self.request.headers.get('email')
+        email = sso_email(self.request)
+        if (email):
+            self.email = email
         return None
 
 
