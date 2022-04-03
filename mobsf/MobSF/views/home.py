@@ -23,11 +23,11 @@ from django.forms.models import model_to_dict
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
+    is_admin,
     is_dir_exists,
     is_file_exists,
     is_safe_path,
     print_n_send_error_response,
-    is_admin,
 )
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
@@ -279,7 +279,7 @@ def recent_scans(request):
     if (not is_admin(request)):
         email = request.headers.get('email', '@@')
         db_obj = db_obj.filter(EMAIL__contains=email)
-    
+
     recentscans = db_obj.values()
     android = StaticAnalyzerAndroid.objects.all()
     package_mapping = {}
@@ -436,7 +436,7 @@ class RecentScans(object):
     def recent_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')        
+        result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)
