@@ -82,4 +82,4 @@ class JWTIdentifier:
             return {}
         data = request.META[DATA_HEADER]
         info = self.verify(data)
-        return info 
+        return info

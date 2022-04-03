@@ -22,7 +22,7 @@ from django.forms.models import model_to_dict
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
-    api_key,    
+    api_key,
     is_admin,
     is_dir_exists,
     is_file_exists,
