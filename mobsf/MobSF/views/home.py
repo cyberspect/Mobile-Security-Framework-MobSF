@@ -60,6 +60,7 @@ def index(request):
         'mimes': mimes,
         'logo': os.getenv('LOGO', '/static/img/mobsf_logo.png'),
         'divisions': os.getenv('DIVISIONS'),
+        'email': request.headers.get('email'),
     }
     template = 'general/home.html'
     return render(request, template, context)
