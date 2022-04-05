@@ -75,7 +75,7 @@ class Scanning(object):
         self.country = request.POST.get('country')
         self.division = request.POST.get('division')
         self.environment = request.POST.get('environment')
-        self.email = request.POST.get('email')
+        self.email = str.lower(request.POST.get('email'))
 
     def scan_apk(self):
         """Android APK."""
