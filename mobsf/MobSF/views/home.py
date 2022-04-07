@@ -176,8 +176,10 @@ class Upload(object):
             file_path = prefix + api_response['scan_type']
             metadata_filepath = prefix + 'json'
             metadata_file = open(metadata_filepath, 'w')
-            metadata_file.write('{"app_name":"' + self.scan.user_app_name + '",')
-            metadata_file.write('"app_version":"' + self.scan.user_app_version + '",')
+            metadata_file.write('{"app_name":"' 
+                + self.scan.user_app_name + '",')
+            metadata_file.write('"app_version":"' 
+                + self.scan.user_app_version + '",')
             metadata_file.write('"email":"' + self.scan.email + '",')
             metadata_file.write('"hash":"' + api_response['hash'] + '"}')
             metadata_file.close()
