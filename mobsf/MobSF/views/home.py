@@ -30,7 +30,6 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     sso_email,
 )
-from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
@@ -146,7 +145,7 @@ class Upload(object):
         self.write_to_s3(api_response)
         return api_response, 200
 
-    def upload(self):        
+    def upload(self):
         content_type = self.scan.file.content_type
         file_name = self.scan.file.name
         logger.info('MIME Type: %s, File: %s', content_type, file_name)
@@ -263,7 +262,7 @@ def recent_scans(request):
     if (not is_admin(request)):
         email_filter = sso_email(request)
         if (not email_filter):
-            email_filter = '@@' 
+            email_filter = '@@'
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
 
     recentscans = db_obj.values()
