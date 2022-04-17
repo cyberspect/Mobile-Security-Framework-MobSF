@@ -290,7 +290,7 @@ def static_analyzer(request, api=False):
                                 apkid_results,
                                 quark_results,
                                 tracker_res,
-                            )                        
+                            )
 
                     except Exception:
                         logger.exception('Saving to Database Failed')
@@ -493,7 +493,7 @@ def static_analyzer(request, api=False):
                                     {},
                                     [],
                                     trackers,
-                                )                            
+                                )
                         except Exception:
                             logger.exception('Saving to Database Failed')
                         context = get_context_from_analysis(

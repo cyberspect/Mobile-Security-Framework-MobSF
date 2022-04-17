@@ -4,7 +4,6 @@ Shared Functions.
 
 Module providing the shared functions for iOS and Android
 """
-import json
 import io
 import hashlib
 import logging
@@ -29,10 +28,6 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.comparer import generic_compare
-
-import boto3
-
-from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
