@@ -37,8 +37,8 @@ def add_to_recent_scan(data):
         new_db_obj.save()
     else:
         scan = db_obj.first()
-        if (not scan.EMAIL == data['email']):
-            raise Exception('Existing file uploaded by another user')
+        if (not data['email'] in scan.EMAIL):
+            scan.EMAIL = scan.EMAIL + ',' + data['email']
         scan.FILE_NAME = data['file_name']
         scan.TIMESTAMP = timezone.now()
         scan.USER_APP_NAME = data['user_app_name']
