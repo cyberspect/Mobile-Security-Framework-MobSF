@@ -29,6 +29,7 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     print_n_send_error_response,
     sso_email,
+    get_siphash,
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -178,17 +179,19 @@ class Upload(object):
                                 + self.scan.user_app_version + '",')
             metadata_file.write('"email":"' + self.scan.email + '",')
             metadata_file.write('"hash":"' + api_response['hash'] + '",')
-            metadata_file.write('"file_hash":"' + api_response['file_hash']
-                                + '"}')
+            metadata_file.write('"file_name":"'
+                                + self.scan.file_name + '",')
+            shorthash = get_siphash(bytes.fromhex(api_response['hash']))   
+            metadata_file.write('"short_hash":"' + shorthash + '"}')
             metadata_file.close()
 
             # Write uploaded files to S3 bucket
             s3_client.upload_file(file_path,
                                   settings.AWS_S3_BUCKET,
-                                  'intake/' + self.scan.file_name)
+                                  'intake/' + api_response['hash'])
             s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
-                                  'intake/' + self.scan.file_name + '.json')
+                                  'intake/' + api_response['hash'] + '.json')
             print('Wrote files to S3 bucket: ' + settings.AWS_S3_BUCKET)
         except ClientError:
             logging.error('Unable to upload files to AWS S3')

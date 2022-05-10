@@ -1,11 +1,8 @@
 # -*- coding: utf_8 -*-
-import base64
+import hashlib
 import logging
 import io
 import os
-import uuid
-
-import siphash
 
 from django.conf import settings
 from django.utils import timezone
@@ -40,6 +37,8 @@ def add_to_recent_scan(data):
         new_db_obj.save()
     else:
         scan = db_obj.first()
+        if (not scan.EMAIL == data['email']):
+            raise Exception('Existing file uploaded by another user')
         scan.FILE_NAME = data['file_name']
         scan.TIMESTAMP = timezone.now()
         scan.USER_APP_NAME = data['user_app_name']
@@ -50,25 +49,23 @@ def add_to_recent_scan(data):
         scan.save()
 
 
-def handle_uploaded_file(content, typ, scanid):
+def handle_uploaded_file(content, typ):
     """Write Uploaded File."""
-    tenant_id = os.getenv('TENANT_ID', 'df73ea3d2b91442a903b6043399b1353')
-    sip = siphash.SipHash_2_4(bytes.fromhex(tenant_id))
+    md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
     if bfr:
         # Not File upload
         while chunk := content.read(8192):
-            sip.update(chunk)
+            md5.update(chunk)
     else:
         # File upload
         for chunk in content.chunks():
-            sip.update(chunk)
-    file_hash = base64.b64encode(sip.digest()).decode('utf8')
-    file_hash = file_hash.replace('=', '')
-    anal_dir = os.path.join(settings.UPLD_DIR, scanid + '/')
+            md5.update(chunk)
+    md5sum = md5.hexdigest()
+    anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
     if not os.path.exists(anal_dir):
         os.makedirs(anal_dir)
-    with open(anal_dir + scanid + typ, 'wb+') as destination:
+    with open(anal_dir + md5sum + typ, 'wb+') as destination:
         if bfr:
             content.seek(0, 0)
             while chunk := content.read(8192):
@@ -76,7 +73,7 @@ def handle_uploaded_file(content, typ, scanid):
         else:
             for chunk in content.chunks():
                 destination.write(chunk)
-    return file_hash
+    return md5sum
 
 
 class Scanning(object):
@@ -91,16 +88,14 @@ class Scanning(object):
         self.division = request.POST.get('division')
         self.environment = request.POST.get('environment')
         self.email = sso_email(request)
-        self.uuid = uuid.uuid4().hex
 
     def scan_apk(self):
         """Android APK."""
-        file_hash = handle_uploaded_file(self.file, '.apk', self.uuid)
+        md5 = handle_uploaded_file(self.file, '.apk')
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': self.uuid,
-            'file_hash': file_hash,
+            'hash': md5,
             'scan_type': 'apk',
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
@@ -116,12 +111,11 @@ class Scanning(object):
 
     def scan_xapk(self):
         """Android XAPK."""
-        file_hash = handle_uploaded_file(self.file, '.xapk', self.uuid)
+        md5 = handle_uploaded_file(self.file, '.xapk')
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': self.uuid,
-            'file_hash': file_hash,
+            'hash': md5,
             'scan_type': 'xapk',
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
@@ -137,12 +131,11 @@ class Scanning(object):
 
     def scan_apks(self):
         """Android Split APK."""
-        file_hash = handle_uploaded_file(self.file, '.apk', self.uuid)
+        md5 = handle_uploaded_file(self.file, '.apk')
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': self.uuid,
-            'file_hash': file_hash,
+            'hash': md5,
             'scan_type': 'apks',
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
@@ -158,12 +151,11 @@ class Scanning(object):
 
     def scan_zip(self):
         """Android /iOS Zipped Source."""
-        file_hash = handle_uploaded_file(self.file, '.zip', self.uuid)
+        md5 = handle_uploaded_file(self.file, '.zip')
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
-            'hash': self.uuid,
-            'file_hash': file_hash,
+            'hash': md5,
             'scan_type': 'zip',
             'file_name': self.file_name,
             'user_app_name': self.user_app_name,
@@ -179,11 +171,10 @@ class Scanning(object):
 
     def scan_ipa(self):
         """IOS Binary."""
-        file_hash = handle_uploaded_file(self.file, '.ipa', self.uuid)
+        md5 = handle_uploaded_file(self.file, '.ipa')
         data = {
             'analyzer': 'static_analyzer_ios',
-            'hash': self.uuid,
-            'file_hash': file_hash,
+            'hash': md5,
             'scan_type': 'ipa',
             'file_name': self.file_name,
             'status': 'success',
@@ -200,11 +191,10 @@ class Scanning(object):
 
     def scan_appx(self):
         """Windows appx."""
-        file_hash = handle_uploaded_file(self.file, '.appx', self.uuid)
+        md5 = handle_uploaded_file(self.file, '.appx')
         data = {
             'analyzer': 'static_analyzer_windows',
-            'hash': self.uuid,
-            'file_hash': file_hash,
+            'hash': md5,
             'scan_type': 'appx',
             'file_name': self.file_name,
             'status': 'success',
