@@ -62,7 +62,7 @@ def handle_uploaded_file(content, typ, scanid):
     else:
         # File upload
         for chunk in content.chunks():
-            sip.update(chunk)  
+            sip.update(chunk)
     file_hash = base64.b64encode(sip.digest()).decode('utf8')
     file_hash = file_hash.replace('=', '')
     anal_dir = os.path.join(settings.UPLD_DIR, scanid + '/')
