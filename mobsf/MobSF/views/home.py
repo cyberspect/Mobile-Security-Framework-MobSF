@@ -29,7 +29,6 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     print_n_send_error_response,
     sso_email,
-    get_siphash,
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -181,8 +180,8 @@ class Upload(object):
             metadata_file.write('"hash":"' + api_response['hash'] + '",')
             metadata_file.write('"file_name":"'
                                 + self.scan.file_name + '",')
-            shorthash = get_siphash(bytes.fromhex(api_response['hash']))
-            metadata_file.write('"short_hash":"' + shorthash + '"}')
+            metadata_file.write('"short_hash":"' + api_response['short_hash']
+                                + '"}')
             metadata_file.close()
 
             # Write uploaded files to S3 bucket

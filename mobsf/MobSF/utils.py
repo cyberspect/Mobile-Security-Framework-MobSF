@@ -624,7 +624,8 @@ def sso_email(request):
 
 
 def get_siphash(data):
+    data_bytes = bytes.fromhex(data)
     tenant_id = os.getenv('TENANT_ID', 'df73ea3d2b91442a903b6043399b1353')
-    sip = siphash.SipHash_2_4(bytes.fromhex(tenant_id), data)
+    sip = siphash.SipHash_2_4(bytes.fromhex(tenant_id), data_bytes)
     response = base64.b64encode(sip.digest()).decode('utf8').replace('=', '')
     return response
