@@ -8,7 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.utils import sso_email, get_siphash
+from mobsf.MobSF.utils import get_siphash, sso_email
 from mobsf.MobSF.views.helpers import FileType
 
 logger = logging.getLogger(__name__)
