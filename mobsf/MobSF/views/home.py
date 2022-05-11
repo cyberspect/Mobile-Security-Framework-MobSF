@@ -181,7 +181,7 @@ class Upload(object):
             metadata_file.write('"hash":"' + api_response['hash'] + '",')
             metadata_file.write('"file_name":"'
                                 + self.scan.file_name + '",')
-            shorthash = get_siphash(bytes.fromhex(api_response['hash']))   
+            shorthash = get_siphash(bytes.fromhex(api_response['hash']))
             metadata_file.write('"short_hash":"' + shorthash + '"}')
             metadata_file.close()
 
@@ -195,7 +195,7 @@ class Upload(object):
             if (self.scan.source_file):
                 s3_client.upload_file(metadata_filepath,
                                       settings.AWS_S3_BUCKET,
-                                      'intake/' + api_response['hash'] 
+                                      'intake/' + api_response['hash']
                                       + '.zip')
             print('Wrote files to S3 bucket: ' + settings.AWS_S3_BUCKET)
         except ClientError:
