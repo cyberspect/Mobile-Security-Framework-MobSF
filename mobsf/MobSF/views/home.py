@@ -192,6 +192,11 @@ class Upload(object):
             s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
                                   'intake/' + api_response['hash'] + '.json')
+            if (self.scan.source_file):
+                s3_client.upload_file(metadata_filepath,
+                                      settings.AWS_S3_BUCKET,
+                                      'intake/' + api_response['hash'] 
+                                      + '.zip')
             print('Wrote files to S3 bucket: ' + settings.AWS_S3_BUCKET)
         except ClientError:
             logging.error('Unable to upload files to AWS S3')

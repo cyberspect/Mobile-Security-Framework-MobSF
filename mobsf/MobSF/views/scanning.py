@@ -82,6 +82,12 @@ class Scanning(object):
         self.file = request.FILES['file']
         self.file_name = request.FILES['file'].name
         self.file_type = FileType(self.file)
+        if ('source_file' in request.FILES):
+            self.source_file = request.FILES['source_file']
+            self.source_file_name = request.FILES['source_file'].name
+        else:
+            self.source_file = None
+            self.source_file_name = None
         self.user_app_name = request.POST.get('user_app_name')
         self.user_app_version = request.POST.get('user_app_version')
         self.country = request.POST.get('country')
