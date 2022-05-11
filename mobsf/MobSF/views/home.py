@@ -188,7 +188,7 @@ class Upload(object):
             # Write uploaded files to S3 bucket
             s3_client.upload_file(file_path,
                                   settings.AWS_S3_BUCKET,
-                                  'intake/' + api_response['hash'] + '.' 
+                                  'intake/' + api_response['hash'] + '.'
                                   + api_response['scan_type'])
             s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
