@@ -193,7 +193,7 @@ class Upload(object):
                                   settings.AWS_S3_BUCKET,
                                   'intake/' + file_name + '.json')
             if (self.scan.source_file):
-                s3_client.upload_file(metadata_filepath,
+                s3_client.upload_file(self.scan.source_file,
                                       settings.AWS_S3_BUCKET,
                                       'intake/' + file_name + '.src')
             print('Wrote files to S3 bucket: ' + settings.AWS_S3_BUCKET)
