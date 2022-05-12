@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
-
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
