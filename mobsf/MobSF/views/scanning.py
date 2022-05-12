@@ -16,51 +16,59 @@ logger = logging.getLogger(__name__)
 
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
-    db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
-    if not db_obj.exists():
-        new_db_obj = RecentScansDB(
-            ANALYZER=data['analyzer'],
-            SCAN_TYPE=data['scan_type'],
-            FILE_NAME=data['file_name'],
-            APP_NAME='',
-            PACKAGE_NAME='',
-            VERSION_NAME='',
-            MD5=data['hash'],
-            TIMESTAMP=timezone.now(),
-            USER_APP_NAME=data['user_app_name'],
-            USER_APP_VERSION=data['user_app_version'],
-            DIVISION=data['division'],
-            COUNTRY=data['country'],
-            ENVIRONMENT=data['environment'],
-            EMAIL=data['email'],
-            USER_GROUPS=data['user_groups'])
+    logger.info('Adding to recent scan page, hash: %s', data['hash'])
 
-        new_db_obj.save()
-    else:
-        scan = db_obj.first()
-        if (not data['email'] in scan.EMAIL):
-            scan.EMAIL = scan.EMAIL + ',' + data['email']
-        if (not data['user_groups'] in scan.USER_GROUPS):
-            scan.USER_GROUPS = scan.USER_GROUPS + ',' + data['user_groups']
-        scan.FILE_NAME = data['file_name']
-        scan.TIMESTAMP = timezone.now()
-        scan.USER_APP_NAME = data['user_app_name']
-        scan.USER_APP_VERSION = data['user_app_version']
-        scan.DIVISION = data['division']
-        scan.COUNTRY = data['country']
-        scan.ENVIRONMENT = data['environment']
-        scan.save()
+    try:
+        db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
+        if not db_obj.exists():
+            new_db_obj = RecentScansDB(
+                ANALYZER=data['analyzer'],
+                SCAN_TYPE=data['scan_type'],
+                FILE_NAME=data['file_name'],
+                APP_NAME='',
+                PACKAGE_NAME='',
+                VERSION_NAME='',
+                MD5=data['hash'],
+                TIMESTAMP=timezone.now(),
+                USER_APP_NAME=data['user_app_name'],
+                USER_APP_VERSION=data['user_app_version'],
+                DIVISION=data['division'],
+                COUNTRY=data['country'],
+                ENVIRONMENT=data['environment'],
+                EMAIL=data['email'],
+                USER_GROUPS=data['user_groups'])
+
+            new_db_obj.save()
+        else:
+            scan = db_obj.first()
+            if (not data['email'] in scan.EMAIL):
+                scan.EMAIL = scan.EMAIL + ',' + data['email']
+            if (not data['user_groups'] in scan.USER_GROUPS):
+                scan.USER_GROUPS = scan.USER_GROUPS + ',' + data['user_groups']
+            scan.FILE_NAME = data['file_name']
+            scan.TIMESTAMP = timezone.now()
+            scan.USER_APP_NAME = data['user_app_name']
+            scan.USER_APP_VERSION = data['user_app_version']
+            scan.DIVISION = data['division']
+            scan.COUNTRY = data['country']
+            scan.ENVIRONMENT = data['environment']
+            scan.save()
+    except Exception:
+        logger.exception('Adding Scan URL to Database')
 
 
 def handle_uploaded_file(content, typ, source_content):
     """Write Uploaded File."""
+    logger.info('Handling uploaded file')
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
     if bfr:
+        logger.info('bfr is true')
         # Not File upload
         while chunk := content.read(8192):
             md5.update(chunk)
     else:
+        logger.info('bfr is false')
         # File upload
         for chunk in content.chunks():
             md5.update(chunk)
@@ -78,13 +86,16 @@ def handle_uploaded_file(content, typ, source_content):
             for chunk in content.chunks():
                 destination.write(chunk)
     if (source_content):
+        logger.info('Processing source_content')
         bfr = isinstance(source_content, io.BufferedReader)
         with open(local_dir + md5sum + typ + '.src', 'wb+') as f:
             if bfr:
+                logger.info('Source bfr is true')
                 source_content.seek(0, 0)
                 while chunk := source_content.read(8192):
                     f.write(chunk)
             else:
+                logger.info('Source bfr is false')
                 for chunk in source_content.chunks():
                     f.write(chunk)
     return md5sum
@@ -112,6 +123,7 @@ class Scanning(object):
 
     def scan_apk(self):
         """Android APK."""
+        logger.info('Inside scan_apk, about to handle uploaded file.')
         md5 = handle_uploaded_file(self.file, '.apk', self.source_file)
         short_hash = get_siphash(md5)
         data = {
