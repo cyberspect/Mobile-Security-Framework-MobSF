@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
     logger.info('Adding to recent scan page, hash: %s', data['hash'])
+
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
@@ -54,6 +55,7 @@ def add_to_recent_scan(data):
             scan.save()
     except Exception:
         logger.exception('Adding Scan URL to Database')
+
 
 
 def handle_uploaded_file(content, typ, source_content):
