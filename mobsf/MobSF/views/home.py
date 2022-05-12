@@ -295,8 +295,8 @@ def recent_scans(request):
             entry['PACKAGE'] = ''
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
-        entry['ERROR'] = (datetime.now(timezone.utc) >
-                          entry['TIMESTAMP'] + timedelta(minutes=5))
+        entry['ERROR'] = (datetime.now(timezone.utc)
+                          > entry['TIMESTAMP'] + timedelta(minutes=5))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
