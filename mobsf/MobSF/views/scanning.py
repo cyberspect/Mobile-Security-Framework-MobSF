@@ -56,8 +56,6 @@ def add_to_recent_scan(data):
     except Exception:
         logger.exception('Adding Scan URL to Database')
 
-
-
 def handle_uploaded_file(content, typ, source_content):
     """Write Uploaded File."""
     logger.info('Handling uploaded file')
