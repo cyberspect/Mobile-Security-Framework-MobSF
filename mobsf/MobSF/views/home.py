@@ -174,8 +174,7 @@ class Upload(object):
             metadata_file = open(metadata_filepath, 'w')
             metadata_file.write('{"user_app_name":"'
                                 + self.scan.user_app_name + '",')
-            metadata_file.write('"user_app_version":"'
-                                + self.scan.user_app_version + '",')
+            metadata_file.write('"user_app_version":"'                                + self.scan.user_app_version + '",')
             metadata_file.write('"email":"' + self.scan.email + '",')
             metadata_file.write('"hash":"' + api_response['hash'] + '",')
             metadata_file.write('"file_name":"'
@@ -185,6 +184,7 @@ class Upload(object):
             metadata_file.close()
 
             # Write uploaded files to S3 bucket
+            logger.info('Writing files to S3 bucket: ' + settings.AWS_S3_BUCKET)
             file_name = self.scan.file_name
             s3_client.upload_file(file_path,
                                   settings.AWS_S3_BUCKET,
@@ -193,10 +193,10 @@ class Upload(object):
                                   settings.AWS_S3_BUCKET,
                                   'intake/' + file_name + '.json')
             if (self.scan.source_file):
-                s3_client.upload_file(self.scan.source_file,
+                source_filepath = file_path + '.src'
+                s3_client.upload_file(source_filepath,
                                       settings.AWS_S3_BUCKET,
                                       'intake/' + file_name + '.src')
-            print('Wrote files to S3 bucket: ' + settings.AWS_S3_BUCKET)
         except ClientError:
             logging.error('Unable to upload files to AWS S3')
             return False
