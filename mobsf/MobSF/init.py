@@ -105,7 +105,7 @@ def get_mobsf_home(use_home, base_dir):
     try:
         mobsf_home = ''
         if use_home:
-            mobsf_files_path = os.getenv('FILES_PATH', 
+            mobsf_files_path = os.getenv('FILES_PATH',
                                          os.path.expanduser('~'))
             mobsf_home = os.path.join(mobsf_files_path, 'MobSF')
             # MobSF Home Directory

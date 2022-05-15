@@ -404,7 +404,7 @@ else:
     # ==============================================
 
     # ========DISABLED BY DEFAULT COMPONENTS=========
-    
+
     # ----------VirusTotal--------------------------
     VT_ENABLED = False
     VT_API_KEY = ''
