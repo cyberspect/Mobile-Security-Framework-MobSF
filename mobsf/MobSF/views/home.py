@@ -189,7 +189,7 @@ class Upload(object):
 
             # Write uploaded files to S3 bucket
             logger.info('Writing files to S3 bucket: %s',
-                        settings.AWS_S3_BUCKET)                        
+                        settings.AWS_S3_BUCKET)
             file_name = self.scan.file_name
             if (self.scan.source_file):
                 source_filepath = file_path + '.src'
@@ -202,7 +202,7 @@ class Upload(object):
             s3_client.upload_file(metadata_filepath,
                                   settings.AWS_S3_BUCKET,
                                   'intake/' + file_name + '.json')
-            
+
         except ClientError:
             logging.error('Unable to upload files to AWS S3')
             return False
