@@ -87,7 +87,8 @@ class Upload(object):
         return resp
 
     def upload_html(self):
-        logger.info('File uploaded via web UI')
+        logger.info('File uploaded via web UI by user %s',
+                    sso_email(self.request))
         try:
             request = self.request
             response_data = {
