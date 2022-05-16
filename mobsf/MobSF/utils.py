@@ -99,6 +99,7 @@ def print_version():
     if dist:
         logger.info('Dist: %s', ' '.join(dist))
     logger.info('File storage: %s', settings.MobSF_HOME)
+    logger.info('Administrators: %s', settings.ADMIN_USERS)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
