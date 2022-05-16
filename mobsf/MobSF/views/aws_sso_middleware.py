@@ -31,7 +31,7 @@ def alb_idp_auth_middleware(
         identifier = JWTIdentifier(region=region)
         info = identifier.identify(request)
         if info:
-            request.META['email'] = str.lower(info['email'])            
+            request.META['email'] = str.lower(info['email'])
         else:
             request.META['email'] = 'test@testing.local'
         return get_response(request)
