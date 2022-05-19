@@ -300,7 +300,7 @@ def recent_scans(request):
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entry['ERROR'] = (datetime.now(timezone.utc)
-                          > entry['TIMESTAMP'] + timedelta(minutes=5))
+                          > entry['TIMESTAMP'] + timedelta(minutes=15))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
@@ -363,7 +363,9 @@ def search(request):
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
-    return print_n_send_error_response(request, 'Invalid Scan Hash')
+    return print_n_send_error_response(request,
+        'The Scan ID provided is invalid. Please provide a valid 32 '
+        + 'character alphanumeric value.')
 
 
 def download(request):
