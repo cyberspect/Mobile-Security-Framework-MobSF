@@ -23,9 +23,9 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
-    file_size,
-    get_config_loc,
     error_response,
+    file_size,
+    get_config_loc,    
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows

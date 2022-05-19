@@ -24,7 +24,7 @@ def run(request):
         if not match and file_type not in ['apk', 'smali', 'java']:
             logger.exception('Invalid options')
             return error_response(request,
-                                               'Invalid options')
+                                  'Invalid options')
         app_dir = os.path.join(settings.UPLD_DIR, md5)
         file_name = ''
         if file_type == 'java':
@@ -50,4 +50,4 @@ def run(request):
     except Exception:
         logger.exception('Generating Downloads')
         return error_response(request,
-                                           'Generating Downloads')
+                              'Generating Downloads')

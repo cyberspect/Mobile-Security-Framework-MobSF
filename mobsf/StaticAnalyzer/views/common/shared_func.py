@@ -22,8 +22,8 @@ from django.utils.html import escape
 
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
-    is_md5,
     error_response,
+    is_md5,    
     upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import RecentScansDB

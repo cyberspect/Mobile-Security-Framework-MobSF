@@ -16,9 +16,9 @@ from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
-    is_file_exists,
-    is_safe_path,
     error_response,
+    is_file_exists,
+    is_safe_path,    
     read_sqlite,
 )
 from mobsf.StaticAnalyzer.forms import (

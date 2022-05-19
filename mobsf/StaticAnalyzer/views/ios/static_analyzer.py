@@ -12,8 +12,8 @@ from django.conf import settings
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
-    file_size,
     error_response,
+    file_size,    
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.ios.appstore import app_search

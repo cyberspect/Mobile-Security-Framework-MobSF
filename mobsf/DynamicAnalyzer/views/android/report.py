@@ -132,8 +132,8 @@ def view_file(request, api=False):
             typ = request.GET['type']
         if not is_md5(md5_hash):
             return error_response(request,
-                                               'Invalid Parameters',
-                                               api)
+                                  'Invalid Parameters',
+                                  api)
         src = os.path.join(
             settings.UPLD_DIR,
             md5_hash,

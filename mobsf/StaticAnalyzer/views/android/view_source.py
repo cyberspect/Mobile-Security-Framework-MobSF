@@ -11,8 +11,8 @@ from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
-    is_safe_path,
     error_response,
+    is_safe_path,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,

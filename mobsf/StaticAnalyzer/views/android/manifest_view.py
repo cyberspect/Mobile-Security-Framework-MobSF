@@ -61,4 +61,4 @@ def run(request):
     except Exception:
         logger.exception('Viewing AndroidManifest.xml')
         return error_response(request,
-                                           'Error Viewing AndroidManifest.xml')
+                              'Error Viewing AndroidManifest.xml')
