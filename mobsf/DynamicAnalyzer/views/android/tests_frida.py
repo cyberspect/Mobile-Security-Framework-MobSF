@@ -24,7 +24,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_md5,
     is_safe_path,
-    print_n_send_error_response,
+    error_response,
 )
 
 logger = logging.getLogger(__name__)
@@ -177,7 +177,7 @@ def live_api(request, api=False):
     except Exception:
         logger.exception('API monitor streaming')
         err = 'Error in API monitor streaming'
-        return print_n_send_error_response(request, err, api)
+        return error_response(request, err, api)
 
 
 def frida_logs(request, api=False):
@@ -215,7 +215,7 @@ def frida_logs(request, api=False):
     except Exception:
         logger.exception('Frida log streaming')
         err = 'Error in Frida log streaming'
-        return print_n_send_error_response(request, err, api)
+        return error_response(request, err, api)
 
 
 def decode_base64(data, altchars=b'+/'):
