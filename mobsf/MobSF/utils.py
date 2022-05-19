@@ -183,10 +183,10 @@ def run_process(args):
         return ''
 
 
-def print_n_send_error_response(request,
-                                msg,
-                                api=False,
-                                exp=''):
+def error_response(request,
+                   msg,
+                   api=False,
+                   exp=''):
     """Print and log errors."""
     logger.error(msg)
     if api:

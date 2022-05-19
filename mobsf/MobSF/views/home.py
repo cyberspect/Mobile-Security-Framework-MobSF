@@ -28,7 +28,7 @@ from mobsf.MobSF.utils import (
     is_dir_exists,
     is_file_exists,
     is_safe_path,
-    print_n_send_error_response,
+    error_response,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
@@ -213,7 +213,7 @@ class Upload(object):
 def api_docs(request):
     """Api Docs Route."""
     if (not is_admin(request)):
-        return print_n_send_error_response(request, 'Unauthorized')
+        return error_response(request, 'Unauthorized')
 
     context = {
         'title': 'REST API Docs',
@@ -363,9 +363,9 @@ def search(request):
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
-    return print_n_send_error_response(request,
-        'The Scan ID provided is invalid. Please provide a valid 32 '
-        + 'character alphanumeric value.')
+    return error_response(request,
+                          'The Scan ID provided is invalid. Please provide a'
+                          + ' valid 32 character alphanumeric value.')
 
 
 def download(request):
@@ -378,7 +378,7 @@ def download(request):
         # Security Checks
         if '../' in filename or not is_safe_path(root, dwd_file):
             msg = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, msg)
+            return error_response(request, msg)
         ext = os.path.splitext(filename)[1]
         if ext in allowed_exts:
             if os.path.isfile(dwd_file):
@@ -435,9 +435,9 @@ def delete_scan(request, api=False):
         msg = str(exp)
         exp_doc = exp.__doc__
         if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
+            return error_response(request, msg, True, exp_doc)
         else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+            return error_response(request, msg, False, exp_doc)
 
 
 class RecentScans(object):
