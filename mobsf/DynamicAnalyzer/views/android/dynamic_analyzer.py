@@ -25,11 +25,11 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     stop_httptools,
 )
 from mobsf.MobSF.utils import (
+    error_response,
     get_config_loc,
     get_device,
     get_proxy_ip,
     is_md5,
-    error_response,
     python_list,
     strict_package_check,
 )
