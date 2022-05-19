@@ -18,7 +18,7 @@ from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
     error_response,
     is_file_exists,
-    is_safe_path,    
+    is_safe_path,
     read_sqlite,
 )
 from mobsf.StaticAnalyzer.forms import (
