@@ -28,7 +28,7 @@ from mobsf.MobSF.utils import (
     is_admin,
     is_dir_exists,
     is_file_exists,
-    is_safe_path,    
+    is_safe_path,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
