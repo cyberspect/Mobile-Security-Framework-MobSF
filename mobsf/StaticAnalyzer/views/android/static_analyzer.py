@@ -22,7 +22,7 @@ from mobsf.MobSF.utils import (
     error_response,
     file_size,
     is_dir_exists,
-    is_file_exists,    
+    is_file_exists,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
