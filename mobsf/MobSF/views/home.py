@@ -444,9 +444,11 @@ def delete_scan(request, api=False):
 
 def health():
     """Check MobSF system health."""
-    db_obj = RecentScansDB.objects.all().first()  
-    data = {'status': 'OK'}      
-    return HttpResponse(json.dumps(data), content_type='application/json; charset=utf-8')
+    # Ensure database access is good
+    RecentScansDB.objects.all().first()
+    data = {'status': 'OK'}
+    return HttpResponse(json.dumps(data), 
+        content_type='application/json; charset=utf-8')
 
 
 class RecentScans(object):
