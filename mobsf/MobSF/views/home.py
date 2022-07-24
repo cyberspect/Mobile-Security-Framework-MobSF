@@ -447,8 +447,8 @@ def health():
     # Ensure database access is good
     RecentScansDB.objects.all().first()
     data = {'status': 'OK'}
-    return HttpResponse(json.dumps(data), 
-        content_type='application/json; charset=utf-8')
+    return HttpResponse(json.dumps(data),
+                        content_type='application/json; charset=utf-8')
 
 
 class RecentScans(object):
