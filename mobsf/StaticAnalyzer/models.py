@@ -15,11 +15,11 @@ class RecentScansDB(models.Model):
     TIMESTAMP = models.DateTimeField(default=datetime.now)
     USER_APP_NAME = models.CharField(max_length=260, default='')
     USER_APP_VERSION = models.CharField(max_length=50, default='')
-    COUNTRY = models.CharField(max_length=50, default='')
     DIVISION = models.CharField(max_length=260, default='')
     ENVIRONMENT = models.CharField(max_length=50, default='')
     EMAIL = models.CharField(max_length=260, default='')
     USER_GROUPS = models.CharField(max_length=260, default='')
+    RELEASE = models.BooleanField(default=False)
 
 
 class StaticAnalyzerAndroid(models.Model):
