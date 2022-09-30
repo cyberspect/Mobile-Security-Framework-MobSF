@@ -137,7 +137,7 @@ class CyberspectScans(models.Model):
     DT_PROJECT_ID = models.UUIDField()
     INTAKE_START = models.DateField()
     INTAKE_END = models.DateField()
-    SAST_STAERT = models.DateField()
+    SAST_START = models.DateField()
     SAST_END = models.DateField()
     SBOM_START = models.DateField()
     SBOM_END = models.DateField()
