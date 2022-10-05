@@ -340,8 +340,8 @@ def update_scan(request):
 
 def update_cyberspect_scan(request):
     """Update Cyberspect scan record."""
-    id = request.POST.get('id', -1)
-    db_obj = CyberspectScans.objects.filter(ID=id).first()
+    csid = request.POST.get('id', -1)
+    db_obj = CyberspectScans.objects.filter(ID=csid).first()
     if db_obj:
         db_obj.MOBSF_MD5 = request.POST.get('mobsf_md5', db_obj.MOBSF_MD5)
         db_obj.DT_PROJECT_ID = request.POST.get('dt_project_id',
