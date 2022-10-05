@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (RecentScans, Upload, delete_scan,
                                     scan_metadata, update_cyberspect_scan,
-                                    update_scan,)
+                                    update_scan)
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
