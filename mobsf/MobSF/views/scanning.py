@@ -50,7 +50,7 @@ def add_to_recent_scan(data):
             scan.USER_APP_VERSION = data['user_app_version']
             scan.DIVISION = data['division']
             scan.ENVIRONMENT = data['environment']
-            scan.RELEASE=data['release']
+            scan.RELEASE = data['release']
             scan.save()
     except Exception as ex:
         logger.exception('Adding Scan URL to Database')

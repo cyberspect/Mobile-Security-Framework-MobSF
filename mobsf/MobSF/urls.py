@@ -48,7 +48,8 @@ urlpatterns = [
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
     re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
-    re_path(r'^api/v1/update_cyberspect_scan$', api_sz.api_update_cyberspect_scans),
+    re_path(r'^api/v1/update_cyberspect_scan$', 
+            api_sz.api_update_cyberspect_scans),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
