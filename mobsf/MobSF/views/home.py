@@ -345,9 +345,9 @@ def update_cyberspect_scan(request):
         csid = request.POST.get('id', -1)
         db_obj = CyberspectScans.objects.filter(ID=csid).first()
         if db_obj:
-            db_obj.MOBSF_MD5 = req(request,'mobsf_md5', db_obj.MOBSF_MD5)
+            db_obj.MOBSF_MD5 = req(request, 'mobsf_md5', db_obj.MOBSF_MD5)
             db_obj.DT_PROJECT_ID = req(request, 'dt_project_id',
-                                        db_obj.DT_PROJECT_ID)
+                                       db_obj.DT_PROJECT_ID)
             db_obj.INTAKE_END = req(request, 'intake_end',
                                     db_obj.INTAKE_END)
             db_obj.SAST_START = req(request, 'sast_start', db_obj.SAST_START)
@@ -355,24 +355,24 @@ def update_cyberspect_scan(request):
             db_obj.SBOM_START = req(request, 'sbom_start', db_obj.SBOM_START)
             db_obj.SBOM_END = req(request, 'sbom_end', db_obj.SBOM_END)
             db_obj.DEPENDENCY_START = req(request, 'dependency_start',
-                                            db_obj.DEPENDENCY_START)
+                                          db_obj.DEPENDENCY_START)
             db_obj.DEPENDENCY_END = req(request, 'dependency_end',
                                         db_obj.DEPENDENCY_END)
             db_obj.NOTIFICATION_START = req(request, 'notification_start',
                                             db_obj.NOTIFICATION_START)
             db_obj.NOTIFICATION_END = req(request, 'notification_end',
-                                            db_obj.NOTIFICATION_END)
+                                          db_obj.NOTIFICATION_END)
             db_obj.SUCCESS = req(request, 'success', db_obj.SUCCESS)
             db_obj.FAILURE_SOURCE = req(request, 'failure_source',
                                         db_obj.FAILURE_SOURCE)
             db_obj.FAILURE_MESSAGE = req(request, 'failure_message',
-                                            db_obj.FAILURE_MESSAGE)
+                                         db_obj.FAILURE_MESSAGE)
             db_obj.FILE_SIZE_PACKAGE = req(request, 'file_size_package',
                 db_obj.FILE_SIZE_PACKAGE)
             db_obj.FILE_SIZE_SOURCE = req(request, 'file_size_source',
-                                            db_obj.FILE_SIZE_SOURCE)
+                                          db_obj.FILE_SIZE_SOURCE)
             db_obj.DEPENDENCY_TYPES = req(request, 'dependency_types',
-                                            db_obj.DEPENDENCY_TYPES)
+                                          db_obj.DEPENDENCY_TYPES)
             db_obj.save()
             return model_to_dict(db_obj)
         else:
