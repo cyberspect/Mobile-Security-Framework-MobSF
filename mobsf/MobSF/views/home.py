@@ -368,7 +368,7 @@ def update_cyberspect_scan(request):
             db_obj.FAILURE_MESSAGE = req(request, 'failure_message',
                                          db_obj.FAILURE_MESSAGE)
             db_obj.FILE_SIZE_PACKAGE = req(request, 'file_size_package',
-                db_obj.FILE_SIZE_PACKAGE)
+                                           db_obj.FILE_SIZE_PACKAGE)
             db_obj.FILE_SIZE_SOURCE = req(request, 'file_size_source',
                                           db_obj.FILE_SIZE_SOURCE)
             db_obj.DEPENDENCY_TYPES = req(request, 'dependency_types',
