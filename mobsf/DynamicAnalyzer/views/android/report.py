@@ -32,7 +32,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     is_path_traversal,
     is_safe_path,
-    key,    
+    key,
     read_sqlite,
 )
 
