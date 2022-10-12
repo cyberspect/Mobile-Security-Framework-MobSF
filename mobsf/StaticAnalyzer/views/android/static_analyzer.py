@@ -20,11 +20,11 @@ from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
     android_component,
+    error_response,
     file_size,
     is_dir_exists,
     is_file_exists,
     key,
-    error_response,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
