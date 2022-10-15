@@ -69,7 +69,7 @@ def handle_uploaded_file(content, typ, source_content):
         # File upload
         for chunk in content.chunks():
             md5.update(chunk)
-    md5sum = md5.hexdigest()    
+    md5sum = md5.hexdigest()
     local_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)

@@ -72,8 +72,8 @@ def api_scan(request):
     # Track scan start time
     data = {
         'id': request.POST['cyberspect_scan_id'],
-        'sast_start': timezone.now()
-        }
+        'sast_start': timezone.now(),
+    }
     update_cyberspect_scan(data)
 
     # APK, Android ZIP and iOS ZIP
@@ -321,21 +321,6 @@ def api_cyberspect_recent_scans(request):
 @csrf_exempt
 def api_update_cyberspect_scan(request):
     """POST - Update a record in CyberspectScans."""
-    data = {
-        'id': request.POST.get('id', ''),
-        'dt_project_id': request.POST.get('dt_project_id', ''),
-        'intake_end': request.POST.get('intake_end', ''),
-        'sbom_start': request.POST.get('sbom_start', ''),
-        'sbom_end': request.POST.get('sbom_end', ''),
-        'dependency_start': request.POST.get('dependency_start', ''),
-        'dependency_end': request.POST.get('dependency_end', ''),
-        'notification_start': request.POST.get('notification_start', ''),
-        'notification_end': request.POST.get('notification_end', ''),
-        'success': request.POST.get('success', ''),
-        'failure_source': request.POST.get('failure_source', ''),
-        'failure_message': request.POST.get('failure_message', ''),
-        'dependency_types': request.POST.get('dependency_types', '')
-        }
     resp = update_cyberspect_scan(request.POST.dict())
     if resp:
         if 'error' in resp:

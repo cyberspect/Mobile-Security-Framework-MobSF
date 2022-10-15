@@ -25,7 +25,6 @@ from django.forms.models import model_to_dict
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
-    dval,
     error_response,
     is_admin,
     is_dir_exists,
@@ -118,14 +117,14 @@ class Upload(object):
                     logger.error(msg)
                     response_data['description'] = msg
                     return self.resp_json(response_data)
-            
-            start_time = datetime.now(timezone.utc) 
+
+            start_time = datetime.now(timezone.utc)
             response_data = self.upload()
             self.track_new_scan(False, start_time, response_data['hash'])
             self.write_to_s3(response_data)
             return self.resp_json(response_data)
         except Exception as ex:
-            msg = getattr(ex, 'message', repr(ex))    
+            msg = getattr(ex, 'message', repr(ex))
             exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
             logger.error(exmsg)
             self.track_failure(msg)
@@ -142,8 +141,8 @@ class Upload(object):
         self.scan.email = self.request.POST.get('email', '')
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
-            return api_response, HTTP_BAD_REQUEST 
-        start_time = datetime.now(timezone.utc)      
+            return api_response, HTTP_BAD_REQUEST
+        start_time = datetime.now(timezone.utc)
         api_response = self.upload()
         self.track_new_scan(True, start_time, api_response['hash'])
         if (not self.request.GET.get('scan', '1') == '0'):
@@ -191,8 +190,8 @@ class Upload(object):
                                 + self.scan.file_name + '",')
             metadata_file.write('"short_hash":"' + api_response['short_hash']
                                 + '",')
-            metadata_file.write('"cyberspect_scan_id":"' + 
-                                str(self.scan.cyberspect_scan_id) + '"}')
+            metadata_file.write('"cyberspect_scan_id":"'
+                                + str(self.scan.cyberspect_scan_id) + '"}')
             metadata_file.close()
 
             # Write uploaded files to S3 bucket
@@ -218,15 +217,15 @@ class Upload(object):
             return False
         return
 
-    def track_new_scan(self, scheduled, start_time, hash):
-        # Insert new record into CyberspectScans        
+    def track_new_scan(self, scheduled, start_time, md5):
+        # Insert new record into CyberspectScans
         new_db_obj = CyberspectScans(
             SCHEDULED=scheduled,
-            MOBSF_MD5=hash,
+            MOBSF_MD5=md5,
             INTAKE_START=start_time,
             FILE_SIZE_PACKAGE=self.scan.file_size,
-            FILE_SIZE_SOURCE=self.scan.source_file_size
-            )
+            FILE_SIZE_SOURCE=self.scan.source_file_size,
+        )
         new_db_obj.save()
         self.scan.cyberspect_scan_id = new_db_obj.ID
         logger.info('Hash: %s, Cyberspect Scan ID: %s', hash, new_db_obj.ID)
@@ -235,11 +234,11 @@ class Upload(object):
         if self.scan.cyberspect_scan_id == 0:
             return
         data = {
-            'id': self.scan.cyberspect_scan_id, 
+            'id': self.scan.cyberspect_scan_id,
             'success': False,
             'failure_source': 'SAST',
-            'failure_message': error_message
-            }
+            'failure_message': error_message,
+        }
         update_cyberspect_scan(data)
 
 
@@ -364,25 +363,25 @@ def update_cyberspect_scan(data):
         if db_obj:
             if 'mobsf_md5' in data:
                 db_obj.MOBSF_MD5 = data['mobsf_md5']
-            if 'dt_project_id' in data:
+            if 'dt_project_id' in data and data['dt_project_id']:
                 db_obj.DT_PROJECT_ID = data['dt_project_id']
-            if 'intake_end' in data:
+            if 'intake_end' in data and data['intake_end']:
                 db_obj.INTAKE_END = data['intake_end']
-            if 'sast_start' in data:
+            if 'sast_start' in data and data['sast_start']:
                 db_obj.SAST_START = data['sast_start']
-            if 'sast_end' in data:
+            if 'sast_end' in data and data['sast_end']:
                 db_obj.SAST_END = data['sast_end']
-            if 'sbom_start' in data:
+            if 'sbom_start' in data and data['sbom_start']:
                 db_obj.SBOM_START = data['sbom_start']
-            if 'sbom_end' in data:
+            if 'sbom_end' in data and data['sbom_end']:
                 db_obj.SBOM_END = data['sbom_end']
-            if 'dependency_start' in data:
+            if 'dependency_start' in data and data['dependency_start']:
                 db_obj.DEPENDENCY_START = data['dependency_start']
-            if 'dependency_end' in data:
+            if 'dependency_end' in data and data['dependency_end']:
                 db_obj.DEPENDENCY_END = data['dependency_end']
-            if 'notification_start' in data:
+            if 'notification_start' in data and data['notification_start']:
                 db_obj.NOTIFICATION_START = data['notification_start']
-            if 'notification_end' in data:
+            if 'notification_end' in data and data['notification_end']:
                 db_obj.NOTIFICATION_END = data['notification_end']
             if 'success' in data:
                 db_obj.SUCCESS = data['success']
@@ -390,9 +389,9 @@ def update_cyberspect_scan(data):
                 db_obj.FAILURE_SOURCE = data['failure_source']
             if 'failure_message' in data:
                 db_obj.FAILURE_MESSAGE = data['failure_message']
-            if 'file_size_package' in data:
+            if 'file_size_package' in data and data['file_size_package']:
                 db_obj.FILE_SIZE_PACKAGE = data['file_size_package']
-            if 'file_size_source' in data:
+            if 'file_size_source' in data and data['file_size_source']:
                 db_obj.FILE_SIZE_SOURCE = data['file_size_source']
             if 'dependency_types' in data:
                 db_obj.DEPENDENCY_TYPES = data['dependency_types']
@@ -402,8 +401,8 @@ def update_cyberspect_scan(data):
             csid = data['id']
             return {'error': f'Scan ID {csid} not found'}
     except Exception as ex:
-        msg = getattr(ex, 'message', repr(ex))
-        logger.error(msg, stack_info=True)
+        exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
+        logger.error(exmsg)
         return {'error': str(ex)}
 
 
