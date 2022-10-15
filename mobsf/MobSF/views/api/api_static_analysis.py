@@ -2,6 +2,7 @@
 """MobSF REST API V 1."""
 
 from django.http import HttpResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.views.helpers import request_method
@@ -61,11 +62,20 @@ def api_scan_metadata(request):
 @csrf_exempt
 def api_scan(request):
     """POST - Scan API."""
-    params = {'scan_type', 'hash', 'file_name'}
-    if set(request.POST) < params:
+    params = {'cyberspect_scan_id', 'file_name', 'hash', 'scan_type'}
+    if set(request.POST).intersection(params) != params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     scan_type = request.POST['scan_type']
+    resp = ''
+
+    # Track scan start time
+    data = {
+        'id': request.POST['cyberspect_scan_id'],
+        'sast_start': timezone.now()
+        }
+    update_cyberspect_scan(data)
+
     # APK, Android ZIP and iOS ZIP
     if scan_type in {'xapk', 'apk', 'apks', 'zip'}:
         resp = static_analyzer(request, True)
@@ -92,6 +102,14 @@ def api_scan(request):
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
+
+    # Record scan end time and failure
+    if response.status_code == 500:
+        data['success'] = False
+        data['failure_source'] = 'SAST'
+        data['failure_message'] = resp['error']
+    data['sast_end'] = timezone.now()
+    update_cyberspect_scan(data)
     return response
 
 
@@ -301,9 +319,24 @@ def api_cyberspect_recent_scans(request):
 
 @request_method(['POST'])
 @csrf_exempt
-def api_update_cyberspect_scans(request):
+def api_update_cyberspect_scan(request):
     """POST - Update a record in CyberspectScans."""
-    resp = update_cyberspect_scan(request)
+    data = {
+        'id': request.POST.get('id', ''),
+        'dt_project_id': request.POST.get('dt_project_id', ''),
+        'intake_end': request.POST.get('intake_end', ''),
+        'sbom_start': request.POST.get('sbom_start', ''),
+        'sbom_end': request.POST.get('sbom_end', ''),
+        'dependency_start': request.POST.get('dependency_start', ''),
+        'dependency_end': request.POST.get('dependency_end', ''),
+        'notification_start': request.POST.get('notification_start', ''),
+        'notification_end': request.POST.get('notification_end', ''),
+        'success': request.POST.get('success', ''),
+        'failure_source': request.POST.get('failure_source', ''),
+        'failure_message': request.POST.get('failure_message', ''),
+        'dependency_types': request.POST.get('dependency_types', '')
+        }
+    resp = update_cyberspect_scan(request.POST.dict())
     if resp:
         if 'error' in resp:
             return make_api_response(resp, 500)
