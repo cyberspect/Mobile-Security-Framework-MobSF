@@ -23,7 +23,7 @@ class RecentScansDB(models.Model):
 
     @property
     def iswithin30days(self):
-        """Return boolean indicating if the scan was performed within 30 days."""
+        """Boolean indicating if the scan was performed within 30 days."""
         return (
             (datetime.now - datetime.fromtimestamp(self.TIMESTAMP)).days <= 30)
 
