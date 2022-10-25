@@ -20,10 +20,12 @@ class RecentScansDB(models.Model):
     EMAIL = models.CharField(max_length=260, default='')
     USER_GROUPS = models.CharField(max_length=260, default='')
     RELEASE = models.BooleanField(default=False)
+    
     @property
-    def isWithin30Days(self):
-        "Return boolean indicating if the scan was performed within 30 days"
-        return ((datetime.now - datetime.fromtimestamp(self.TIMESTAMP)).days <= 30)
+    def iswithin30days(self):
+     """Return boolean indicating if the scan was performed within 30 days"""
+     return (
+        (datetime.now - datetime.fromtimestamp(self.TIMESTAMP)).days <= 30)
 
 
 class StaticAnalyzerAndroid(models.Model):
