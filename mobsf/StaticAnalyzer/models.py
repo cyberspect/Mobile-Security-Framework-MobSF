@@ -25,7 +25,9 @@ class RecentScansDB(models.Model):
     def iswithin30days(self):
         """Boolean indicating if the scan was performed within 30 days."""
         return (
-            (datetime.now - datetime.fromtimestamp(self.TIMESTAMP)).days <= 30)
+            (datetime.now - 
+            datetime.strptime(self.TIMESTAMP, '%Y-%m-%d %H::%M::%S.%f')
+            ).days <= 30)
 
 
 class StaticAnalyzerAndroid(models.Model):
