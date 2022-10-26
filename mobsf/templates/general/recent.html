@@ -87,12 +87,7 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            <td>{{ e.MD5 }}
-                                {% if is_admin %}
-                                    <br/><br/><label id="scanEmails" text="{{ e.EMAIL }}"/>
-                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden/>
-                                {% endif %}
-                            </td>                            
+                            <td>{{ e.MD5 }}{% if is_admin %}<br/><br/>{{ e.EMAIL }}{% endif %}</td>                            
                             <td><p>                                    
                                     {% if e.PACKAGE_NAME %}
                                         {% if is_admin %}
