@@ -87,11 +87,16 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            <td>{{ e.MD5 }}{% if is_admin %}<br/><br/>{{ e.EMAIL }}{% endif %}</td>                            
+                            <td>{{ e.MD5 }}
+                                {% if is_admin %}
+                                    <br/><br/><label id="scanEmails" text="{{ e.EMAIL }}"/>
+                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden/>
+                                {% endif %}
+                            </td>                               
                             <td><p>                                    
                                     {% if e.PACKAGE_NAME %}
                                         {% if is_admin %}
-                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit" onclick="show_admin_save()" href="#"><i class="fas fa-pencil-square-o" title="Edit"></i></a>
+                                            <a class="btn btn-outline-primary btn-sm" id="admin_edit" onclick="show_admin_save({{e.MD5}})" href="#"><i class="fas fa-pencil-square-o" title="Edit"></i></a>
                                             <a class="btn btn-outline-primary btn-sm" id="admin_save" onclick="update_emails({{e.MD5}})" href="#" hidden><i class="fas fa-floppy-disk" title="Save"></i></a>
                                         {% endif %}
                                     <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/?name={{e.FILE_NAME}}&amp;checksum={{e.MD5}}&amp;type={{e.SCAN_TYPE}}"><i class="fas fa-eye" title="View static analysis details"></i> Static Details</a><br/>
@@ -274,12 +279,18 @@
         });
     }
 
-    function show_admin_save(){
+    function show_admin_save(item){
+        var inputName = "#scanEmailsInput" + item;
         $('#admin_edit').prop('hidden', true);
+        $('#scanEmails').prop('hidden', true);
+        $(inputName).prop('hidden', false);
         $('#admin_save').prop('hidden', false);
     }
 
-    function reset_admin_save(){
+    function reset_admin_save(item){
+        var inputName = "#scanEmailsInput" + item;
+        $(inputName).prop('hidden', true);
+        $('#scanEmails').prop('hidden', false);
         $('#admin_edit').prop('hidden', false);
         $('#admin_save').prop('hidden', true);
     }
@@ -417,7 +428,7 @@
                   });
                  
           } else {
-                  reset_admin_save();
+                  reset_admin_save(item);
           }
           });
       }
