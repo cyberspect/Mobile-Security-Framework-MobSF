@@ -98,8 +98,8 @@
                                     <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
                                     <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/?tag={{ e.MD5 }}"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
                                         {% if is_admin %}
-                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, {{ not e.RELEASE}})" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %} ><i class="fas fa-check" title="Remove Release"></i></a>
-                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, {{ not e.RELEASE}})" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %}><i class="fas fa-check" title="Set Release"></i></a>
+                                            {% if e.RELEASE %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, false)" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %} ><i class="fas fa-check" title="Remove Release"></i></a>
+                                            {% else %}<a class="btn btn-outline-primary btn-sm" id="admin_release" onclick="toggle_release({{e.MD5}}, true)" href={% if e.isWithin30Days() %}"#"{% endif %} {% if not e.iswithin30days() %}disabled{% endif %}><i class="fas fa-check" title="Set Release"></i></a>
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}
@@ -312,7 +312,7 @@
     function toggle_release(item, flag){
         Swal.fire({
         title: 'Are you sure?',
-        text: "This will remove the package as a release version",
+        text: if(flag){"This will remove the scan as a release version"}else{"This will set the scan as a release version"},
         type: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes',
@@ -336,7 +336,7 @@
                                   if (json.updated ==='yes'){
                                       Swal.fire(
                                           'Updated!',
-                                          'The package release has been updated!',
+                                          'The scan has been updated!',
                                           'success'
                                       ).then(function () {
                                           location.reload();
@@ -352,7 +352,7 @@
                               },
                               error : function(xhr,errmsg,err) {
                                   Swal.fire(
-                                      'Updating Release Failed',
+                                      'Updating scan Failed',
                                       errmsg,
                                       'error'
                                       )
