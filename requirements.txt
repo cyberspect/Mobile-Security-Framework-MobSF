@@ -34,4 +34,3 @@ decorator==4.4.2 # pyup: ignore
 boto3>=1.21.0
 PyJWT>=2.3.0
 siphash>=0.0.1
-psycopg2>=2.9.4
