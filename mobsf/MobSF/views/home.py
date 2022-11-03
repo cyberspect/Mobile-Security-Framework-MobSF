@@ -1,13 +1,14 @@
 # -*- coding: utf_8 -*-
 """MobSF File Upload and Home Routes."""
+import datetime
 import json
 import logging
 import os
 import platform
 import re
 import shutil
+import time
 import traceback as tb
-from datetime import timedelta
 from pathlib import Path
 from wsgiref.util import FileWrapper
 
@@ -334,7 +335,8 @@ def recent_scans(request):
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entry['ERROR'] = (timezone.now()
-                          > entry['TIMESTAMP'] + timedelta(minutes=15))
+                          > entry['TIMESTAMP']
+                          + datetime.timedelta(minutes=15))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
@@ -367,28 +369,28 @@ def update_cyberspect_scan(data):
             if 'dt_project_id' in data and data['dt_project_id']:
                 db_obj.DT_PROJECT_ID = data['dt_project_id']
             if 'intake_end' in data and data['intake_end']:
-                db_obj.INTAKE_END = data['intake_end']
+                db_obj.INTAKE_END = tz(data['intake_end'])
             if 'sast_start' in data and data['sast_start']:
-                db_obj.SAST_START = data['sast_start']
+                db_obj.SAST_START = tz(data['sast_start'])
             if 'sast_end' in data and data['sast_end']:
-                db_obj.SAST_END = data['sast_end']
+                db_obj.SAST_END = tz(data['sast_end'])
             if 'sbom_start' in data and data['sbom_start']:
-                db_obj.SBOM_START = data['sbom_start']
+                db_obj.SBOM_START = tz(data['sbom_start'])
             if 'sbom_end' in data and data['sbom_end']:
-                db_obj.SBOM_END = data['sbom_end']
+                db_obj.SBOM_END = tz(data['sbom_end'])
             if 'dependency_start' in data and data['dependency_start']:
-                db_obj.DEPENDENCY_START = data['dependency_start']
+                db_obj.DEPENDENCY_START = tz(data['dependency_start'])
             if 'dependency_end' in data and data['dependency_end']:
-                db_obj.DEPENDENCY_END = data['dependency_end']
+                db_obj.DEPENDENCY_END = tz(data['dependency_end'])
             if 'notification_start' in data and data['notification_start']:
-                db_obj.NOTIFICATION_START = data['notification_start']
+                db_obj.NOTIFICATION_START = tz(data['notification_start'])
             if 'notification_end' in data and data['notification_end']:
-                db_obj.NOTIFICATION_END = data['notification_end']
+                db_obj.NOTIFICATION_END = tz(data['notification_end'])
             if 'success' in data:
                 db_obj.SUCCESS = data['success']
-            if 'failure_source' in data:
+            if 'failure_source' in data and data['failure_source']:
                 db_obj.FAILURE_SOURCE = data['failure_source']
-            if 'failure_message' in data:
+            if 'failure_message' in data and data['failure_message']:
                 db_obj.FAILURE_MESSAGE = data['failure_message']
             if 'file_size_package' in data and data['file_size_package']:
                 db_obj.FILE_SIZE_PACKAGE = data['file_size_package']
@@ -405,6 +407,15 @@ def update_cyberspect_scan(data):
         exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
         logger.error(exmsg)
         return {'error': str(ex)}
+
+
+def tz(value):
+    # Parse string into date/time parts and build time zone aware datetime
+    value = value.replace('T', ' ').replace('Z', '')
+    st = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+    ts = time.mktime(st.timetuple()) + (st.microsecond / 1000000.0)
+    dt = datetime.datetime.fromtimestamp(ts)
+    return dt.replace(tzinfo=timezone.utc)
 
 
 def logout_aws(request):
