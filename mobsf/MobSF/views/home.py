@@ -1,13 +1,14 @@
 # -*- coding: utf_8 -*-
 """MobSF File Upload and Home Routes."""
+import datetime
 import json
 import logging
 import os
 import platform
 import re
 import shutil
+import time
 import traceback as tb
-from datetime import timedelta
 from pathlib import Path
 from wsgiref.util import FileWrapper
 
@@ -334,7 +335,8 @@ def recent_scans(request):
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
         entry['ERROR'] = (timezone.now()
-                          > entry['TIMESTAMP'] + timedelta(minutes=15))
+                          > entry['TIMESTAMP']
+                          + datetime.timedelta(minutes=15))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
@@ -387,7 +389,7 @@ def update_cyberspect_scan(data):
             if 'success' in data:
                 db_obj.SUCCESS = data['success']
             if 'failure_source' in data and data['failure_source']:
-                db_obj.FAILURE_SOURCE = data['failure_source']
+                db_obj.FAILURE_SOURCE = data['failure_source']                
             if 'failure_message' in data and data['failure_message']:
                 db_obj.FAILURE_MESSAGE = data['failure_message']
             if 'file_size_package' in data and data['file_size_package']:
@@ -408,9 +410,11 @@ def update_cyberspect_scan(data):
 
 
 def tz(value):
-    if value[-1:] != 'Z':
-        value = value + 'Z'
-    return value
+    # Parse string into date/time parts and build time zone aware datetime
+    st = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
+    ts = time.mktime(st.timetuple()) + (st.microsecond / 1000000.0)
+    dt = datetime.datetime.fromtimestamp(ts)
+    return dt.replace(tzinfo=timezone.utc)
 
 
 def logout_aws(request):
