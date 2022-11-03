@@ -389,7 +389,7 @@ def update_cyberspect_scan(data):
             if 'success' in data:
                 db_obj.SUCCESS = data['success']
             if 'failure_source' in data and data['failure_source']:
-                db_obj.FAILURE_SOURCE = data['failure_source']                
+                db_obj.FAILURE_SOURCE = data['failure_source']
             if 'failure_message' in data and data['failure_message']:
                 db_obj.FAILURE_MESSAGE = data['failure_message']
             if 'file_size_package' in data and data['file_size_package']:
