@@ -337,6 +337,9 @@ def recent_scans(request):
         entry['ERROR'] = (timezone.now()
                           > entry['TIMESTAMP']
                           + datetime.timedelta(minutes=15))
+        entry['CAN_RELEASE'] = (timezone.now()
+                                < entry['TIMESTAMP']
+                                + datetime.timedelta(days=30))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
