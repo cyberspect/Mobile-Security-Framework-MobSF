@@ -362,6 +362,36 @@ def scan_metadata(md5):
     return None
 
 
+def update_scan(request, api=False):
+    """Update RecentScansDB record."""
+    try:
+        md5 = request.POST['hash']
+        response = {'error': f'Scan {md5} not found'}
+        db_obj = RecentScansDB.objects.filter(MD5=md5).first()
+        if db_obj:
+            if 'email' in request.POST:
+                db_obj.EMAIL = request.POST['email']
+            if 'release' in request.POST:
+                db_obj.RELEASE = request.POST['release']
+            db_obj.save()
+            response = model_to_dict(db_obj)
+
+        if api:
+            return response
+        else:
+            ctype = 'application/json; charset=utf-8'
+            return HttpResponse(json.dumps(response), content_type=ctype)
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        msg = str(exp)
+        exp_doc = exp.__doc__
+        if api:
+            return error_response(request, msg, True, exp_doc)
+        else:
+            return error_response(request, msg, False, exp_doc)
+
+
 def update_cyberspect_scan(data):
     """Update Cyberspect scan record."""
     try:
