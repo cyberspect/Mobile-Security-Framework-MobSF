@@ -395,13 +395,14 @@ def update_scan(request, api=False):
 def update_cyberspect_scan(data):
     """Update Cyberspect scan record."""
     try:
-        if ((not 'id' in data) and ('dt_project_id' in data)):
-            db_obj = CyberspectScans.objects.filter(DT_PROJECT_ID
-                = data['dt_project_id']).order_by('-ID').first()
-            id = data['dt_project_id']
+        if (('id' not in data) and ('dt_project_id' in data)):
+            db_obj = CyberspectScans.objects \
+                .filter(DT_PROJECT_ID=data['dt_project_id']) \
+                .order_by('-ID').first()
+            csid = data['dt_project_id']
         else:
             db_obj = CyberspectScans.objects.filter(ID=data['id']).first()
-            id = data['id']
+            csid = data['id']
 
         if db_obj:
             if 'mobsf_md5' in data:
@@ -441,7 +442,7 @@ def update_cyberspect_scan(data):
             db_obj.save()
             return model_to_dict(db_obj)
         else:
-            return {'error': f'Scan ID {id} not found'}
+            return {'error': f'Scan ID {csid} not found'}
     except Exception as ex:
         exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
         logger.error(exmsg)
