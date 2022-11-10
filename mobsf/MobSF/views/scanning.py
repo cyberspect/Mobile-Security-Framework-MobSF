@@ -114,7 +114,7 @@ class Scanning(object):
         self.division = request.POST.get('division')
         self.environment = request.POST.get('environment')
         self.email = request.POST.get('email') \
-            if 'email' in request.POST.get else sso_email(request)
+            if request.POST.get('email') == None else sso_email(request)
         self.user_groups = get_usergroups(request)
         self.release = False
         if (is_admin(request)):
