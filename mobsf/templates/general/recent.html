@@ -338,7 +338,7 @@
       }).then((result) => {
           if (result.value) {
               var md5_hash = item;
-              var newRelease = flag ? True : False;
+              var newRelease = flag ? 'True' : 'False';
               $.ajax({
                       url: '../update_scan/',
                           type : 'POST',
