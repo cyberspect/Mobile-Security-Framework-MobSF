@@ -80,20 +80,24 @@ register.filter('key', key)
 register.filter('android_component', android_component)
 
 
-def static_analyzer(request, api=False):
+def static_analyzer_request(request):
+    return static_analyzer(request.GET, False)
+
+
+def static_analyzer(request_data, api=False):
     """Do static analysis on an request and save to db."""
     try:
         rescan = False
         if api:
-            typ = request.POST['scan_type']
-            checksum = request.POST['hash']
-            filename = request.POST['file_name']
-            re_scan = request.POST.get('re_scan', 0)
+            typ = request_data['scan_type']
+            checksum = request_data['hash']
+            filename = request_data['file_name']
+            re_scan = request_data.get('rescan', 0)
         else:
-            typ = request.GET['type']
-            checksum = request.GET['checksum']
-            filename = request.GET['name']
-            re_scan = request.GET.get('rescan', 0)
+            typ = request_data['type']
+            checksum = request_data['checksum']
+            filename = request_data['name']
+            re_scan = request_data.get('rescan', 0)
         if re_scan == '1':
             rescan = True
         # Input validation

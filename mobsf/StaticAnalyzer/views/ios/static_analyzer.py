@@ -50,22 +50,25 @@ logger = logging.getLogger(__name__)
 # iOS Static Code Analysis IPA and Source Code
 ##############################################################
 
+def static_analyzer_ios_request(request):
+    return static_analyzer_ios(request.GET, False)
 
-def static_analyzer_ios(request, api=False):
+
+def static_analyzer_ios(request_data, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
         logger.info('iOS Static Analysis Started')
         rescan = False
         if api:
-            file_type = request.POST['scan_type']
-            checksum = request.POST['hash']
-            re_scan = request.POST.get('re_scan', 0)
-            filename = request.POST['file_name']
+            file_type = request_data['scan_type']
+            checksum = request_data['hash']
+            re_scan = request_data.get('re_scan', 0)
+            filename = request_data['file_name']
         else:
-            file_type = request.GET['type']
-            checksum = request.GET['checksum']
-            re_scan = request.GET.get('rescan', 0)
-            filename = request.GET['name']
+            file_type = request_data['type']
+            checksum = request_data['checksum']
+            re_scan = request_data.get('rescan', 0)
+            filename = request_data['name']
         if re_scan == '1':
             rescan = True
         md5_match = re.match('^[0-9a-f]{32}$', checksum)

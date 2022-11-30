@@ -53,8 +53,11 @@ config = None
 ##############################################################
 # Windows Support Functions
 
+def staticanalyzer_windows_request(request):
+    return staticanalyzer_windows(request.GET, False)
 
-def staticanalyzer_windows(request, api=False):
+
+def staticanalyzer_windows(request_data, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
@@ -62,15 +65,15 @@ def staticanalyzer_windows(request, api=False):
         rescan = False
         app_dic = {}  # Dict to store the binary attributes
         if api:
-            typ = request.POST['scan_type']
-            re_scan = request.POST.get('re_scan', 0)
-            checksum = request.POST['hash']
-            filename = request.POST['file_name']
+            typ = request_data['scan_type']
+            re_scan = request_data.get('re_scan', 0)
+            checksum = request_data['hash']
+            filename = request_data['file_name']
         else:
-            typ = request.GET['type']
-            re_scan = request.GET.get('rescan', 0)
-            checksum = request.GET['checksum']
-            filename = request.GET['name']
+            typ = request_data['type']
+            re_scan = request_data.get('rescan', 0)
+            checksum = request_data['checksum']
+            filename = request_data['name']
         if re_scan == '1':
             rescan = True
         md5_regex = re.match('^[0-9a-f]{32}$', checksum)
