@@ -66,7 +66,7 @@ def staticanalyzer_windows(request_data, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
-        logger.info('Windows Static Analysis Started')        
+        logger.info('Windows Static Analysis Started')
         app_dic = {}  # Dict to store the binary attributes
         typ = request_data['scan_type']
         re_scan = request_data.get('rescan', 0)
@@ -136,15 +136,16 @@ def staticanalyzer_windows(request_data, api=False):
                         app_dic['md5'])
                 context['logo'] = os.getenv('LOGO',
                                             '/static/img/mobsf_logo.png')
-                context['template'] = 'static_analysis/windows_binary_analysis.html'
+                context['template'] = \
+                    'static_analysis/windows_binary_analysis.html'
                 return context
             else:
                 msg = 'File type not supported'
-                logger.error(msg)  
+                logger.error(msg)
                 return {'error': msg}
         else:
             msg = 'Hash match failed or Invalid file extension'
-            logger.error(msg)  
+            logger.error(msg)
             return {'error': msg}
     except Exception as exception:
         logger.exception('Error Performing Static Analysis')

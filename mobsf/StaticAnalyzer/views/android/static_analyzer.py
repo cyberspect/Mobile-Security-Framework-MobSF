@@ -86,11 +86,11 @@ def static_analyzer_request(request):
         return error_response(request, response['error'])
     else:
         return render(request, response['template'], response)
-                                
+
 
 def static_analyzer(request_data, api=False):
     """Do static analysis on a request and save to db."""
-    try:        
+    try:
         typ = request_data['scan_type']
         checksum = request_data['hash']
         filename = request_data['file_name']
@@ -147,7 +147,7 @@ def static_analyzer(request_data, api=False):
                     logger.info('APK Extracted')
                     if not app_dic['files']:
                         # Can't Analyze APK, bail out.
-                        return { 'error': 'APK file is invalid or corrupt' }
+                        return {'error': 'APK file is invalid or corrupt'}
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
                     # Manifest XML
@@ -297,7 +297,8 @@ def static_analyzer(request_data, api=False):
                     context['virus_total'] = vt.get_result(
                         app_dic['app_path'],
                         app_dic['md5'])
-                context['template'] = 'static_analysis/android_binary_analysis.html'
+                context['template'] = \
+                    'static_analysis/android_binary_analysis.html'
                 return context
             elif typ == 'zip':
                 ret = (
@@ -485,23 +486,25 @@ def static_analyzer(request_data, api=False):
                     else:
                         error_result = {
                             'error': 'This ZIP format is not supported',
-                            'template': 'general/zip.html'
+                            'template': 'general/zip.html',
                         }
-                        logger.error(error_result['error'])                        
+                        logger.error(error_result['error'])
                         return error_result
                 context['appsec'] = get_android_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
                 context['logo'] = os.getenv('LOGO',
                                             '/static/img/mobsf_logo.png')
-                context['template'] = 'static_analysis/android_source_analysis.html'
+                context['template'] = \
+                    'static_analysis/android_source_analysis.html'
                 return context
             else:
                 err = ('Only APK, IPA and Zipped '
                        'Android/iOS Source code supported!')
                 logger.error(err)
         else:
-            return { 'error' : 'Hash match failed or invalid file extension or file type' }            
+            return {'error' :
+                'Hash match failed or invalid file extension or file type'}
 
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')

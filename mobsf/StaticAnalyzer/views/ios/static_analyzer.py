@@ -274,7 +274,7 @@ def static_analyzer_ios(request_data, api=False):
                                             '/static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/ios_source_analysis.html'
-                return context                
+                return context
             else:
                 msg = 'File Type not supported!'
                 logger.error(msg)
