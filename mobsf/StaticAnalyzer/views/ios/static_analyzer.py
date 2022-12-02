@@ -53,10 +53,12 @@ logger = logging.getLogger(__name__)
 
 def static_analyzer_ios_request(request):
     response = static_analyzer_ios(request.GET, False)
-    if 'error' in response:
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
         return error_response(request, response['error'])
     else:
-        return render(request, response['template'], response)
+        return response
 
 
 def static_analyzer_ios(request_data, api=False):

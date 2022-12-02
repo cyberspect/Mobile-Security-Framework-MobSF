@@ -82,10 +82,12 @@ register.filter('android_component', android_component)
 
 def static_analyzer_request(request):
     response = static_analyzer(request.GET, False)
-    if 'error' in response:
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
         return error_response(request, response['error'])
     else:
-        return render(request, response['template'], response)
+        return response
 
 
 def static_analyzer(request_data, api=False):

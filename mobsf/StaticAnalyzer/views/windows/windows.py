@@ -56,10 +56,12 @@ config = None
 
 def staticanalyzer_windows_request(request):
     response = staticanalyzer_windows(request.GET, False)
-    if 'error' in response:
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
         return error_response(request, response['error'])
     else:
-        return render(request, response['template'], response)
+        return response
 
 
 def staticanalyzer_windows(request_data, api=False):
