@@ -55,7 +55,7 @@ config = None
 
 
 def staticanalyzer_windows_request(request):
-    response = staticanalyzer_windows(request.GET, False)
+    response = staticanalyzer_windows(request.GET)
     if 'template' in response:
         return render(request, response['template'], response)
     elif 'error' in response:

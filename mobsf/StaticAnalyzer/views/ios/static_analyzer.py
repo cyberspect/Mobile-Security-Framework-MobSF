@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 
 def static_analyzer_ios_request(request):
-    response = static_analyzer_ios(request.GET, False)
+    response = static_analyzer_ios(request.GET)
     if 'template' in response:
         return render(request, response['template'], response)
     elif 'error' in response:
@@ -65,6 +65,7 @@ def static_analyzer_ios(request_data, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
         logger.info('iOS Static Analysis Started')
+        logger.info(request_data)        
         file_type = request_data['scan_type']
         checksum = request_data['hash']
         re_scan = request_data.get('re_scan', 0)
