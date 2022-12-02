@@ -503,8 +503,8 @@ def static_analyzer(request_data, api=False):
                        'Android/iOS Source code supported!')
                 logger.error(err)
         else:
-            return {'error': \
-                'Hash match failed or invalid file extension or file type'}
+            msg = 'Hash match failed or invalid file extension or file type'
+            return {'error': msg }
 
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')
