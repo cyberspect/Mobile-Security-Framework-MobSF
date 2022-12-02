@@ -53,27 +53,26 @@ config = None
 ##############################################################
 # Windows Support Functions
 
+
 def staticanalyzer_windows_request(request):
-    return staticanalyzer_windows(request.GET, False)
+    response = staticanalyzer_windows(request.GET, False)
+    if 'error' in response:
+        return error_response(request, response['error'])
+    else:
+        return render(request, response['template'], response)
 
 
 def staticanalyzer_windows(request_data, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
-        logger.info('Windows Static Analysis Started')
-        rescan = False
+        logger.info('Windows Static Analysis Started')        
         app_dic = {}  # Dict to store the binary attributes
-        if api:
-            typ = request_data['scan_type']
-            re_scan = request_data.get('re_scan', 0)
-            checksum = request_data['hash']
-            filename = request_data['file_name']
-        else:
-            typ = request_data['type']
-            re_scan = request_data.get('rescan', 0)
-            checksum = request_data['checksum']
-            filename = request_data['name']
+        typ = request_data['scan_type']
+        re_scan = request_data.get('rescan', 0)
+        checksum = request_data['hash']
+        filename = request_data['file_name']
+        rescan = False
         if re_scan == '1':
             rescan = True
         md5_regex = re.match('^[0-9a-f]{32}$', checksum)
@@ -137,31 +136,20 @@ def staticanalyzer_windows(request_data, api=False):
                         app_dic['md5'])
                 context['logo'] = os.getenv('LOGO',
                                             '/static/img/mobsf_logo.png')
-                template = 'static_analysis/windows_binary_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request, template, context)
+                context['template'] = 'static_analysis/windows_binary_analysis.html'
+                return context
             else:
                 msg = 'File type not supported'
-                if api:
-                    return error_response(request, msg, True)
-                else:
-                    return error_response(request, msg, False)
+                logger.error(msg)  
+                return {'error': msg}
         else:
             msg = 'Hash match failed or Invalid file extension'
-            if api:
-                return error_response(request, msg, True)
-            else:
-                return error_response(request, msg, False)
+            logger.error(msg)  
+            return {'error': msg}
     except Exception as exception:
         logger.exception('Error Performing Static Analysis')
         msg = str(exception)
-        exp_doc = exception.__doc__
-        if api:
-            return error_response(request, msg, True, exp_doc)
-        else:
-            return error_response(request, msg, False, exp_doc)
+        return {'error': msg}
 
 
 def _get_token():

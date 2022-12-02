@@ -33,6 +33,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_safe_path,
     key,
+    model_to_dict_str,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
@@ -154,7 +155,7 @@ class Upload(object):
         self.scan.cyberspect_scan_id = \
             new_cyberspect_scan(False, api_response['hash'],
                                 start_time,
-                                self.scan.file_size, 
+                                self.scan.file_size,
                                 self.scan.source_file_size)
         if (not self.request.GET.get('scan', '1') == '0'):
             self.cyberspect_scan_intake()
@@ -199,7 +200,7 @@ class Upload(object):
                 'scan_type': self.scan.scan_type,
                 'email': self.scan.email,
                 'file_name': file_path,
-                'source_file_name': source_file_path
+                'source_file_name': source_file_path,
             }
             logger.info('Executing Cyberspect intake lambda: %s',
                         settings.AWS_INTAKE_LAMBDA)
@@ -210,11 +211,10 @@ class Upload(object):
         except ClientError as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             msg = 'Unable to trigger AWS Lambda (Intake). '
-            logging.error(msg + exmsg)
+            logging.error('%s %s', msg, exmsg)
             self.track_failure(msg + str(exp))
             return False
         return
-
 
     def track_failure(self, error_message):
         if self.scan.cyberspect_scan_id == 0:
@@ -224,7 +224,7 @@ class Upload(object):
             'success': False,
             'failure_source': 'SAST',
             'failure_message': error_message,
-            'sast_end': datetime.datetime.utcnow()
+            'sast_end': datetime.datetime.utcnow(),
         }
         update_cyberspect_scan(data)
 
@@ -347,10 +347,10 @@ def scan_metadata(md5):
     return None
 
 
-def get_cyberspect_scan(id):
-    db_obj = CyberspectScans.objects.filter(ID=id).first()
+def get_cyberspect_scan(csid):
+    db_obj = CyberspectScans.objects.filter(ID=csid).first()
     if db_obj:
-        cs_obj = model_to_dict(db_obj)
+        cs_obj = model_to_dict_str(db_obj)
         rs_obj = scan_metadata(cs_obj['MOBSF_MD5'])
         cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE']
         cs_obj['FILE_NAME'] = rs_obj['FILE_NAME']
@@ -359,18 +359,18 @@ def get_cyberspect_scan(id):
 
 
 def new_cyberspect_scan(scheduled, md5, start_time,
-    file_size, source_file_size):
-        # Insert new record into CyberspectScans
-        new_db_obj = CyberspectScans(
-            SCHEDULED=scheduled,
-            MOBSF_MD5=md5,
-            INTAKE_START=start_time,
-            FILE_SIZE_PACKAGE=file_size,
-            FILE_SIZE_SOURCE=source_file_size,
-        )
-        new_db_obj.save()
-        logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
-        return new_db_obj.ID
+                        file_size, source_file_size):
+    # Insert new record into CyberspectScans
+    new_db_obj = CyberspectScans(
+        SCHEDULED=scheduled,
+        MOBSF_MD5=md5,
+        INTAKE_START=start_time,
+        FILE_SIZE_PACKAGE=file_size,
+        FILE_SIZE_SOURCE=source_file_size,
+    )
+    new_db_obj.save()
+    logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
+    return new_db_obj.ID
 
 
 def update_scan(request, api=False):
@@ -587,7 +587,7 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
-def cyberspect_rescan(hash, scheduled):
+def cyberspect_rescan(md5, scheduled):
     """Get cyberspect scan by hash."""
     response_data = {
         'cyberspect_scan_id': '',
@@ -595,19 +595,19 @@ def cyberspect_rescan(hash, scheduled):
         'scan_type': '',
         'file_name': '',
     }
-    rs_obj = RecentScansDB.objects.filter(MD5=hash).first()
+    rs_obj = RecentScansDB.objects.filter(MD5=md5).first()
     if not rs_obj:
         return None
-    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=hash) \
+    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=md5) \
         .order_by('-INTAKE_START').first()
 
-    scan_id = new_cyberspect_scan(scheduled, hash, 
+    scan_id = new_cyberspect_scan(scheduled, md5,
                                   datetime.datetime.now(timezone.utc),
                                   cs_obj.FILE_SIZE_PACKAGE,
                                   cs_obj.FILE_SIZE_SOURCE)
 
     response_data['cyberspect_scan_id'] = scan_id
-    response_data['hash'] = hash
+    response_data['hash'] = md5
     response_data['scan_type'] = rs_obj.SCAN_TYPE
     response_data['file_name'] = rs_obj.FILE_NAME
     return response_data
@@ -648,6 +648,24 @@ class RecentScans(object):
         page_size = self.request.GET.get('page_size', 10)
         cs_scans = CyberspectScans.objects.all()
         result = cs_scans.values().order_by('-INTAKE_START')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            data = {
+                'content': list(content),
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+            }
+        except Exception as exp:
+            data = {'error': str(exp)}
+        return data
+
+
+    def cyberspect_scheduled_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        cs_scans = CyberspectScans.objects.filter(SCHEDULED=True)
+        result = cs_scans.values().order_by('ID')        
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)

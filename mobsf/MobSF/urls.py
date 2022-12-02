@@ -56,6 +56,7 @@ urlpatterns = [
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
     re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
     re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
+    re_path(r'^api/v1/cyberspect_scheduled_scans$', api_sz.api_cyberspect_scheduled_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis
@@ -114,7 +115,8 @@ if settings.API_ONLY == '0':
         re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios_request),
         re_path(r'^view_file_ios/$', io_view_source.run),
         # Windows
-        re_path(r'^static_analyzer_windows/$', windows.staticanalyzer_windows_request),
+        re_path(r'^static_analyzer_windows/$',
+                windows.staticanalyzer_windows_request),
         # Shared
         re_path(r'^pdf/$', pdf.pdf),
         re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',

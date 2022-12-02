@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
 from datetime import datetime
+import logging
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -27,6 +28,10 @@ from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
 from mobsf.StaticAnalyzer.views.windows import windows
 
 from background_task import background
+
+
+logger = logging.getLogger(__name__)
+
 
 @request_method(['POST'])
 @csrf_exempt
@@ -81,16 +86,25 @@ def api_async_scan(request):
         # Create a new CyberspectScans record for an app
         scheduled = request.POST.get('scheduled', True)
         scan_data = cyberspect_rescan(request.POST['hash'], scheduled)
+        response_message = 'Hash ' + request.POST['hash']
     elif ('cyberspect_scan_id' in request.POST):
-        scan_data = get_cyberspect_scan(request.POST['cyberspect_scan_id'])
+        csdata = get_cyberspect_scan(request.POST['cyberspect_scan_id'])
+        scan_data = {
+            'cyberspect_scan_id': csdata['ID'],
+            'hash': csdata['MOBSF_MD5'],
+            'scan_type': csdata['SCAN_TYPE'],
+            'file_name': csdata['FILE_NAME'],
+        }
+        response_message = 'Scan ID ' + request.POST['cyberspect_scan_id']
     else:
         return make_api_response(
             {'error': 'Missing parameter: hash or cyberspect_scan_id'}, 422)
- 
+
     scan_data['rescan'] = request.POST.get('rescan', '1')
     async_scan(scan_data)
-    return make_api_response({'message': 'Hash ' + request.POST['hash']
-                             + ' queued for background scanning'}, 202)
+    response_message = response_message + ' queued for background scanning'
+    logging.info(response_message)
+    return make_api_response({'message': response_message}, 202)
 
 
 @request_method(['POST'])
@@ -289,12 +303,12 @@ def api_delete_suppression(request):
 @csrf_exempt
 def api_cyberspect_get_scan(request):
     """GET - get Cyberspect scan detail."""
-    id = request.GET['id']
-    scan = get_cyberspect_scan(id)
+    csid = request.GET['id']
+    scan = get_cyberspect_scan(csid)
     if scan:
         return make_api_response(scan, 200)
     else:
-        return make_api_response({'id': id}, 404)
+        return make_api_response({'id': csid}, 404)
 
 
 @request_method(['GET'])
@@ -303,6 +317,18 @@ def api_cyberspect_recent_scans(request):
     """GET - get recent Cyberspect scans."""
     scans = RecentScans(request)
     resp = scans.cyberspect_recent_scans()
+    if 'error' in resp:
+        return make_api_response(resp, 500)
+    else:
+        return make_api_response(resp, 200)
+
+
+@request_method(['GET'])
+@csrf_exempt
+def api_cyberspect_scheduled_scans(request):
+    """GET - get scheduled Cyberspect scans."""
+    scans = RecentScans(request)
+    resp = scans.cyberspect_scheduled_scans()
     if 'error' in resp:
         return make_api_response(resp, 500)
     else:
