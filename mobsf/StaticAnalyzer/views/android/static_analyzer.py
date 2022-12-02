@@ -304,9 +304,9 @@ def static_analyzer(request_data, api=False):
                 return context
             elif typ == 'zip':
                 ret = (
-                    '/static_analyzer_ios/?name='
+                    '/static_analyzer_ios/?file_name='
                     + app_dic['app_name']
-                    + '&type=ios&checksum='
+                    + '&scan_type=ios&hash='
                     + app_dic['md5']
                 )
                 # Check if in DB

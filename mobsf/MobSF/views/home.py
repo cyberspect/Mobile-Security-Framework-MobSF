@@ -505,8 +505,8 @@ def search(request):
         db_obj = RecentScansDB.objects.filter(MD5=md5)
         if db_obj.exists():
             e = db_obj[0]
-            url = (f'/{e.ANALYZER }/?name={e.FILE_NAME}&'
-                   f'checksum={e.MD5}&type={e.SCAN_TYPE}')
+            url = (f'/{e.ANALYZER }/?file_name={e.FILE_NAME}&'
+                   f'hash={e.MD5}&scan_type={e.SCAN_TYPE}')
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
