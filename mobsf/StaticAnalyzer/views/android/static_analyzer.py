@@ -504,7 +504,7 @@ def static_analyzer(request_data, api=False):
                 logger.error(err)
         else:
             msg = 'Hash match failed or invalid file extension or file type'
-            return {'error': msg }
+            return {'error': msg}
 
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')
