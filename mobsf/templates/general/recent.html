@@ -285,7 +285,7 @@
         var saveBtnName = "#admin_save" + item;
         var saveText = $(labelName).innerText;
         $(inputName).prop('hidden', false);
-        $(inputName).prop('text', saveText);
+        $(inputName).innerText = saveText;
         $(labelName).prop('hidden', true);
         $(editBtnName).prop('hidden', true);
         $(saveBtnName).prop('hidden', false);
@@ -340,7 +340,7 @@
               var md5_hash = item;
               var newRelease = flag ? 'True' : 'False';
               $.ajax({
-                      url: '../update_scan/',
+                      url: '../api/v1/update_scan/',
                           type : 'POST',
                       dataType: 'json',
                           data : {
