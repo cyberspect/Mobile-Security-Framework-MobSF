@@ -94,12 +94,7 @@ def api_scan(request):
 @csrf_exempt
 def api_async_scan(request):
     """POST - Async Scan API."""
-    if ('hash' in request.POST):
-        # Create a new CyberspectScans record for an app
-        scheduled = request.POST.get('scheduled', True)
-        scan_data = cyberspect_rescan(request.POST['hash'], scheduled)
-        response_message = 'Hash ' + request.POST['hash']
-    elif ('cyberspect_scan_id' in request.POST):
+    if ('cyberspect_scan_id' in request.POST):
         csdata = get_cyberspect_scan(request.POST['cyberspect_scan_id'])
         scan_data = {
             'cyberspect_scan_id': csdata['ID'],
@@ -107,14 +102,33 @@ def api_async_scan(request):
             'scan_type': csdata['SCAN_TYPE'],
             'file_name': csdata['FILE_NAME'],
         }
-        response_message = 'Scan ID ' + request.POST['cyberspect_scan_id']
     else:
         return make_api_response(
-            {'error': 'Missing parameter: hash or cyberspect_scan_id'}, 422)
+            {'error': 'Missing parameter: cyberspect_scan_id'}, 422)
+
+    async_scan(scan_data)
+    response_message = 'Scan ID ' + request.POST['cyberspect_scan_id'] \
+        + ' queued for background scanning'
+    logging.info(response_message)
+    return make_api_response({'message': response_message}, 202)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_rescan(request):
+    """POST - Rescan API."""
+    if ('hash' in request.POST):
+        # Create a new CyberspectScans record for an app
+        scheduled = request.POST.get('scheduled', True)
+        scan_data = cyberspect_rescan(request.POST['hash'], scheduled)
+    else:
+        return make_api_response(
+            {'error': 'Missing parameter: hash'}, 422)
 
     scan_data['rescan'] = request.POST.get('rescan', '1')
     async_scan(scan_data)
-    response_message = response_message + ' queued for background scanning'
+    response_message = 'Scan ID ' + str(scan_data['cyberspect_scan_id']) \
+        + ' queued for background scanning'
     logging.info(response_message)
     return make_api_response({'message': response_message}, 202)
 

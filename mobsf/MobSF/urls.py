@@ -39,6 +39,7 @@ urlpatterns = [
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
     re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
+    re_path(r'^api/v1/rescan$', api_sz.api_rescan),
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
