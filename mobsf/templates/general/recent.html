@@ -91,7 +91,7 @@
                                 {% if is_admin %}
                                     <br/><br/><label id="scanEmails{{e.MD5}}" text="{{ e.EMAIL }}">{{ e.EMAIL }}</label>
                                     <br/>
-                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden>{{e.EMAIL}}</input>
+                                    <input type="text" id="scanEmailsInput{{e.MD5}}" text="{{ e.EMAIL }}" hidden />
                                 {% endif %}
                             </td>                               
                             <td><p>                                    
@@ -283,9 +283,9 @@
         var inputName = "#scanEmailsInput" + item;
         var editBtnName = "#admin_edit" + item;
         var saveBtnName = "#admin_save" + item;
-        var saveText = $(labelName).innerText;
+        var saveText = $(labelName).text();
         $(inputName).prop('hidden', false);
-        $(inputName).prop('text', saveText);
+        $(inputName).val(saveText);
         $(labelName).prop('hidden', true);
         $(editBtnName).prop('hidden', true);
         $(saveBtnName).prop('hidden', false);
@@ -308,7 +308,7 @@
         var emails = $(inputName).val();
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
-        eamilArray.forEach(cleanElement);
+        emailArray.forEach(cleanElement);
         for(var i = 0; i < emailArray.length; i++){
             if(i < emailArray.length - 1){
                 retVal += emailArray[i] + ",";
@@ -349,7 +349,7 @@
                                   release: newRelease
                                   },
                               success : function(json) {
-                                  if (json.release === newRelease){
+                                if (json.updated==='yes'){
                                       Swal.fire(
                                           'Updated!',
                                           'The scan has been updated!',
@@ -357,14 +357,14 @@
                                       ).then(function () {
                                           location.reload();
                                       })
-                                  }
-                                  else {
-                                      Swal.fire(
-                                      'Release update Failed',
-                                      'Cannot update the scan!',
-                                      'error'
-                                      )
-                                  }
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Update Failed',
+                                    'Cannot update the scan.',
+                                    'error'
+                                    )
+                                }
                               },
                               error : function(xhr,errmsg,err) {
                                   Swal.fire(
@@ -401,11 +401,11 @@
                       dataType: 'json',
                           data : {
                                   csrfmiddlewaretoken: '{{ csrf_token }}',
-                                  md5: md5_hash,
+                                  hash: md5_hash,
                                   email: emails
                                   },
                               success : function(json) {
-                                  if (json.EMAIL === emails){
+                                if (json.updated==='yes'){
                                       Swal.fire(
                                           'Updated!',
                                           'The email addresses have been updated!',
