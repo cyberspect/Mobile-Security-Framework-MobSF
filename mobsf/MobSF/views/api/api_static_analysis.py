@@ -56,6 +56,18 @@ def api_recent_scans(request):
 
 @request_method(['GET'])
 @csrf_exempt
+def api_release_scans(request):
+    """GET - get release scans."""
+    scans = RecentScans(request)
+    resp = scans.release_scans()
+    if 'error' in resp:
+        return make_api_response(resp, 500)
+    else:
+        return make_api_response(resp, 200)
+
+
+@request_method(['GET'])
+@csrf_exempt
 def api_scan_metadata(request):
     """GET - get scan metadata."""
     md5 = request.GET['hash']
@@ -317,18 +329,6 @@ def api_cyberspect_recent_scans(request):
     """GET - get recent Cyberspect scans."""
     scans = RecentScans(request)
     resp = scans.cyberspect_recent_scans()
-    if 'error' in resp:
-        return make_api_response(resp, 500)
-    else:
-        return make_api_response(resp, 200)
-
-
-@request_method(['GET'])
-@csrf_exempt
-def api_cyberspect_scheduled_scans(request):
-    """GET - get scheduled Cyberspect scans."""
-    scans = RecentScans(request)
-    resp = scans.cyberspect_scheduled_scans()
     if 'error' in resp:
         return make_api_response(resp, 500)
     else:
