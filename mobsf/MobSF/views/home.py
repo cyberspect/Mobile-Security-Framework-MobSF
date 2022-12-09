@@ -128,7 +128,7 @@ class Upload(object):
                                     start_time,
                                     self.scan.file_size,
                                     self.scan.source_file_size)
-            self.cyberspect_scan_intake()
+            cyberspect_scan_intake(self.scan)
             return self.resp_json(response_data)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
