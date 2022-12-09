@@ -14,8 +14,6 @@ from wsgiref.util import FileWrapper
 
 import boto3
 
-from botocore.exceptions import ClientError
-
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
@@ -561,7 +559,7 @@ def cyberspect_rescan(md5, scheduled):
     scan_id = new_cyberspect_scan(scheduled, md5,
                                   datetime.datetime.now(timezone.utc),
                                   cs_obj.FILE_SIZE_PACKAGE,
-                                  cs_obj.FILE_SIZE_SOURCE)    
+                                  cs_obj.FILE_SIZE_SOURCE)
     scan_data = {
         'cyberspect_scan_id': scan_id,
         'md5': md5,
@@ -599,8 +597,8 @@ def cyberspect_scan_intake(scan):
     logger.info('Executing Cyberspect intake lambda: %s',
                 settings.AWS_INTAKE_LAMBDA)
     lclient.invoke(FunctionName=settings.AWS_INTAKE_LAMBDA,
-                    InvocationType='Event',
-                    Payload=json.dumps(lambda_params).encode('utf-8'))
+                   InvocationType='Event',
+                   Payload=json.dumps(lambda_params).encode('utf-8'))
     return
 
 
