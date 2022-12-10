@@ -19,6 +19,7 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
+            privacy_classification = data['data_privacy_classification']
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
@@ -36,8 +37,7 @@ def add_to_recent_scan(data):
                 EMAIL=data['email'],
                 USER_GROUPS=data['user_groups'],
                 RELEASE=data['release'],
-                DATA_PRIVACY_CLASSIFICATION=\
-                    data['data_privacy_classification'],
+                DATA_PRIVACY_CLASSIFICATION=privacy_classification,
                 DATA_PRIVACY_ATTRIBUTES=data['data_privacy_attributes'])
 
             new_db_obj.save()
@@ -191,7 +191,7 @@ class Scanning(object):
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Windows APP')
         return data
-    
+
     def populate_data_dict(self):
         self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,
                                         self.source_file)
