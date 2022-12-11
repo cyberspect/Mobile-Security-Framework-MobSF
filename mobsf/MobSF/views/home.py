@@ -353,9 +353,11 @@ def update_scan(request, api=False):
             if 'country' in request.POST:
                 db_obj.COUNTRY = request.POST['country']
             if 'data_privacy_classification' in request.POST:
-                db_obj.DATA_PRIVACY_CLASSIFICATION = request.POST['data_privacy_classification']
+                dpc = request.POST['data_privacy_classification']
+                db_obj.DATA_PRIVACY_CLASSIFICATION = dpc
             if 'data_privacy_attributes' in request.POST:
-                db_obj.DATA_PRIVACY_ATTRIBUTES = request.POST['data_privacy_attributes']
+                dpa = request.POST['data_privacy_attributes']
+                db_obj.DATA_PRIVACY_ATTRIBUTES = dpa
             if 'email' in request.POST:
                 db_obj.EMAIL = request.POST['email']
             if 'release' in request.POST:
@@ -563,22 +565,22 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
-def cyberspect_rescan(hash, scheduled):
+def cyberspect_rescan(apphash, scheduled):
     """Get cyberspect scan by hash."""
-    rs_obj = RecentScansDB.objects.filter(MD5=hash).first()
+    rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
     if not rs_obj:
         return None
-    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=hash) \
+    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=apphash) \
         .order_by('-INTAKE_START').first()
 
-    scan_id = new_cyberspect_scan(scheduled, hash,
+    scan_id = new_cyberspect_scan(scheduled, apphash,
                                   datetime.datetime.now(timezone.utc),
                                   cs_obj.FILE_SIZE_PACKAGE,
                                   cs_obj.FILE_SIZE_SOURCE)
     scan_data = {
         'cyberspect_scan_id': scan_id,
-        'hash': hash,
-        'short_hash': get_siphash(hash),
+        'hash': apphash,
+        'short_hash': get_siphash(apphash),
         'scan_type': rs_obj.SCAN_TYPE,
         'file_name': rs_obj.FILE_NAME,
         'user_app_name': rs_obj.USER_APP_NAME,
