@@ -119,13 +119,13 @@ class Scanning(object):
             self.source_file_size = None
         self.user_app_name = request.POST.get('user_app_name')
         self.user_app_version = request.POST.get('user_app_version')
-        self.division = request.POST.get('division')
-        self.environment = request.POST.get('environment')
-        self.country = request.POST.get('country')
+        self.division = request.POST.get('division', '')
+        self.environment = request.POST.get('environment', '')
+        self.country = request.POST.get('country', '')
         self.data_privacy_classification = \
-            request.POST.get('data_privacy_classification')
+            request.POST.get('data_privacy_classification', '')
         self.data_privacy_attributes = \
-            request.POST.get('data_privacy_attributes')
+            request.POST.get('data_privacy_attributes', '')
         self.email = sso_email(request)
         self.user_groups = get_usergroups(request)
         self.release = False
