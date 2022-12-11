@@ -643,7 +643,7 @@ def android_component(data):
 def is_admin(request):
     if (not settings.ADMIN_USERS):
         return False
-    if (not 'email' in request.META):
+    if ('email' not in request.META):
         return False
     email = request.META['email']
     if (email and email in settings.ADMIN_USERS.split(',')):
