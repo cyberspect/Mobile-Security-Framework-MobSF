@@ -157,7 +157,7 @@ class Upload(object):
                                 self.scan.file_size,
                                 self.scan.source_file_size)
         if (not self.request.GET.get('scan', '1') == '0'):
-            cyberspect_scan_intake(model_to_dict(self.scan))
+            cyberspect_scan_intake(self.scan.populate_data_dict())
         return api_response, 200
 
     def upload(self):
