@@ -61,7 +61,7 @@ urlpatterns = [
     re_path(r'^api/v1/cyberspect_completedscans$',
             api_sz.api_cyberspect_completed_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
-            api_sz.api_update_cyberspect_scan),    
+            api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
