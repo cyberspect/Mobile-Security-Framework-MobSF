@@ -676,11 +676,11 @@ class RecentScans(object):
             content = paginator.page(page)
             for scan in content:
                 # Get scan vulnerability counts
-                findings = appsec.appsec_dashboard(self.request, 
-                                                   scan['MOBSF_MD5'], True)                
+                findings = appsec.appsec_dashboard(self.request,
+                                                   scan['MOBSF_MD5'], True)
                 scan['FINDINGS_HIGH'] = len(findings['high'])
                 scan['FINDINGS_WARNING'] = len(findings['warning'])
-                scan['FINDINGS_INFO'] = len(findings['info'])                
+                scan['FINDINGS_INFO'] = len(findings['info'])
             data = {
                 'content': list(content),
                 'count': paginator.count,
