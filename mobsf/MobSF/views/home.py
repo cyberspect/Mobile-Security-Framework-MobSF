@@ -698,7 +698,7 @@ class RecentScans(object):
         except Exception as exp:
             msg = str(exp)
             exp_doc = exp.__doc__
-            data = {'error': str(exp)}
+            data = {'error': str(msg)}
         return data
 
     def release_scans(self):
