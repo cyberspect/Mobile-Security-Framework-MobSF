@@ -686,7 +686,7 @@ class RecentScans(object):
                 scan['EMAIL'] = scan_result.EMAIL
 
                 # Get scan vulnerability counts
-                findings = appsec.appsec_dashboard(self.request,md5, True)
+                findings = appsec.appsec_dashboard(self.request, md5, True)
                 scan['FINDINGS_HIGH'] = len(findings['high'])
                 scan['FINDINGS_WARNING'] = len(findings['warning'])
                 scan['FINDINGS_INFO'] = len(findings['info'])
@@ -696,9 +696,7 @@ class RecentScans(object):
                 'num_pages': paginator.num_pages,
             }
         except Exception as exp:
-            msg = str(exp)
-            exp_doc = exp.__doc__
-            data = {'error': str(msg)}
+            data = {'error': str(exp)}
         return data
 
     def release_scans(self):
