@@ -16,6 +16,7 @@ from mobsf.StaticAnalyzer.views.common import (
     appsec,
     pdf,
     shared_func,
+    suppression,
 )
 from mobsf.StaticAnalyzer.views.android import (
     find,
@@ -37,6 +38,9 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
+    re_path(r'^api/v1/rescan$', api_sz.api_rescan),
+    re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
@@ -44,8 +48,20 @@ urlpatterns = [
     re_path(r'^api/v1/view_source$', api_sz.api_view_source,
             name='api_view_source'),
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
+    re_path(r'^api/v1/release_scans$', api_sz.api_release_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
+    # Static Suppression
+    re_path(r'^api/v1/suppress_by_rule$', api_sz.api_suppress_by_rule_id),
+    re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
+    re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
+    re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
+    re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
+    re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
+    re_path(r'^api/v1/cyberspect_completedscans$',
+            api_sz.api_cyberspect_completed_scans),
+    re_path(r'^api/v1/update_cyberspect_scan$',
+            api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
@@ -80,6 +96,7 @@ if settings.API_ONLY == '0':
         re_path(r'^about$', home.about, name='about'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
+        re_path(r'^update_scan/$', home.update_scan),
         re_path(r'^delete_scan/$', home.delete_scan),
         re_path(r'^search$', home.search),
         re_path(r'^error/$', home.error, name='error'),
@@ -90,7 +107,7 @@ if settings.API_ONLY == '0':
 
         # Static Analysis
         # Android
-        re_path(r'^static_analyzer/$', android_sa.static_analyzer),
+        re_path(r'^static_analyzer/$', android_sa.static_analyzer_request),
         # Remove this is version 4/5
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
@@ -98,15 +115,29 @@ if settings.API_ONLY == '0':
         re_path(r'^generate_downloads/$', generate_downloads.run),
         re_path(r'^manifest_view/$', manifest_view.run),
         # IOS
-        re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios),
+        re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios_request),
         re_path(r'^view_file_ios/$', io_view_source.run),
         # Windows
-        re_path(r'^static_analyzer_windows/$', windows.staticanalyzer_windows),
+        re_path(r'^static_analyzer_windows/$',
+                windows.staticanalyzer_windows_request),
         # Shared
         re_path(r'^pdf/$', pdf.pdf),
         re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',
                 appsec.appsec_dashboard,
                 name='appsec_dashboard'),
+        # Suppression
+        re_path(r'^suppress_by_rule/$',
+                suppression.suppress_by_rule_id,
+                name='suppress_by_rule'),
+        re_path(r'^suppress_by_files/$',
+                suppression.suppress_by_files,
+                name='suppress_by_files'),
+        re_path(r'^list_suppressions/$',
+                suppression.list_suppressions,
+                name='list_suppressions'),
+        re_path(r'^delete_suppression/$',
+                suppression.delete_suppression,
+                name='delete_suppression'),
         # App Compare
         re_path(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
                 shared_func.compare_apps),

@@ -19,10 +19,12 @@ from django.shortcuts import render
 from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
+    android_component,
     error_response,
     file_size,
     is_dir_exists,
     is_file_exists,
+    key,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -45,7 +47,7 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
 )
 from mobsf.StaticAnalyzer.views.android.icon_analysis import (
     find_icon_path_zip,
-    get_icon,
+    get_icon_apk,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     get_manifest,
@@ -74,30 +76,31 @@ from androguard.core.bytecodes import apk
 
 logger = logging.getLogger(__name__)
 logging.getLogger('androguard').setLevel(logging.ERROR)
+register.filter('key', key)
+register.filter('android_component', android_component)
 
 
-@register.filter
-def key(data, key_name):
-    """Return the data for a key_name."""
-    return data.get(key_name)
+def static_analyzer_request(request):
+    response = static_analyzer(request.GET, False)
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
+        return error_response(request, response['error'])
+    else:
+        return response
 
 
-def static_analyzer(request, api=False):
-    """Do static analysis on an request and save to db."""
+def static_analyzer(request_data, api=False):
+    """Do static analysis on a request and save to db."""
     try:
+        typ = request_data['scan_type']
+        checksum = request_data['hash']
+        filename = request_data['file_name']
+        re_scan = request_data.get('rescan', 0)
         rescan = False
-        if api:
-            typ = request.POST['scan_type']
-            checksum = request.POST['hash']
-            filename = request.POST['file_name']
-            re_scan = request.POST.get('re_scan', 0)
-        else:
-            typ = request.GET['type']
-            checksum = request.GET['checksum']
-            filename = request.GET['name']
-            re_scan = request.GET.get('rescan', 0)
         if re_scan == '1':
             rescan = True
+
         # Input validation
         app_dic = {}
         match = re.match('^[0-9a-f]{32}$', checksum)
@@ -146,17 +149,7 @@ def static_analyzer(request, api=False):
                     logger.info('APK Extracted')
                     if not app_dic['files']:
                         # Can't Analyze APK, bail out.
-                        msg = 'APK file is invalid or corrupt'
-                        if api:
-                            return error_response(
-                                request,
-                                msg,
-                                True)
-                        else:
-                            return error_response(
-                                request,
-                                msg,
-                                False)
+                        return {'error': 'APK file is invalid or corrupt'}
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
                                                                    'files'])
                     # Manifest XML
@@ -179,21 +172,8 @@ def static_analyzer(request, api=False):
                     )
 
                     # Get icon
-                    res_path = os.path.join(app_dic['app_dir'], 'res')
-                    app_dic['icon_hidden'] = True
-                    # Even if the icon is hidden, try to guess it by the
-                    # default paths
-                    app_dic['icon_found'] = False
-                    app_dic['icon_path'] = ''
-                    # TODO: Check for possible different names for resource
-                    # folder?
-                    if os.path.exists(res_path):
-                        icon_dic = get_icon(
-                            app_dic['app_path'], res_path)
-                        if icon_dic:
-                            app_dic['icon_hidden'] = icon_dic['hidden']
-                            app_dic['icon_found'] = bool(icon_dic['path'])
-                            app_dic['icon_path'] = icon_dic['path']
+                    # apktool should run before this
+                    get_icon_apk(app_dic)
 
                     # Set Manifest link
                     app_dic['mani'] = ('../manifest_view/?md5='
@@ -319,16 +299,14 @@ def static_analyzer(request, api=False):
                     context['virus_total'] = vt.get_result(
                         app_dic['app_path'],
                         app_dic['md5'])
-                template = 'static_analysis/android_binary_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request, template, context)
+                context['template'] = \
+                    'static_analysis/android_binary_analysis.html'
+                return context
             elif typ == 'zip':
                 ret = (
-                    '/static_analyzer_ios/?name='
+                    '/static_analyzer_ios/?file_name='
                     + app_dic['app_name']
-                    + '&type=ios&checksum='
+                    + '&scan_type=ios&hash='
                     + app_dic['md5']
                 )
                 # Check if in DB
@@ -508,49 +486,32 @@ def static_analyzer(request, api=False):
                             trackers,
                         )
                     else:
-                        msg = 'This ZIP Format is not supported'
-                        if api:
-                            return error_response(
-                                request,
-                                msg,
-                                True)
-                        else:
-                            error_response(request, msg, False)
-                            ctx = {
-                                'title': 'Invalid ZIP archive',
-                                'version': settings.MOBSF_VER,
-                            }
-                            template = 'general/zip.html'
-                            return render(request, template, ctx)
+                        error_result = {
+                            'error': 'This ZIP format is not supported',
+                            'template': 'general/zip.html',
+                        }
+                        logger.error(error_result['error'])
+                        return error_result
                 context['appsec'] = get_android_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
                 context['logo'] = os.getenv('LOGO',
                                             '/static/img/mobsf_logo.png')
-                template = 'static_analysis/android_source_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request, template, context)
+                context['template'] = \
+                    'static_analysis/android_source_analysis.html'
+                return context
             else:
-                err = ('Only APK,IPA and Zipped '
-                       'Android/iOS Source code supported now!')
+                err = ('Only APK, IPA and Zipped '
+                       'Android/iOS Source code supported!')
                 logger.error(err)
         else:
-            msg = 'Hash match failed or Invalid file extension or file type'
-            if api:
-                return error_response(request, msg, True)
-            else:
-                return error_response(request, msg, False)
+            msg = 'Hash match failed or invalid file extension or file type'
+            return {'error': msg}
 
     except Exception as excep:
         logger.exception('Error Performing Static Analysis')
         msg = str(excep)
-        exp = excep.__doc__
-        if api:
-            return error_response(request, msg, True, exp)
-        else:
-            return error_response(request, msg, False, exp)
+        return {'error': msg}
 
 
 def is_android_source(app_dir):

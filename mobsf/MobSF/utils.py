@@ -27,6 +27,7 @@ import requests
 
 import siphash
 
+from django.forms.models import model_to_dict
 from django.shortcuts import render
 
 from . import settings
@@ -71,7 +72,6 @@ def upstream_proxy(flaw_type):
 def api_key():
     """Print REST API Key."""
     if os.environ.get('MOBSF_API_KEY'):
-        logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
 
     secret_file = os.path.join(settings.MobSF_HOME, 'secret')
@@ -604,8 +604,46 @@ def enable_print():
     sys.stdout = sys.__stdout__
 
 
+def find_key_in_dict(key, var):
+    """Recursively look up a key in a nested dict."""
+    if hasattr(var, 'items'):
+        for k, v in var.items():
+            if k == key:
+                yield v
+            if isinstance(v, dict):
+                for result in find_key_in_dict(key, v):
+                    yield result
+            elif isinstance(v, list):
+                for d in v:
+                    for result in find_key_in_dict(key, d):
+                        yield result
+
+
+def key(data, key_name):
+    """Return the data for a key_name."""
+    return data.get(key_name)
+
+
+def android_component(data):
+    """Return Android component from data."""
+    cmp = ''
+    if 'Activity-Alias' in data:
+        cmp = 'activity_alias_'
+    elif 'Activity' in data:
+        cmp = 'activity_'
+    elif 'Service' in data:
+        cmp = 'service_'
+    elif 'Content Provider' in data:
+        cmp = 'provider_'
+    elif 'Broadcast Receiver' in data:
+        cmp = 'receiver_'
+    return cmp
+
+
 def is_admin(request):
     if (not settings.ADMIN_USERS):
+        return False
+    if ('email' not in request.META):
         return False
     email = request.META['email']
     if (email and email in settings.ADMIN_USERS.split(',')):
@@ -614,7 +652,7 @@ def is_admin(request):
 
 
 def sso_email(request):
-    if (request.META['email']):
+    if ('email' in request.META) and (request.META['email']):
         return request.META['email']
     else:
         return None
@@ -633,3 +671,10 @@ def get_usergroups(request):
         return settings.ADMIN_GROUP
     else:
         return settings.GENERAL_GROUP
+
+
+def model_to_dict_str(instance):
+    result = model_to_dict(instance)
+    for key, value in result.items():
+        result[key] = str(value)
+    return result

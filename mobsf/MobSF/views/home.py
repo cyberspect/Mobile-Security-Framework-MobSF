@@ -1,18 +1,18 @@
 # -*- coding: utf_8 -*-
 """MobSF File Upload and Home Routes."""
+import datetime
 import json
 import logging
 import os
 import platform
 import re
 import shutil
-from datetime import datetime, timedelta, timezone
+import time
+import traceback as tb
 from pathlib import Path
 from wsgiref.util import FileWrapper
 
 import boto3
-
-from botocore.exceptions import ClientError
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -20,35 +20,35 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
+from django.utils import timezone
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
     error_response,
+    get_siphash,
     is_admin,
     is_dir_exists,
     is_file_exists,
     is_safe_path,
+    key,
     sso_email,
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
+    CyberspectScans,
     RecentScansDB,
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
 )
+from mobsf.StaticAnalyzer.views.common import appsec
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
 logger = logging.getLogger(__name__)
-
-
-@register.filter
-def key(d, key_name):
-    """To get dict element by key name in template."""
-    return d.get(key_name)
+register.filter('key', key)
 
 
 def index(request):
@@ -61,7 +61,7 @@ def index(request):
         'version': settings.MOBSF_VER,
         'mimes': mimes,
         'tenant_static': settings.TENANT_STATIC_URL,
-        'divisions': os.getenv('DIVISIONS'),
+        'is_admin': is_admin(request),
         'email': sso_email(request),
     }
     template = 'general/home.html'
@@ -120,14 +120,22 @@ class Upload(object):
                     response_data['description'] = msg
                     return self.resp_json(response_data)
 
+            start_time = datetime.datetime.now(timezone.utc)
             response_data = self.upload()
-            self.write_to_s3(response_data)
+            self.scan.cyberspect_scan_id = \
+                new_cyberspect_scan(False, response_data['hash'],
+                                    start_time,
+                                    self.scan.file_size,
+                                    self.scan.source_file_size)
+            cyberspect_scan_intake(self.scan.populate_data_dict())
             return self.resp_json(response_data)
-        except Exception as ex:
-            msg = getattr(ex, 'message', repr(ex))
-            logger.error(msg)
-            response_data['description'] = msg
-            return self.resp_json(response_data)
+        except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
+            msg = str(exp)
+            exp_doc = exp.__doc__
+            self.track_failure(msg)
+            return error_response(request, msg, True, exp_doc)
 
     def upload_api(self):
         """API File Upload."""
@@ -140,9 +148,15 @@ class Upload(object):
         if not self.scan.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
+        start_time = datetime.datetime.now(timezone.utc)
         api_response = self.upload()
+        self.scan.cyberspect_scan_id = \
+            new_cyberspect_scan(False, api_response['hash'],
+                                start_time,
+                                self.scan.file_size,
+                                self.scan.source_file_size)
         if (not self.request.GET.get('scan', '1') == '0'):
-            self.write_to_s3(api_response)
+            cyberspect_scan_intake(self.scan.populate_data_dict())
         return api_response, 200
 
     def upload(self):
@@ -162,52 +176,17 @@ class Upload(object):
         elif self.scan.file_type.is_appx():
             return self.scan.scan_appx()
 
-    def write_to_s3(self, api_response):
-        if not settings.AWS_S3_BUCKET:
-            logging.warning('Environment variable AWS_S3_BUCKET not set')
+    def track_failure(self, error_message):
+        if self.scan.cyberspect_scan_id == 0:
             return
-
-        s3_client = boto3.client('s3')
-        try:
-            # Write minimal metadata to file
-            prefix = os.path.join(settings.UPLD_DIR,
-                                  api_response['hash'] + '/'
-                                  + api_response['hash'] + '.')
-            file_path = prefix + api_response['scan_type']
-            metadata_filepath = file_path + '.json'
-            metadata_file = open(metadata_filepath, 'w')
-            metadata_file.write('{"user_app_name":"'
-                                + self.scan.user_app_name + '",')
-            metadata_file.write('"user_app_version":"'
-                                + self.scan.user_app_version + '",')
-            metadata_file.write('"email":"' + self.scan.email + '",')
-            metadata_file.write('"hash":"' + api_response['hash'] + '",')
-            metadata_file.write('"file_name":"'
-                                + self.scan.file_name + '",')
-            metadata_file.write('"short_hash":"' + api_response['short_hash']
-                                + '"}')
-            metadata_file.close()
-
-            # Write uploaded files to S3 bucket
-            logger.info('Writing files to S3 bucket: %s',
-                        settings.AWS_S3_BUCKET)
-            file_name = self.scan.file_name
-            if (self.scan.source_file):
-                source_filepath = file_path + '.src'
-                s3_client.upload_file(source_filepath,
-                                      settings.AWS_S3_BUCKET,
-                                      'intake/' + file_name + '.src')
-            s3_client.upload_file(file_path,
-                                  settings.AWS_S3_BUCKET,
-                                  'intake/' + file_name)
-            s3_client.upload_file(metadata_filepath,
-                                  settings.AWS_S3_BUCKET,
-                                  'intake/' + file_name + '.json')
-
-        except ClientError:
-            logging.error('Unable to upload files to AWS S3')
-            return False
-        return
+        data = {
+            'id': self.scan.cyberspect_scan_id,
+            'success': False,
+            'failure_source': 'SAST',
+            'failure_message': error_message,
+            'sast_end': datetime.datetime.utcnow(),
+        }
+        update_cyberspect_scan(data)
 
 
 def api_docs(request):
@@ -300,8 +279,12 @@ def recent_scans(request):
             entry['PACKAGE'] = ''
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
-        entry['ERROR'] = (datetime.now(timezone.utc)
-                          > entry['TIMESTAMP'] + timedelta(minutes=15))
+        entry['ERROR'] = (timezone.now()
+                          > entry['TIMESTAMP']
+                          + datetime.timedelta(minutes=15))
+        entry['CAN_RELEASE'] = (timezone.now()
+                                < entry['TIMESTAMP']
+                                + datetime.timedelta(days=30))
         entries.append(entry)
     context = {
         'title': 'Recent Scans',
@@ -322,6 +305,146 @@ def scan_metadata(md5):
         if db_obj:
             return model_to_dict(db_obj)
     return None
+
+
+def get_cyberspect_scan(csid):
+    db_obj = CyberspectScans.objects.filter(ID=csid).first()
+    if db_obj:
+        cs_obj = model_to_dict(db_obj)
+        rs_obj = scan_metadata(cs_obj['MOBSF_MD5'])
+        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE']
+        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME']
+        return cs_obj
+    return None
+
+
+def new_cyberspect_scan(scheduled, md5, start_time,
+                        file_size, source_file_size):
+    # Insert new record into CyberspectScans
+    new_db_obj = CyberspectScans(
+        SCHEDULED=scheduled,
+        MOBSF_MD5=md5,
+        INTAKE_START=start_time,
+        FILE_SIZE_PACKAGE=file_size,
+        FILE_SIZE_SOURCE=source_file_size,
+    )
+    new_db_obj.save()
+    logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
+    return new_db_obj.ID
+
+
+def update_scan(request, api=False):
+    """Update RecentScansDB record."""
+    try:
+        if (not is_admin(request) and not api):
+            return HttpResponse(status=403)
+        md5 = request.POST['hash']
+        response = {'error': f'Scan {md5} not found'}
+        db_obj = RecentScansDB.objects.filter(MD5=md5).first()
+        if db_obj:
+            if 'user_app_name' in request.POST:
+                db_obj.USER_APP_NAME = request.POST['user_app_name']
+            if 'user_app_version' in request.POST:
+                db_obj.USER_APP_VERSION = request.POST['user_app_version']
+            if 'division' in request.POST:
+                db_obj.DIVISION = request.POST['division']
+            if 'environment' in request.POST:
+                db_obj.ENVIRONMENT = request.POST['environment']
+            if 'country' in request.POST:
+                db_obj.COUNTRY = request.POST['country']
+            if 'data_privacy_classification' in request.POST:
+                dpc = request.POST['data_privacy_classification']
+                db_obj.DATA_PRIVACY_CLASSIFICATION = dpc
+            if 'data_privacy_attributes' in request.POST:
+                dpa = request.POST['data_privacy_attributes']
+                db_obj.DATA_PRIVACY_ATTRIBUTES = dpa
+            if 'email' in request.POST:
+                db_obj.EMAIL = request.POST['email']
+            if 'release' in request.POST:
+                db_obj.RELEASE = request.POST['release']
+            db_obj.save()
+            response = model_to_dict(db_obj)
+            data = {'result': 'success'}
+        if api:
+            return response
+        else:
+            ctype = 'application/json; charset=utf-8'
+            return HttpResponse(json.dumps(data), content_type=ctype)
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        msg = str(exp)
+        exp_doc = exp.__doc__
+        if api:
+            return error_response(request, msg, True, exp_doc)
+        else:
+            return error_response(request, msg, False, exp_doc)
+
+
+def update_cyberspect_scan(data):
+    """Update Cyberspect scan record."""
+    try:
+        if (('id' not in data) and ('dt_project_id' in data)):
+            db_obj = CyberspectScans.objects \
+                .filter(DT_PROJECT_ID=data['dt_project_id']) \
+                .order_by('-ID').first()
+            csid = data['dt_project_id']
+        else:
+            db_obj = CyberspectScans.objects.filter(ID=data['id']).first()
+            csid = data['id']
+
+        if db_obj:
+            if 'mobsf_md5' in data:
+                db_obj.MOBSF_MD5 = data['mobsf_md5']
+            if 'dt_project_id' in data and data['dt_project_id']:
+                db_obj.DT_PROJECT_ID = data['dt_project_id']
+            if 'intake_end' in data and data['intake_end']:
+                db_obj.INTAKE_END = tz(data['intake_end'])
+            if 'sast_start' in data and data['sast_start']:
+                db_obj.SAST_START = tz(data['sast_start'])
+            if 'sast_end' in data and data['sast_end']:
+                db_obj.SAST_END = tz(data['sast_end'])
+            if 'sbom_start' in data and data['sbom_start']:
+                db_obj.SBOM_START = tz(data['sbom_start'])
+            if 'sbom_end' in data and data['sbom_end']:
+                db_obj.SBOM_END = tz(data['sbom_end'])
+            if 'dependency_start' in data and data['dependency_start']:
+                db_obj.DEPENDENCY_START = tz(data['dependency_start'])
+            if 'dependency_end' in data and data['dependency_end']:
+                db_obj.DEPENDENCY_END = tz(data['dependency_end'])
+            if 'notification_start' in data and data['notification_start']:
+                db_obj.NOTIFICATION_START = tz(data['notification_start'])
+            if 'notification_end' in data and data['notification_end']:
+                db_obj.NOTIFICATION_END = tz(data['notification_end'])
+            if 'success' in data:
+                db_obj.SUCCESS = data['success']
+            if 'failure_source' in data and data['failure_source']:
+                db_obj.FAILURE_SOURCE = data['failure_source']
+            if 'failure_message' in data and data['failure_message']:
+                db_obj.FAILURE_MESSAGE = data['failure_message']
+            if 'file_size_package' in data and data['file_size_package']:
+                db_obj.FILE_SIZE_PACKAGE = data['file_size_package']
+            if 'file_size_source' in data and data['file_size_source']:
+                db_obj.FILE_SIZE_SOURCE = data['file_size_source']
+            if 'dependency_types' in data:
+                db_obj.DEPENDENCY_TYPES = data['dependency_types']
+            db_obj.save()
+            return model_to_dict(db_obj)
+        else:
+            return {'error': f'Scan ID {csid} not found'}
+    except Exception as ex:
+        exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
+        logger.error(exmsg)
+        return {'error': str(ex)}
+
+
+def tz(value):
+    # Parse string into date/time parts and build time zone aware datetime
+    value = value.replace('T', ' ').replace('Z', '')
+    st = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+    ts = time.mktime(st.timetuple()) + (st.microsecond / 1000000.0)
+    dt = datetime.datetime.fromtimestamp(ts)
+    return dt.replace(tzinfo=timezone.utc)
 
 
 def logout_aws(request):
@@ -360,8 +483,8 @@ def search(request):
         db_obj = RecentScansDB.objects.filter(MD5=md5)
         if db_obj.exists():
             e = db_obj[0]
-            url = (f'/{e.ANALYZER }/?name={e.FILE_NAME}&'
-                   f'checksum={e.MD5}&type={e.SCAN_TYPE}')
+            url = (f'/{e.ANALYZER }/?file_name={e.FILE_NAME}&'
+                   f'hash={e.MD5}&scan_type={e.SCAN_TYPE}')
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
@@ -442,6 +565,60 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
+def cyberspect_rescan(apphash, scheduled):
+    """Get cyberspect scan by hash."""
+    rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
+    if not rs_obj:
+        return None
+    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=apphash) \
+        .order_by('-INTAKE_START').first()
+
+    scan_id = new_cyberspect_scan(scheduled, apphash,
+                                  datetime.datetime.now(timezone.utc),
+                                  cs_obj.FILE_SIZE_PACKAGE,
+                                  cs_obj.FILE_SIZE_SOURCE)
+    scan_data = {
+        'cyberspect_scan_id': scan_id,
+        'hash': apphash,
+        'short_hash': get_siphash(apphash),
+        'scan_type': rs_obj.SCAN_TYPE,
+        'file_name': rs_obj.FILE_NAME,
+        'user_app_name': rs_obj.USER_APP_NAME,
+        'user_app_version': rs_obj.USER_APP_VERSION,
+        'email': rs_obj.EMAIL,
+    }
+    cyberspect_scan_intake(scan_data)
+    return scan_data
+
+
+def cyberspect_scan_intake(scan):
+    if not settings.AWS_INTAKE_LAMBDA:
+        logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
+        return
+
+    lclient = boto3.client('lambda')
+    file_path = os.path.join(settings.UPLD_DIR, scan['hash'] + '/') \
+        + scan['hash'] + '.' + scan['scan_type']
+    if (os.path.exists(file_path + '.src')):
+        file_path = file_path + '.src'
+    lambda_params = {
+        'cyberspect_scan_id': scan['cyberspect_scan_id'],
+        'hash': scan['hash'],
+        'short_hash': scan['short_hash'],
+        'user_app_name': scan['user_app_name'],
+        'user_app_version': scan['user_app_version'],
+        'scan_type': scan['scan_type'],
+        'email': scan['email'],
+        'file_name': file_path,
+    }
+    logger.info('Executing Cyberspect intake lambda: %s',
+                settings.AWS_INTAKE_LAMBDA)
+    lclient.invoke(FunctionName=settings.AWS_INTAKE_LAMBDA,
+                   InvocationType='Event',
+                   Payload=json.dumps(lambda_params).encode('utf-8'))
+    return
+
+
 def health(request):
     """Check MobSF system health."""
     # Ensure database access is good
@@ -460,6 +637,73 @@ class RecentScans(object):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
         result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            data = {
+                'content': list(content),
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+            }
+        except Exception as exp:
+            data = {'error': str(exp)}
+        return data
+
+    def cyberspect_recent_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        cs_scans = CyberspectScans.objects.all()
+        result = cs_scans.values().order_by('-INTAKE_START')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            data = {
+                'content': list(content),
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+            }
+        except Exception as exp:
+            data = {'error': str(exp)}
+        return data
+
+    def cyberspect_completed_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        result = CyberspectScans.objects.filter(SCHEDULED=True) \
+            .exclude(SUCCESS=None).values().order_by('-INTAKE_START')
+        try:
+            paginator = Paginator(result, page_size)
+            content = paginator.page(page)
+            for scan in content:
+                # Get app details
+                md5 = scan['MOBSF_MD5']
+                scan_result = RecentScansDB.objects.filter(MD5=md5) \
+                    .first()
+                scan['APP_NAME'] = scan_result.APP_NAME
+                scan['VERSION_NAME'] = scan_result.VERSION_NAME
+                scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
+                scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
+                scan['EMAIL'] = scan_result.EMAIL
+
+                # Get scan vulnerability counts
+                findings = appsec.appsec_dashboard(self.request, md5, True)
+                scan['FINDINGS_HIGH'] = len(findings['high'])
+                scan['FINDINGS_WARNING'] = len(findings['warning'])
+                scan['FINDINGS_INFO'] = len(findings['info'])
+            data = {
+                'content': list(content),
+                'count': paginator.count,
+                'num_pages': paginator.num_pages,
+            }
+        except Exception as exp:
+            data = {'error': str(exp)}
+        return data
+
+    def release_scans(self):
+        page = self.request.GET.get('page', 1)
+        page_size = self.request.GET.get('page_size', 10)
+        scans = RecentScansDB.objects.filter(RELEASE=True)
+        result = scans.values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
             content = paginator.page(page)
