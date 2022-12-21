@@ -362,6 +362,7 @@ def update_scan(request, api=False):
                 db_obj.EMAIL = request.POST['email']
             if 'release' in request.POST:
                 db_obj.RELEASE = request.POST['release']
+            db_obj.TIMESTAMP = timezone.now()
             db_obj.save()
             response = model_to_dict(db_obj)
             data = {'result': 'success'}
