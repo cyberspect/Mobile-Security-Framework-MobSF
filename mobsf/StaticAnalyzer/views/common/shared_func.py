@@ -24,6 +24,7 @@ from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
     error_response,
     is_md5,
+    utcnow,
     upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import RecentScansDB
@@ -157,7 +158,7 @@ def get_avg_cvss(findings):
 
 def update_scan_timestamp(scan_hash):
     # Update the last scan time.
-    tms = timezone.now()
+    tms = utcnow()
     RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
 
 

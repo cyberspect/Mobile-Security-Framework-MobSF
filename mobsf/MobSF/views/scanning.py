@@ -8,7 +8,13 @@ from django.conf import settings
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.utils import get_siphash, get_usergroups, is_admin, sso_email
+from mobsf.MobSF.utils import (
+    get_siphash,
+    get_usergroups,
+    is_admin,
+    sso_email,
+    utcnow,
+)
 from mobsf.MobSF.views.helpers import FileType
 
 logger = logging.getLogger(__name__)
@@ -28,7 +34,7 @@ def add_to_recent_scan(data):
                 PACKAGE_NAME='',
                 VERSION_NAME='',
                 MD5=data['hash'],
-                TIMESTAMP=timezone.now(),
+                TIMESTAMP=utcnow(),
                 USER_APP_NAME=data['user_app_name'],
                 USER_APP_VERSION=data['user_app_version'],
                 DIVISION=data['division'],
@@ -49,7 +55,7 @@ def add_to_recent_scan(data):
                 scan.USER_GROUPS = (scan.USER_GROUPS + ','
                                     + data['user_groups'])
             scan.FILE_NAME = data['file_name']
-            scan.TIMESTAMP = timezone.now()
+            scan.TIMESTAMP = utcnow()
             scan.USER_APP_NAME = data['user_app_name']
             scan.USER_APP_VERSION = data['user_app_version']
             scan.DIVISION = data['division']
