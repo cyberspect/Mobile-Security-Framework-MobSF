@@ -5,7 +5,6 @@ import io
 import os
 
 from django.conf import settings
-from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.MobSF.utils import (

@@ -640,7 +640,7 @@ class RecentScans(object):
             if (int(page) > paginator.num_pages):
                 data = {
                     'content': [],
-                    'count': 0,
+                    'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
             else:
@@ -651,7 +651,8 @@ class RecentScans(object):
                     'num_pages': paginator.num_pages,
                 }
         except Exception as exp:
-            logger.error(str(exp))     
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
@@ -665,7 +666,7 @@ class RecentScans(object):
             if (int(page) > paginator.num_pages):
                 data = {
                     'content': [],
-                    'count': 0,
+                    'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
             else:
@@ -676,7 +677,8 @@ class RecentScans(object):
                     'num_pages': paginator.num_pages,
                 }
         except Exception as exp:
-            logger.error(str(exp))
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
@@ -690,7 +692,7 @@ class RecentScans(object):
             if (int(page) > paginator.num_pages):
                 data = {
                     'content': [],
-                    'count': 0,
+                    'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
             else:
@@ -717,7 +719,8 @@ class RecentScans(object):
                     'num_pages': paginator.num_pages,
                 }
         except Exception as exp:
-            logger.error(str(exp))
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
@@ -731,7 +734,7 @@ class RecentScans(object):
             if (int(page) > paginator.num_pages):
                 data = {
                     'content': [],
-                    'count': 0,
+                    'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
             else:
@@ -742,6 +745,7 @@ class RecentScans(object):
                     'num_pages': paginator.num_pages,
                 }
         except Exception as exp:
-            logger.error(str(exp))
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data

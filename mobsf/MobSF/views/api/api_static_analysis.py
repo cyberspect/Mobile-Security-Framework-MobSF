@@ -1,6 +1,5 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
-from datetime import datetime
 import logging
 
 from django.http import HttpResponse
