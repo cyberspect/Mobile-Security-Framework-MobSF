@@ -691,5 +691,5 @@ def tz(value):
     return timezone.makeaware(unware_time)
 
 
-def utcnow():    
+def utcnow():
     return timezone.now()
