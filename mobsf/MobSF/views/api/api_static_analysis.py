@@ -443,7 +443,7 @@ def scan(request_data):
         data['sast_end'] = utcnow()
         update_cyberspect_scan(data)
         return response
-    
+
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
         logger.error(exmsg)
