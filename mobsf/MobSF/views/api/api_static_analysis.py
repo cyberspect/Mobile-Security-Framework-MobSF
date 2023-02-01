@@ -3,7 +3,7 @@
 import logging
 import traceback as tb
 
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.utils import utcnow
@@ -414,6 +414,8 @@ def scan(request_data):
             resp = static_analyzer(request_data, True)
             if 'type' in resp:
                 # For now it's only ios_zip
+                if isinstance(request_data, QueryDict):
+                    request_data._mutable = True
                 request_data['scan_type'] = 'ios'
                 resp = static_analyzer_ios(request_data, True)
             if 'error' in resp:
