@@ -145,8 +145,12 @@
                                 </p>
                                 <p>
                                     {% if e.APP_NAME and is_admin %}
-                                        <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
-                                        <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="javascript:void(0);" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a>
+
+                                        <a class="btn btn-primary btn-sm" href="#" onclick="admin_edit({{ e.MD5 }})" style="margin-right: 12px;"><i
+                                        class="fas fa-pen"></i> Edit </a>
+
+                                        <!-- <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
+                                        <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="javascript:void(0);" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a> -->
                                     {% endif %}
                                     <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                     {% if e.APP_NAME %}                                        

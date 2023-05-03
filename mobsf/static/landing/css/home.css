@@ -323,8 +323,8 @@ progress::-webkit-progress-value {
 }
 
 .error {
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 6px;
+  padding-right: 6px;
   text-shadow: none;
   background: #F7211D;
 }
@@ -355,4 +355,10 @@ progress::-webkit-progress-value {
 
 #upload_form {
   padding-top: 10px;
+}
+
+/* Adjust fields on home upload page */
+#upload-form > .form-control {
+  display:inline;
+  width: 100%;
 }
