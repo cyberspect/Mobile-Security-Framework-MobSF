@@ -15,8 +15,8 @@ sidebar-collapse
         <div class="card">
           <div class="card-body">
             <div class="inner cover">
-              <h3 class="box-title">Upload Mobile Appp</h3>
-
+              <h3 class="box-title">Upload Mobile App</h3>
+              
               <style>
                 .box-title {
                   padding-bottom: 28px;
@@ -116,25 +116,14 @@ sidebar-collapse
                   <!-- Country -->
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label>Multiple</label>
-                      <select class="select2" multiple="multiple" data-placeholder="Select a State" style="width: 100%;">
-                        <option>Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
+                      <label for="country">Country</label>
+                      <i class="fas fa-info-circle fa-lg"
+                      title="The country (or countries) where the mobile app has been (or will be) released.">
+                      </i>
+                      <select class="select2bs4" id="country" required multiple data-placeholder="--">
+                        <option>Unknown</option>
                       </select>
                     </div>
-
-                    <!--<label for="country">Country</label>
-                    <i class="fas fa-info-circle fa-lg"
-                      title="The country (or countries) where the mobile app has been (or will be) released.">
-                    </i>
-                    <select class="custom-select d-block w-100" id="country" size="3" required multiple>
-                      <option>Unknown</option>
-                    </select> -->
                   </div>
 
                 </div> <!-- end of second row -->
@@ -165,13 +154,16 @@ sidebar-collapse
 
                   <!-- Data Privacy Attributes -->
                   <div class="col-md-6">
-                    <label for="data_privacy_attributes">Data Privacy Attributes
-                      <i class="fas fa-info-circle fa-lg"
-                        title="The data privacy attributes for the mobile application.">
-                      </i>
-                    </label>
-                    <select class="custom-select d-block w-100" id="data_privacy_attributes" size="3" required
-                      multiple></select>
+                    <div class="form-group">
+                      <label for="data_privacy_attributes">Data Privacy Attributes
+                        <i class="fas fa-info-circle fa-lg"
+                          title="The data privacy attributes for the mobile application.">
+                        </i>
+                      </label>
+                      <select class="select2bs4" id="data_privacy_attributes" required multiple data-placeholder="--">
+                        <option>Unknown</option>
+                      </select>
+                    </div>
                   </div>
 
                 </div> <!-- end of third row -->
@@ -487,6 +479,12 @@ sidebar-collapse
     populateDivisions();
     populateCountries();
     populateDataPrivacy();
+
+    //Initialize Select2 Elements
+    $('.select2').select2();
+    $('.select2bs4').select2({
+      theme: 'bootstrap4'
+    });
 
     $('#but').click(function () {
       _('status').innerText = "";
