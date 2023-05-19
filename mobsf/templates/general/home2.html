@@ -15,13 +15,11 @@ sidebar-collapse
         <div class="card">
           <div class="card-body">
             <div class="inner cover">
-              <h3 class="box-title">Upload Mobile App</h3>
-              
+              <h3 class="box-title">Upload Mobile App</h3>              
               <style>
                 .box-title {
                   padding-bottom: 28px;
                 }
-
                 .row,
                 .section-title {
                   text-align: left;
@@ -245,12 +243,12 @@ sidebar-collapse
     hide_loader();
     var xhr = new XMLHttpRequest()
     xhr.open('GET', url, true)
-    xhr.addEventListener("loadstart", function (evt) {
-      Notifier.snackbar({
-        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
-        duration: 10,
-      });
-    })
+    // xhr.addEventListener("loadstart", function (evt) {
+    //   Notifier.snackbar({
+    //     message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
+    //     duration: 10,
+    //   });
+    // })
     xhr.addEventListener("load", function (evt) {
       window.location.href = window.location.href + url;
     }, false);
@@ -287,7 +285,8 @@ sidebar-collapse
           i = 1;
         }
       }, 2000);
-      load_result("recent_scans");
+      window.location.href = "/recent_scans";
+      //load_result("recent_scans");
     }
   }
   function progressHandler(event) {
@@ -314,17 +313,14 @@ sidebar-collapse
   }
 
   function lookupHandler(event) {
-    var version = $("#version").val();
     var appname = $("#appname").val();
-    if (version && appname) {
+    if (appname) {
       $.ajax({
         url: "app_info",
-        type: "POST",
+        type: "GET",
         dataType: "json",
         data: {
-          csrfmiddlewaretoken: '{{ csrf_token }}',
-          name: appname,
-          version: version,
+          name: appname
         },
         success: function (json) {
           if (json.found) {
@@ -334,11 +330,12 @@ sidebar-collapse
             else {
               $("#release").prop("checked", false);
             }
+            $("#version").val(json.version);
             $("#environment").val(json.environment);
             $("#division").val(json.division);
-            $("#country").val(json.country);
+            $("#country").val(json.country.split(","));
             $("#data_privacy_classification").val(json.data_privacy_classification);
-            $("#data_privacy_attributes").val(json.data_privacy_attributes);
+            $("#data_privacy_attributes").val(json.data_privacy_attributes.split(","));
             $("#override_email").val(json.email);
           }
         },
@@ -360,17 +357,18 @@ sidebar-collapse
     }
     return true;
   }
+
   // Is allowed mimetype
   function isValidMime(file_mime) {
     if (file_mime.length < 1)
       // bypass if mime is not available
       return true;
     var supported = [{% for mime in mimes %} '{{mime}}', {% endfor %}];
-  if (supported.indexOf(file_mime) > -1)
-    return true;
-  _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
-  return false;
-    }
+    if (supported.indexOf(file_mime) > -1)
+      return true;
+    _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+    return false;
+  }
 
   // File Upload
   function upload(app_file, source_file, extradata) {
@@ -381,7 +379,8 @@ sidebar-collapse
       if (source_file != null && (!isValidExt(source_file.name) || !isValidMime(source_file.type))) {
         return;
       }
-      _("progressBar").style.visibility = "visible";
+      _("but").classList.add('hidden');
+      _("progressBar").classList.remove('hidden');
       var url = '/upload/'
       var xhr = new XMLHttpRequest()
       xhr.open('POST', url, true)
@@ -433,6 +432,12 @@ sidebar-collapse
       return false;
     } else { _('err_file').classList.add('hidden'); }
 
+    var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/;
+    if (!_("override_email").value.match(mailformat)) {
+      _('err_email').classList.remove('hidden');
+      return false;
+    } else { _('err_email').classList.add('hidden'); }
+
     return true;
   }
 
@@ -479,6 +484,7 @@ sidebar-collapse
     populateDivisions();
     populateCountries();
     populateDataPrivacy();
+    $('#appname').focus();
 
     //Initialize Select2 Elements
     $('.select2').select2();

@@ -148,6 +148,7 @@ DATABASES = {
 }
 # End Postgres support
 """
+
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DEBUG = False
