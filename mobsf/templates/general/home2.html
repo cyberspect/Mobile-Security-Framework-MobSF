@@ -1,6 +1,35 @@
 {% extends "base/base_layout.html" %}
 {% block extra_css %}
 <link rel="stylesheet" href="/static/landing/css/home.css">
+<style>
+  .box-title {
+    padding-bottom: 15px;
+  }
+
+  .row,
+  .section-title {
+    text-align: left;
+  }
+
+  #upload-form>.form-control {
+    display: inline;
+    width: 100%;
+  }
+
+  input[type=file] {
+    padding: 0.2rem 0.2rem;
+  }
+
+  .fa-info-circle {
+    padding-left: 8px;
+  }
+
+  .upload-form-hr {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin: 0;
+  }
+</style>
 {% endblock %}
 {% block sidebar_option %}
 sidebar-collapse
@@ -16,26 +45,6 @@ sidebar-collapse
           <div class="card-body">
             <div class="inner cover">
               <h3 class="box-title">Upload Mobile App</h3>              
-              <style>
-                .box-title {
-                  padding-bottom: 28px;
-                }
-                .row,
-                .section-title {
-                  text-align: left;
-                }
-
-                /* Adjust fields on home upload page */
-                #upload-form>.form-control {
-                  display: inline;
-                  width: 100%;
-                }
-
-                .fa-info-circle {
-                  padding-left: 8px;
-                }
-              </style>
-
               <form id="upload_form" novalidate enctype="multipart/form-data" method="post">
                 {% csrf_token %}
 
@@ -117,7 +126,7 @@ sidebar-collapse
                       <i class="fas fa-info-circle fa-lg"
                       title="The country (or countries) where the mobile app has been (or will be) released.">
                       </i>
-                      <select class="select2bs4" id="country" required multiple data-placeholder="--">
+                      <select class="select2bs4" style="width: 100%" id="country" required multiple>
                         <option>Unknown</option>
                       </select>
                     </div>
@@ -157,7 +166,7 @@ sidebar-collapse
                           title="The data privacy attributes for the mobile application.">
                         </i>
                       </label>
-                      <select class="select2bs4" id="data_privacy_attributes" required multiple data-placeholder="--">
+                      <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
                         <option>Unknown</option>
                       </select>
                     </div>
@@ -171,18 +180,18 @@ sidebar-collapse
 
                   <!-- Mobile App File -->
                   <div class="col-md-6 mb-3">
-                    <label for="file" class="form-label">
+                    <label for="uploadFile" class="form-label">
                       <i class="fa fa-mobile-alt fa-lg" aria-hidden="true"></i> &nbsp;Mobile App
                       File
                     </label>
                     <input class="form-control" type="file" name="file" id="uploadFile"
                       placeholder="Choose Mobile App File" accept=".apk, .apks, .appx, .ipa, .xapk, .zip">
-                    <div id="err_file" class="hidden"><span class="error">Required!</span></div>
+                    <div id="err_file" class="hidden"><span class="error">Mobile App File Required!</span></div>
                   </div>
 
                   <!-- Source Code File -->
                   <div class="col-md-6 mb-3">
-                    <label for="source_file" class="form-label">
+                    <label for="uploadSourceFile" class="form-label">
                       <i class="fa fa-code fa-lg" aria-hidden="true"></i> &nbsp;Source Code File
                       (optional)
                     </label>
@@ -205,6 +214,7 @@ sidebar-collapse
                     </label>
                     <input style="width:100%" class="form-control" type="text" id="override_email"
                       placeholder="Email Address" value="{{email}}">
+                    <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
                   </div>
                   {% endif %}
 
@@ -217,16 +227,13 @@ sidebar-collapse
                 </div>
                 <h5 id="status"></h5>
                 <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;"></progress>
-
+              </form>
             </div> <!-- end of inner-cover -->
-            </form>
-
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 </div>
 
 <div class="hidden loading">
