@@ -37,8 +37,7 @@ sidebar-collapse
               </style>
 
               <form id="upload_form" novalidate enctype="multipart/form-data" method="post">
-                <input type="hidden" name="csrfmiddlewaretoken"
-                  value="S0TYzBbYkYJaBRauWhac8OALFJ4sQEzNHnbME3UzqoSgv8BAOGz0X8PvDTkFJday">
+                {% csrf_token %}
 
                 <div class="row"> <!-- first row -->
 
@@ -243,12 +242,6 @@ sidebar-collapse
     hide_loader();
     var xhr = new XMLHttpRequest()
     xhr.open('GET', url, true)
-    // xhr.addEventListener("loadstart", function (evt) {
-    //   Notifier.snackbar({
-    //     message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
-    //     duration: 10,
-    //   });
-    // })
     xhr.addEventListener("load", function (evt) {
       window.location.href = window.location.href + url;
     }, false);
@@ -286,7 +279,6 @@ sidebar-collapse
         }
       }, 2000);
       window.location.href = "/recent_scans";
-      //load_result("recent_scans");
     }
   }
   function progressHandler(event) {
@@ -432,11 +424,13 @@ sidebar-collapse
       return false;
     } else { _('err_file').classList.add('hidden'); }
 
-    var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/;
-    if (!_("override_email").value.match(mailformat)) {
-      _('err_email').classList.remove('hidden');
-      return false;
-    } else { _('err_email').classList.add('hidden'); }
+    if ($("#override_email").length) {
+      var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/;
+      if (!_("override_email").value.match(mailformat)) {
+        _('err_email').classList.remove('hidden');
+        return false;
+      } else { _('err_email').classList.add('hidden'); }
+    }
 
     return true;
   }
