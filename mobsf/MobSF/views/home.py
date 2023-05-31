@@ -779,7 +779,8 @@ class RecentScans(object):
                         scan['EMAIL'] = scan_result.EMAIL
 
                         # Get scan vulnerability counts
-                        findings = appsec.appsec_dashboard(self.request, md5, True)
+                        findings = appsec.appsec_dashboard(self.request, md5,
+                                                           True)
                         scan['FINDINGS_HIGH'] = len(findings['high']) \
                             if 'high' in findings else 0
                         scan['FINDINGS_WARNING'] = len(findings['warning']) \
