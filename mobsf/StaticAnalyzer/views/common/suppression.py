@@ -30,6 +30,16 @@ from mobsf.StaticAnalyzer.models import (
 
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
+=======
+HIGH = 'high'
+WARNING = 'warning'
+INFO = 'info'
+SECURE = 'secure'
+GOOD = 'good'
+SUPPRESSED = 'suppressed'
+
+>>>>>>> upstream/master
 
 def get_package(checksum):
     """Get package from checksum."""
@@ -233,10 +243,21 @@ def delete_suppression(request, api=False):
 def process_suppression(data, package):
     """Process all suppression for code."""
     filtered = {}
+<<<<<<< HEAD
+=======
+    summary = {HIGH: 0, WARNING: 0, INFO: 0,
+               SECURE: 0, SUPPRESSED: 0}
+    if len(data) == 0:
+        return {
+            'findings': data,
+            'summary': {},
+        }
+>>>>>>> upstream/master
     filters = SuppressFindings.objects.filter(
         PACKAGE_NAME=package,
         SUPPRESS_TYPE='code')
     if not filters.exists():
+<<<<<<< HEAD
         return data
 
     # Priority to rules
@@ -262,15 +283,67 @@ def process_suppression(data, package):
             if len(filtered[k]['files']) == 0:
                 del cleaned[k]
     return cleaned
+=======
+        cleaned = data
+    else:
+        # Priority to rules
+        filter_rules = python_list(filters[0].SUPPRESS_RULE_ID)
+        if filter_rules:
+            for k in data:
+                if k not in filter_rules:
+                    filtered[k] = data[k]
+                else:
+                    summary[SUPPRESSED] += 1
+        else:
+            filtered = deepcopy(data)
+
+        # Process by files
+        filter_files = python_dict(filters[0].SUPPRESS_FILES)
+        cleaned = copy(filtered)
+        if filter_files:
+            for k in filtered:
+                if k not in filter_files.keys():
+                    continue
+                for rem_file in filter_files[k]:
+                    if rem_file in filtered[k]['files']:
+                        del filtered[k]['files'][rem_file]
+                        summary[SUPPRESSED] += 1
+                # Remove rule_id with no files
+                if len(filtered[k]['files']) == 0:
+                    del cleaned[k]
+    for v in cleaned.values():
+        if 'severity' in v:
+            # iOS binary code
+            sev = v['severity']
+        else:
+            sev = v['metadata']['severity']
+        if sev == HIGH:
+            summary[HIGH] += 1
+        elif sev == WARNING:
+            summary[WARNING] += 1
+        elif sev == INFO:
+            summary[INFO] += 1
+        elif sev == GOOD or sev == SECURE:
+            summary[SECURE] += 1
+    return {
+        'findings': cleaned,
+        'summary': summary,
+    }
+>>>>>>> upstream/master
 
 
 def process_suppression_manifest(data, package):
     """Process all suppression for manifest."""
     filtered = []
+<<<<<<< HEAD
+=======
+    summary = {HIGH: 0, WARNING: 0, INFO: 0, SUPPRESSED: 0}
+>>>>>>> upstream/master
     filters = SuppressFindings.objects.filter(
         PACKAGE_NAME=package,
         SUPPRESS_TYPE='manifest')
     if not filters.exists():
+<<<<<<< HEAD
         return data
 
     filter_rules = python_list(filters[0].SUPPRESS_RULE_ID)
@@ -284,3 +357,30 @@ def process_suppression_manifest(data, package):
     else:
         filtered = data
     return filtered
+=======
+        filtered = data
+    else:
+        filter_rules = python_list(filters[0].SUPPRESS_RULE_ID)
+        if filter_rules:
+            for k in data:
+                rule = k['rule']
+                title = k['title']
+                dynamic_rule = f'{android_component(title)}{rule}'
+                if dynamic_rule not in filter_rules:
+                    filtered.append(k)
+                else:
+                    summary[SUPPRESSED] += 1
+        else:
+            filtered = data
+    for i in filtered:
+        if i['severity'] == HIGH:
+            summary[HIGH] += 1
+        elif i['severity'] == WARNING:
+            summary[WARNING] += 1
+        elif ['severity'] == INFO:
+            summary[INFO] += 1
+    return {
+        'manifest_findings': filtered,
+        'manifest_summary': summary,
+    }
+>>>>>>> upstream/master

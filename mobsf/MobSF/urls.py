@@ -20,7 +20,6 @@ from mobsf.StaticAnalyzer.views.common import (
 )
 from mobsf.StaticAnalyzer.views.android import (
     find,
-    generate_downloads,
     manifest_view,
     source_tree,
     view_source,
@@ -94,7 +93,9 @@ if settings.API_ONLY == '0':
         re_path(r'^download/', home.download),
         re_path(r'^download_scan/', home.download_apk),
         re_path(r'^support$', home.support, name='support'),
+        re_path(r'^generate_downloads/$', home.generate_download),
         re_path(r'^about$', home.about, name='about'),
+        re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans$', home.recent_scans, name='recent'),
         re_path(r'^update_scan/$', home.update_scan),
@@ -118,7 +119,6 @@ if settings.API_ONLY == '0':
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
         re_path(r'^find/$', find.run, name='find_files'),
-        re_path(r'^generate_downloads/$', generate_downloads.run),
         re_path(r'^manifest_view/$', manifest_view.run),
         # IOS
         re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios_request),

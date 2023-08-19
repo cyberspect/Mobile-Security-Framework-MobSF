@@ -5,6 +5,10 @@ from pathlib import Path
 
 import lief
 
+from mobsf.MobSF.utils import (
+    settings_enabled,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -188,26 +192,34 @@ class Checksec:
 
 def elf_analysis(app_dir: str) -> dict:
     """Perform elf analysis on shared object."""
+    elf = {'elf_analysis': [], 'elf_strings': []}
     try:
-        strings = []
-        elf_list = []
-        logger.info('Binary Analysis Started')
-        libs = Path(app_dir) / 'lib'
-        elf = {'elf_analysis': elf_list, 'elf_strings': strings}
-        if not libs.is_dir():
+        if not settings_enabled('SO_ANALYSIS_ENABLED'):
             return elf
-        for sofile in libs.rglob('*.so'):
-            so_rel = (
-                f'{sofile.parents[1].name}/'
-                f'{sofile.parents[0].name}/'
-                f'{sofile.name}')
-            logger.info('Analyzing %s', so_rel)
-            chk = Checksec(sofile, so_rel)
-            elf_find = chk.checksec()
-            if elf_find:
-                elf_list.append(elf_find)
-                strings.append({so_rel: chk.strings()})
-        return {'elf_analysis': elf_list, 'elf_strings': strings}
+        logger.info('Binary Analysis Started')
+        sdir = Path(app_dir)
+        # Supports APK, SO, AAR and JAR
+        libs = [
+            sdir,
+            sdir / 'lib',
+            sdir / 'libs',
+            sdir / 'jni']
+        for lib_dir in libs:
+            if not lib_dir.is_dir():
+                continue
+            for sofile in lib_dir.rglob('*.so'):
+                so_rel = (
+                    f'{sofile.parents[1].name}/'
+                    f'{sofile.parents[0].name}/'
+                    f'{sofile.name}')
+                logger.info('Analyzing %s', so_rel)
+                chk = Checksec(sofile, so_rel)
+                elf_find = chk.checksec()
+                if elf_find:
+                    elf['elf_analysis'].append(
+                        elf_find)
+                    elf['elf_strings'].append(
+                        {so_rel: chk.strings()})
     except Exception:
         logger.exception('Performing Binary Analysis')
-        return elf
+    return elf

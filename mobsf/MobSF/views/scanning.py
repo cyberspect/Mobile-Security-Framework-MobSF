@@ -110,6 +110,7 @@ def handle_uploaded_file(content, typ, source_content):
 class Scanning(object):
 
     def __init__(self, request):
+<<<<<<< HEAD
         if ('file' in request.FILES):
             self.file = request.FILES['file']
             self.file_name = self.file.name
@@ -156,47 +157,122 @@ class Scanning(object):
         data = self.populate_data_dict()
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
+=======
+        self.file = request.FILES['file']
+        self.file_name = request.FILES['file'].name
+        self.data = {
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': '',
+            'scan_type': '',
+            'file_name': self.file_name,
+        }
+
+    def scan_apk(self):
+        """Android APK."""
+        md5 = handle_uploaded_file(self.file, '.apk')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'apk'
+        add_to_recent_scan(self.data)
+>>>>>>> upstream/master
         logger.info('Performing Static Analysis of Android APK')
-        return data
+        return self.data
 
     def scan_xapk(self):
         """Android XAPK."""
+<<<<<<< HEAD
         self.scan_type = 'xapk'
         data = self.populate_data_dict()
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
+=======
+        md5 = handle_uploaded_file(self.file, '.xapk')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'xapk'
+        add_to_recent_scan(self.data)
+>>>>>>> upstream/master
         logger.info('Performing Static Analysis of Android XAPK base APK')
-        return data
+        return self.data
 
     def scan_apks(self):
         """Android Split APK."""
+<<<<<<< HEAD
         self.scan_type = 'apks'
         data = self.populate_data_dict()
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
+=======
+        md5 = handle_uploaded_file(self.file, '.apk')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'apks'
+        add_to_recent_scan(self.data)
+>>>>>>> upstream/master
         logger.info('Performing Static Analysis of Android Split APK')
-        return data
+        return self.data
+
+    def scan_jar(self):
+        """Java JAR file."""
+        md5 = handle_uploaded_file(self.file, '.jar')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'jar'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Java JAR')
+        return self.data
+
+    def scan_aar(self):
+        """Android AAR file."""
+        md5 = handle_uploaded_file(self.file, '.aar')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'aar'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Android AAR')
+        return self.data
+
+    def scan_so(self):
+        """Shared object file."""
+        md5 = handle_uploaded_file(self.file, '.so')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'so'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Shared Object')
+        return self.data
 
     def scan_zip(self):
         """Android /iOS Zipped Source."""
+<<<<<<< HEAD
         self.scan_type = 'zip'
         data = self.populate_data_dict()
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
+=======
+        md5 = handle_uploaded_file(self.file, '.zip')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'zip'
+        add_to_recent_scan(self.data)
+>>>>>>> upstream/master
         logger.info('Performing Static Analysis of Android/iOS Source Code')
-        return data
+        return self.data
 
     def scan_ipa(self):
         """IOS Binary."""
+<<<<<<< HEAD
         self.scan_type = 'ipa'
         data = self.populate_data_dict()
         data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(data)
+=======
+        md5 = handle_uploaded_file(self.file, '.ipa')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'ipa'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+>>>>>>> upstream/master
         logger.info('Performing Static Analysis of iOS IPA')
-        return data
+        return self.data
 
     def scan_appx(self):
         """Windows appx."""
+<<<<<<< HEAD
         self.scan_type = 'appx'
         data = self.populate_data_dict()
         data['analyzer'] = 'static_analyzer_windows'
@@ -227,3 +303,12 @@ class Scanning(object):
             'cyberspect_scan_id': self.cyberspect_scan_id,
             'rescan': self.rescan,
         }
+=======
+        md5 = handle_uploaded_file(self.file, '.appx')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'appx'
+        self.data['analyzer'] = 'static_analyzer_windows'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Windows APP')
+        return self.data
+>>>>>>> upstream/master

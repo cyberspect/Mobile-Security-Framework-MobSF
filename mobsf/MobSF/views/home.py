@@ -17,7 +17,10 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import (
+    redirect,
+    render,
+)
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
 from django.utils.timezone import utc
@@ -36,6 +39,8 @@ from mobsf.MobSF.utils import (
     sso_email,
     tz,
     utcnow,
+    print_n_send_error_response,
+
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -230,6 +235,16 @@ def about(request):
         'is_admin': is_admin(request),
     }
     template = 'general/about.html'
+    return render(request, template, context)
+
+
+def donate(request):
+    """Donate Route."""
+    context = {
+        'title': 'Donate',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/donate.html'
     return render(request, template, context)
 
 
@@ -574,6 +589,49 @@ def download(request):
         if filename.endswith(('screen/screen.png', '-icon.png')):
             return HttpResponse('')
     return HttpResponse(status=404)
+
+
+def generate_download(request):
+    """Generate downloads for uploaded binaries/source."""
+    try:
+        allowed = ('apk', 'ipa', 'smali', 'java', 'jar', 'aar', 'so')
+        logger.info('Generating Downloads')
+        md5 = request.GET['hash']
+        file_type = request.GET['file_type']
+        match = re.match('^[0-9a-f]{32}$', md5)
+        if (not match
+                or file_type not in allowed):
+            msg = 'Invalid download type or hash'
+            logger.exception(msg)
+            return print_n_send_error_response(request, msg)
+        app_dir = Path(settings.UPLD_DIR) / md5
+        dwd_dir = Path(settings.DWD_DIR)
+        file_name = ''
+        if file_type == 'java':
+            # For Java zipped source code
+            directory = app_dir / 'java_source'
+            dwd_file = dwd_dir / f'{md5}-java'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-java.zip'
+        elif file_type == 'smali':
+            # For Smali zipped source code
+            directory = app_dir / 'smali_source'
+            dwd_file = dwd_dir / f'{md5}-smali'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-smali.zip'
+        elif file_type in ('apk', 'ipa', 'jar', 'aar', 'so'):
+            # Binaries
+            file_name = f'{md5}.{file_type}'
+            src = app_dir / file_name
+            dst = dwd_dir / file_name
+            shutil.copy2(src.as_posix(), dst.as_posix())
+        return redirect(f'/download/{file_name}')
+    except Exception:
+        msg = 'Generating Downloads'
+        logger.exception(msg)
+        return print_n_send_error_response(request, msg)
 
 
 def delete_scan(request, api=False):

@@ -173,6 +173,7 @@
                             </tr>
                         </table>
 
+<<<<<<< HEAD
                         <div class="fileUpload btn btn-default btn-lg" id="but">
                             <span class="fas fa-cloud-upload-alt"></span>
                             Upload &amp; Analyze
@@ -188,6 +189,15 @@
                         <p>&copy; {% now "Y" %} Cyberspect - {{ version }} - {{email}}</p>
                     </div>
                 </div>
+=======
+                  <div class="inner">
+                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">REST API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
+                         href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
+                     </br>
+                     <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
+                  </div>
+               </div>
+>>>>>>> upstream/master
             </div>
         </div>
     </div>
@@ -198,6 +208,7 @@
         </div>
     </div>
 
+<<<<<<< HEAD
     <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
     <script src="{% static "others/js/notify.min.js" %}"></script>
     <script>
@@ -217,6 +228,30 @@
             }, false);
             xhr.send();
         }
+=======
+        <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+        <script src="{% static "others/js/notify.min.js" %}"></script>
+        <!-- Bootstrap 4 -->
+        <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
+      <script>
+            let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
+            // Result View
+            function load_result(url){
+                hide_loader();
+                var xhr = new XMLHttpRequest()
+                xhr.open('GET', url, true)
+                xhr.addEventListener("loadstart", function(evt){
+                    Notifier.snackbar({
+                        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
+                        duration: 10,
+                    });
+                })
+                xhr.addEventListener("load", function (evt) {
+                    window.location.href = window.location.href + url;
+                }, false);
+                xhr.send();
+            }
+>>>>>>> upstream/master
 
         function show_loader() {
             var loadingOverlay = document.querySelector('.loading');
@@ -319,12 +354,24 @@
                 _('status').innerText = "Please upload APK/APKS/XAPK/IPA/ZIP/APPX only!";
                 return false;
             }
+<<<<<<< HEAD
             return true;
         }
         // Is allowed mimetype
         function isValidMime(file_mime) {
             if (file_mime.length < 1)
                 // bypass if mime is not available
+=======
+          // Is valid file extensions
+          function isValidExt(file_name){
+                var val = file_name.toLowerCase();
+                var regex = new RegExp("^(.{1,300}?)\.(ipa|apk|apks|xapk|jar|aar|so|zip|appx)$");
+                val = val.replace(/^.*[\\\/]/, '');
+                if (!(regex.test(val))) {
+                    _('status').innerText = "Please upload APK/APKS/XAPK/JAR/AAR/SO/IPA/ZIP/APPX only!";
+                    return false;
+                }
+>>>>>>> upstream/master
                 return true;
             var supported = [{% for mime in mimes %} '{{mime}}', {% endfor %}];
         if (supported.indexOf(file_mime) > -1)
@@ -370,7 +417,69 @@
             } catch (e) {
                 alert("Error:" + e);
             }
+<<<<<<< HEAD
         }
+=======
+           }
+         
+           function handleFiles(files) {
+               files = [...files]
+               files.forEach(uploadFile)
+           }
+         
+           // Full Screen Drag & Drop File Upload
+           var lastTarget = null;
+           function isFile(evt) {
+               var dt = evt.dataTransfer;
+         
+               for (var i = 0; i < dt.types.length; i++) {
+                   if (dt.types[i] === "Files") {
+                       return true;
+                   }
+               }
+               return false;
+           }
+         
+           window.addEventListener("dragenter", function (e) {
+               if (isFile(e)) {
+                   lastTarget = e.target;
+                   document.querySelector("#drop").style.visibility = "";
+                   document.querySelector("#drop").style.opacity = 1;
+                   document.querySelector("#textnode").style.fontSize = "48px";
+               }
+           });
+         
+           window.addEventListener("dragleave", function (e) {
+               e.preventDefault();
+               if (e.target === document || e.target === lastTarget) {
+                   document.querySelector("#drop").style.visibility = "hidden";
+                   document.querySelector("#drop").style.opacity = 0;
+                   document.querySelector("#textnode").style.fontSize = "42px";
+               }
+           });
+         
+           window.addEventListener("dragover", function (e) {
+               e.preventDefault();
+           });
+         
+           window.addEventListener("drop", function (e) {
+               e.preventDefault();
+               document.querySelector("#drop").style.visibility = "hidden";
+               document.querySelector("#drop").style.opacity = 0;
+               document.querySelector("#textnode").style.fontSize = "42px";
+               if(e.dataTransfer.files.length > 0) {
+                if (document.location.host === 'mobsf.live'){
+                    if (confirm(warning) == true) {
+                        handleFiles(e.dataTransfer.files);
+                    } else {
+                        return;
+                    }
+                } else {
+                    handleFiles(e.dataTransfer.files);
+                }
+               }
+           });
+>>>>>>> upstream/master
 
         function checkRequired() {
             if (!_('appname').value) {
@@ -406,7 +515,22 @@
                     for (i = 0; i < data.length; i++) {
                         options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
                     }
+<<<<<<< HEAD
                     _('division').innerHTML = options;
+=======
+                    var files = _("uploadFile").files;
+                    if (document.location.host === 'mobsf.live'){
+                        if (confirm(warning) == true) {
+                            _("uploadFile").style.display = "none";
+                            handleFiles(files);
+                        } else {
+                            return;
+                        }
+                    } else {
+                        _("uploadFile").style.display = "none";
+                        handleFiles(files);
+                    }
+>>>>>>> upstream/master
                 });
         }
 
@@ -471,8 +595,14 @@
                     upload(_("uploadFile").files[0], _("uploadSourceFile").files[0], extradata);
                 }
             });
+<<<<<<< HEAD
         });
     </script>
 </body>
 
 </html>
+=======
+      </script>
+   </body>
+</html>
+>>>>>>> upstream/master

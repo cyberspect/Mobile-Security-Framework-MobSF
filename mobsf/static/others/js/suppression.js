@@ -133,6 +133,7 @@ function get_files(type, files){
 }
 
 function list_suppressions(){
+<<<<<<< HEAD
   action(document.location.origin + list_suppressions_url, { checksum: hash }, function(json) {
     if (json.status==="ok") {
 
@@ -149,5 +150,25 @@ function list_suppressions(){
     } else {
       Swal.fire("Failed to list Suppression rules")
     }
+=======
+  $(document).ready(function () {
+    action(document.location.origin + list_suppressions_url, { checksum: hash }, function(json) {
+      if (json.status==="ok") {
+
+        var tbl = $('#sup_table').DataTable();
+        tbl.clear().draw();
+          $(function() {
+              $.each(json.message, function(i, item) {
+                typ = item.SUPPRESS_TYPE
+                rule_ids = get_rules(typ, item.SUPPRESS_RULE_ID)
+                files = get_files(typ, item.SUPPRESS_FILES)
+                tbl.row.add([typ, rule_ids, files]).draw(false)
+              });
+          });
+      } else {
+        Swal.fire("Failed to list Suppression rules")
+      }
+    });
+>>>>>>> upstream/master
   });
 }

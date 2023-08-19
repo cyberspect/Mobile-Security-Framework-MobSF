@@ -15,7 +15,10 @@ from django.conf import settings
 from django.shortcuts import render
 from django.db.models import ObjectDoesNotExist
 
-from mobsf.DynamicAnalyzer.views.android.environment import Environment
+from mobsf.DynamicAnalyzer.views.android.environment import (
+    ANDROID_API_SUPPORTED,
+    Environment,
+)
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
 )
@@ -75,10 +78,12 @@ def dynamic_analysis(request, api=False):
         try:
             if identifier:
                 env = Environment(identifier)
+                env.connect()
                 device_packages = env.get_device_packages()
-                pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-                with pkg_file.open('w', encoding='utf-8') as target:
-                    dump(device_packages, target)
+                if device_packages:
+                    pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+                    with pkg_file.open('w', encoding='utf-8') as target:
+                        dump(device_packages, target)
                 and_ver = env.get_android_version()
                 and_sdk = env.get_android_sdk()
         except Exception:
@@ -87,6 +92,7 @@ def dynamic_analysis(request, api=False):
                    'identifier': identifier,
                    'android_version': and_ver,
                    'android_sdk': and_sdk,
+                   'android_supported': ANDROID_API_SUPPORTED,
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
                    'settings_loc': get_config_loc(),
@@ -310,8 +316,6 @@ def trigger_static_analysis(request, checksum):
         try:
             identifier = get_device()
         except Exception:
-            pass
-        if not identifier:
             err = 'Cannot connect to Android Runtime'
             return error_response(request, err)
         env = Environment(identifier)

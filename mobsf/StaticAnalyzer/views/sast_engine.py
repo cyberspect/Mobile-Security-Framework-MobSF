@@ -4,6 +4,10 @@ import logging
 
 from libsast import Scanner
 
+from mobsf.MobSF.utils import (
+    settings_enabled,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,7 +30,10 @@ def scan(rule, extensions, paths, ignore_paths=None):
 
 def niap_scan(rule, extensions, paths, apath, ignore_paths=None):
     """NIAP scan."""
+    if not settings_enabled('NIAP_ENABLED'):
+        return {}
     try:
+        logger.info('Running NIAP Analyzer')
         if not apath:
             apath = ''
         options = {

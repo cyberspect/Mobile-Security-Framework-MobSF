@@ -38,6 +38,7 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
     get_avg_cvss,
     hash_gen,
+    strings_and_entropies,
     unzip,
     update_scan_timestamp,
 )
@@ -223,6 +224,11 @@ def static_analyzer_ios(request_data, api=False):
                         infoplist_dict['plist_xml'])
                     code_analysis_dic = ios_source_analysis(
                         app_dict['app_dir'])
+                    ios_strs = strings_and_entropies(
+                        Path(app_dict['app_dir']),
+                        ['.swift', '.m', '.h', '.plist'])
+                    if ios_strs['secrets']:
+                        app_dict['secrets'].extend(list(ios_strs['secrets']))
                     # Get App Icon
                     app_dict['icon_found'] = get_icon_source(
                         app_dict['md5_hash'],
@@ -240,7 +246,7 @@ def static_analyzer_ios(request_data, api=False):
                         'checksec': {},
                         'libraries': [],
                         'bin_code_analysis': {},
-                        'strings': [],
+                        'strings': list(ios_strs['strings']),
                         'bin_info': {},
                         'bin_type': code_analysis_dic['source_type'],
                     }
