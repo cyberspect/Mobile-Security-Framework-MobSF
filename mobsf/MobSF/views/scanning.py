@@ -166,7 +166,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
-        return self.data
+        return data
 
     def scan_apks(self):
         """Android Split APK."""
@@ -175,7 +175,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
-        return self.data
+        return data
 
     def scan_jar(self):
         """Java JAR file."""
@@ -184,7 +184,7 @@ class Scanning(object):
         self.data['scan_type'] = 'jar'
         add_to_recent_scan(self.data)
         logger.info('Performing Static Analysis of Java JAR')
-        return self.data
+        return data
 
     def scan_aar(self):
         """Android AAR file."""
@@ -202,7 +202,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
-        return self.data
+        return data
 
     def scan_ipa(self):
         """IOS Binary."""
@@ -211,7 +211,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
-        return self.data
+        return data
 
     def scan_appx(self):
         """Windows appx."""
