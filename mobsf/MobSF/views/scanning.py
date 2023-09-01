@@ -157,7 +157,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
-        return self.data
+        return data
 
     def scan_xapk(self):
         """Android XAPK."""

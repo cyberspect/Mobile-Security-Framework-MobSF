@@ -35,4 +35,4 @@ decorator==4.4.2 # pyup: ignore
 boto3>=1.26.0
 PyJWT>=2.6.0
 siphash>=0.0.1
-django4-background-tasks>=1.2.7
+django4-background-tasks>=1.2.8
