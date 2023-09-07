@@ -305,6 +305,10 @@ def static_analyzer(request_data, api=False):
                 context['template'] = \
                     'static_analysis/android_binary_analysis.html'
                 return context
+            elif typ == 'jar':
+                return jar_analysis(request_data, app_dic, rescan, api)
+            elif typ == 'aar':
+                return aar_analysis(request_data, app_dic, rescan, api)
             elif typ == 'zip':
                 ret = (
                     '/static_analyzer_ios/?file_name='

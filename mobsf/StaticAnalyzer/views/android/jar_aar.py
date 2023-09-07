@@ -7,8 +7,8 @@ from django.shortcuts import render
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF.utils import (
-    file_size,
     error_response,
+    file_size,    
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
