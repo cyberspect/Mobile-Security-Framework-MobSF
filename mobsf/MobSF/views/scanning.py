@@ -179,19 +179,19 @@ class Scanning(object):
 
     def scan_jar(self):
         """Java JAR file."""
-        md5 = handle_uploaded_file(self.file, '.jar')
-        self.data['hash'] = md5
-        self.data['scan_type'] = 'jar'
-        add_to_recent_scan(self.data)
+        self.scan_type = 'jar'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
+        add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Java JAR')
         return data
 
     def scan_aar(self):
         """Android AAR file."""
-        md5 = handle_uploaded_file(self.file, '.aar')
-        self.data['hash'] = md5
-        self.data['scan_type'] = 'aar'
-        add_to_recent_scan(self.data)
+        self.scan_type = 'aar'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer'
+        add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android AAR')
         return self.data
 

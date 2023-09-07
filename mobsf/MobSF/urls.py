@@ -17,7 +17,6 @@ from mobsf.StaticAnalyzer.views.common import (
     pdf,
     shared_func,
     suppression,
-    suppression,
 )
 from mobsf.StaticAnalyzer.views.android import (
     find,
