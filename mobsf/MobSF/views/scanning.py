@@ -70,7 +70,7 @@ def add_to_recent_scan(data):
         raise ex
 
 
-def handle_uploaded_file(content, typ, source_content):
+def handle_uploaded_file(content, extension, source_content):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -83,10 +83,10 @@ def handle_uploaded_file(content, typ, source_content):
         for chunk in content.chunks():
             md5.update(chunk)
     md5sum = md5.hexdigest()
-    local_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
-    if not os.path.exists(local_dir):
-        os.makedirs(local_dir)
-    with open(local_dir + md5sum + typ, 'wb+') as destination:
+    anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
+    if not os.path.exists(anal_dir):
+        os.makedirs(anal_dir)
+    with open(f'{anal_dir}{md5sum}{extension}', 'wb+') as destination:
         if bfr:
             content.seek(0, 0)
             while chunk := content.read(8192):
@@ -157,7 +157,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
-        return data
+        return self.data
 
     def scan_xapk(self):
         """Android XAPK."""
@@ -166,7 +166,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
-        return data
+        return self.data
 
     def scan_apks(self):
         """Android Split APK."""
@@ -175,7 +175,32 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
-        return data
+        return self.data
+
+    def scan_jar(self):
+        """Java JAR file."""
+        self.data['scan_type'] = 'jar'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Java JAR')
+        return self.data
+
+    def scan_aar(self):
+        """Android AAR file."""
+        md5 = handle_uploaded_file(self.file, '.aar')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'aar'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Android AAR')
+        return self.data
+
+    def scan_so(self):
+        """Shared object file."""
+        md5 = handle_uploaded_file(self.file, '.so')
+        self.data['hash'] = md5
+        self.scan_type = 'so'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Shared Object')
+        return self.data
 
     def scan_jar(self):
         """Java JAR file."""
@@ -195,6 +220,12 @@ class Scanning(object):
         logger.info('Performing Static Analysis of Android AAR')
         return self.data
 
+def scan_so(self):
+        """Shared object file."""
+        self.data['scan_type'] = 'so'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Shared Object')
+        return self.data
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         self.scan_type = 'zip'
@@ -202,7 +233,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
-        return data
+        return self.data
 
     def scan_ipa(self):
         """IOS Binary."""
@@ -211,7 +242,17 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
-        return data
+        return self.data
+
+    def scan_a(self):
+        """Scan static library."""
+        md5 = handle_uploaded_file(self.file, '.a')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'a'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+        logger.info('Performing Static Analysis of Static Library')
+        return self.data
 
     def scan_appx(self):
         """Windows appx."""
