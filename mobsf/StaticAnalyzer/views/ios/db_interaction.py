@@ -2,9 +2,9 @@
 import logging
 
 from django.conf import settings
+from django.utils import timezone
 
 from mobsf.MobSF.utils import python_dict, python_list
-from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -185,6 +185,7 @@ def save_or_update(update_type,
             if not db_entry.exists():
                 StaticAnalyzerIOS.objects.create(**values)
         else:
+            values['TIMESTAMP'] = timezone.now()
             StaticAnalyzerIOS.objects.filter(
                 MD5=app_dict['md5_hash']).update(**values)
     except Exception:
@@ -213,7 +214,6 @@ def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
             code_dict,
             bin_dict,
             all_files)
-        update_scan_timestamp(app_dict['md5_hash'])
     else:
         logger.info('Saving to Database')
         save_or_update(

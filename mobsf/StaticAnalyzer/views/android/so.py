@@ -153,8 +153,7 @@ def so_analysis(request, app_dic, rescan, api):
         context['virus_total'] = vt.get_result(
             app_dic['app_path'],
             app_dic['md5'])
-    template = 'static_analysis/android_binary_analysis.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    context['template'] = \
+        'static_analysis/android_binary_analysis.html'
+    return context
+

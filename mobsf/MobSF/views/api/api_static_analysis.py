@@ -412,20 +412,17 @@ def scan(request_data):
         # APK, Android ZIP and iOS ZIP
         response = None
         scan_type = request_data['scan_type']
-        if scan_type in {'xapk', 'apk', 'apks', 'zip'}:
+        # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
+        if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
             resp = static_analyzer(request_data, True)
             if 'type' in resp:
-                # For now it's only ios_zip
-                if isinstance(request_data, QueryDict):
-                    request_data._mutable = True
-                request_data['scan_type'] = 'ios'
                 resp = static_analyzer_ios(request_data, True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
                 response = make_api_response(resp, 200)
         # IPA
-        elif scan_type == 'ipa':
+        elif scan_type in {'ipa', 'dylib', 'a'}:
             resp = static_analyzer_ios(request_data, True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
@@ -437,7 +434,7 @@ def scan(request_data):
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
-                response = make_api_response(resp, 200)
+                response = make_api_response(resp, 200)                
 
         # Record scan end time and failure
         if response and response.status_code == 500:

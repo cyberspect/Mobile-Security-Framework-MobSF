@@ -8,8 +8,8 @@ from django.shortcuts import render
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF.utils import (
+    error_response,
     file_size,
-    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     firebase_analysis,
@@ -69,7 +69,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         app_dic['files'] = unzip(app_dic['app_path'], app_dic['app_dir'])
         logger.info('%s Extracted', analysis_type.upper())
         if not app_dic['files']:
-            return print_n_send_error_response(
+            return error_response(
                 request,
                 f'{analysis_type.upper()} file is invalid or corrupt',
                 api)
@@ -208,11 +208,9 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         context['virus_total'] = vt.get_result(
             app_dic['app_path'],
             app_dic['md5'])
-    template = 'static_analysis/android_binary_analysis.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    context['template'] = \
+        'static_analysis/android_binary_analysis.html'
+    return context    
 
 
 def jar_analysis(request, app_dic, rescan, api):

@@ -20,6 +20,7 @@ from lxml import etree
 
 from django.conf import settings
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
@@ -28,7 +29,6 @@ from mobsf.MobSF.utils import (
     get_config_loc,
     is_admin,
 )
-from mobsf.MobSF.views.home import update_scan_timestamp
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
 from mobsf.StaticAnalyzer.tools.strings import strings_util
@@ -121,7 +121,6 @@ def staticanalyzer_windows(request_data, api=False):
                                        app_dic,
                                        xml_dic,
                                        bin_an_dic)
-                        update_scan_timestamp(app_dic['md5'])
                     else:
                         logger.info('Saving to Database')
                         save_or_update('save',
@@ -138,8 +137,6 @@ def staticanalyzer_windows(request_data, api=False):
                         os.path.join(app_dic['app_dir'], app_dic[
                                      'md5']) + '.appx',
                         app_dic['md5'])
-                context['logo'] = os.getenv('LOGO',
-                                            '../static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/windows_binary_analysis.html'
                 return context

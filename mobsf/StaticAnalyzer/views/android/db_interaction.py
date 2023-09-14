@@ -3,9 +3,9 @@ import logging
 
 from django.conf import settings
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from mobsf.MobSF.utils import python_dict, python_list
-from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -220,6 +220,7 @@ def save_or_update(update_type,
             if not db_entry.exists():
                 StaticAnalyzerAndroid.objects.create(**values)
         else:
+            values['TIMESTAMP'] = timezone.now()
             StaticAnalyzerAndroid.objects.filter(
                 MD5=app_dic['md5']).update(**values)
     except Exception:
@@ -252,7 +253,6 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
             quark,
             trk,
         )
-        update_scan_timestamp(app['md5'])
     else:
         logger.info('Saving to Database')
         save_or_update(

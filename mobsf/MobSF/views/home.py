@@ -171,36 +171,33 @@ class Upload(object):
         return api_response, 200
 
     def upload(self):
-        request = self.request
-        scanning = Scanning(request)
-        content_type = self.file.content_type
-        file_name = self.file.name
+        content_type = self.scan.file.content_type
+        file_name = self.scan.file.name
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
-        if self.file_type.is_apk():
-            return scanning.scan_apk()
-        elif self.file_type.is_xapk():
-            return scanning.scan_xapk()
-        elif self.file_type.is_apks():
-            return scanning.scan_apks()
-        elif self.file_type.is_jar():
-            return scanning.scan_jar()
-        elif self.file_type.is_aar():
-            return scanning.scan_aar()
-        elif self.file_type.is_so():
-            return scanning.scan_so()
-        elif self.file_type.is_zip():
-            return scanning.scan_zip()
-        elif self.file_type.is_ipa():
-            return scanning.scan_ipa()
-        elif self.file_type.is_dylib():
-            return scanning.scan_dylib()
-        elif self.file_type.is_a():
-            return scanning.scan_a()
-        elif self.file_type.is_appx():
-            return scanning.scan_appx()
+        if self.scan.file_type.is_apk():
+            return self.scan.scan_apk()
+        elif self.scan.file_type.is_xapk():
+            return self.scan.scan_xapk()
+        elif self.scan.file_type.is_apks():
+            return self.scan.scan_apks()
+        elif self.scan.file_type.is_jar():
+            return self.scan.scan_jar()
+        elif self.scan.file_type.is_aar():
+            return self.scan.scan_aar()
+        elif self.scan.file_type.is_so():
+            return self.scan.scan_so()
+        elif self.scan.file_type.is_zip():
+            return self.scan.scan_zip()
+        elif self.scan.file_type.is_ipa():
+            return self.scan.scan_ipa()
+        elif self.scan.file_type.is_dylib():
+            return self.scan.scan_dylib()
+        elif self.scan.file_type.is_a():
+            return self.scan.scan_a()
+        elif self.scan.file_type.is_appx():
+            return self.scan.scan_appx()
 
-
-def track_failure(self, error_message):
+    def track_failure(self, error_message):
         if self.scan.cyberspect_scan_id == 0:
             return
         data = {
@@ -897,9 +894,3 @@ class RecentScans(object):
             logger.error(exmsg)
             data = {'error': str(exp)}
         return data
-
-
-def update_scan_timestamp(scan_hash):
-    # Update the last scan time.
-    tms = timezone.now()
-    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)

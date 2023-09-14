@@ -270,26 +270,21 @@ def static_analyzer(request_data, api=False):
                     context['code_analysis'])
                 context['dynamic_analysis_done'] = is_file_exists(
                     os.path.join(app_dic['app_dir'], 'logcat.txt'))
-                context['logo'] = os.getenv('LOGO',
-                                            '/static/img/mobsf_logo.png')
-
                 context['virus_total'] = None
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
                     context['virus_total'] = vt.get_result(
                         app_dic['app_path'],
                         app_dic['md5'])
-                template = 'static_analysis/android_binary_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request, template, context)
+                context['template'] = \
+                    'static_analysis/android_binary_analysis.html'                
+                return context                
             elif typ == 'jar':
-                return jar_analysis(request, app_dic, rescan, api)
+                return jar_analysis(request_data, app_dic, rescan, api)
             elif typ == 'aar':
-                return aar_analysis(request, app_dic, rescan, api)
+                return aar_analysis(request_data, app_dic, rescan, api)
             elif typ == 'so':
-                return so_analysis(request, app_dic, rescan, api)
+                return so_analysis(request_data, app_dic, rescan, api)
             elif typ == 'zip':
                 ret = (
                     '/static_analyzer_ios/?file_name='
@@ -457,8 +452,6 @@ def static_analyzer(request_data, api=False):
                 context['appsec'] = get_android_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
-                context['logo'] = os.getenv('LOGO',
-                                            '/static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/android_source_analysis.html'
                 return context
@@ -532,55 +525,3 @@ def move_to_parent(inside, app_dir):
         full_path = os.path.join(inside, x)
         shutil.move(full_path, app_dir)
     shutil.rmtree(inside)
-
-
-def get_app_name(app_path, app_dir, is_apk):
-    """Get app name."""
-    if is_apk:
-        a = apk.APK(app_path)
-        real_name = a.get_app_name()
-        return real_name
-    else:
-        strings_path = os.path.join(app_dir,
-                                    'app/src/main/res/values/')
-        eclipse_path = os.path.join(app_dir,
-                                    'res/values/')
-        if os.path.exists(strings_path):
-            strings_dir = strings_path
-        elif os.path.exists(eclipse_path):
-            strings_dir = eclipse_path
-        else:
-            strings_dir = ''
-    if not os.path.exists(strings_dir):
-        logger.warning('Cannot find values folder.')
-        return ''
-    return get_app_name_from_values_folder(strings_dir)
-
-
-def get_app_name_from_values_folder(values_dir):
-    """Get all the files in values folder and checks them for app_name."""
-    files = [f for f in os.listdir(values_dir) if
-             (os.path.isfile(os.path.join(values_dir, f)))
-             and (f.endswith('.xml'))]
-    for f in files:
-        # Look through each file, searching for app_name.
-        app_name = get_app_name_from_file(os.path.join(values_dir, f))
-        if app_name:
-            return app_name  # we found an app_name, lets return it.
-    return ''  # Didn't find app_name, returning empty string.
-
-
-def get_app_name_from_file(file_path):
-    """Looks for app_name in specific file."""
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = f.read()
-
-    app_name_match = re.search(r'<string name=\"app_name\">(.*)</string>',
-                               data)
-
-    if (not app_name_match) or (len(app_name_match.group()) <= 0):
-        # Did not find app_name in current file.
-        return ''
-
-    # Found app_name!
-    return app_name_match.group(app_name_match.lastindex)

@@ -154,59 +154,30 @@ class Scanning(object):
         """Android APK."""
         self.scan_type = 'apk'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
-        return self.data
+        return data
 
     def scan_xapk(self):
         """Android XAPK."""
         self.scan_type = 'xapk'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
-        return self.data
+        return data
 
     def scan_apks(self):
         """Android Split APK."""
         self.scan_type = 'apks'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
-        return self.data
-
-    def scan_jar(self):
-        """Java JAR file."""
-        self.data['scan_type'] = 'jar'
-        add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Java JAR')
-        return self.data
-
-    def scan_aar(self):
-        """Android AAR file."""
-        md5 = handle_uploaded_file(self.file, '.aar')
-        self.data['hash'] = md5
-        self.data['scan_type'] = 'aar'
-        add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Android AAR')
-        return self.data
-
-    def scan_so(self):
-        """Shared object file."""
-        md5 = handle_uploaded_file(self.file, '.so')
-        self.data['hash'] = md5
-        self.scan_type = 'so'
-        add_to_recent_scan(self.data)
-        logger.info('Performing Static Analysis of Shared Object')
-        return self.data
+        return data
 
     def scan_jar(self):
         """Java JAR file."""
         self.scan_type = 'jar'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Java JAR')
         return data
@@ -215,25 +186,25 @@ class Scanning(object):
         """Android AAR file."""
         self.scan_type = 'aar'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android AAR')
-        return self.data
+        return data
 
-def scan_so(self):
+    def scan_so(self):
         """Shared object file."""
-        self.data['scan_type'] = 'so'
-        add_to_recent_scan(self.data)
+        self.scan_type = 'so'
+        data = self.populate_data_dict()
+        add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Shared Object')
-        return self.data
+        return data
+
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         self.scan_type = 'zip'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
-        return self.data
+        return data
 
     def scan_ipa(self):
         """IOS Binary."""
@@ -242,15 +213,23 @@ def scan_so(self):
         data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
-        return self.data
+        return data
+
+    def scan_dylib(self):
+        """IOS Dylib."""
+        self.scan_type = 'dylib'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of iOS IPA')
+        return data
 
     def scan_a(self):
         """Scan static library."""
-        md5 = handle_uploaded_file(self.file, '.a')
-        self.data['hash'] = md5
-        self.data['scan_type'] = 'a'
-        self.data['analyzer'] = 'static_analyzer_ios'
-        add_to_recent_scan(self.data)
+        self.scan_type = 'a'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Static Library')
         return self.data
 
@@ -268,6 +247,7 @@ def scan_so(self):
                                         self.source_file)
         self.short_hash = get_siphash(self.md5)
         return {
+            'analyzer': 'static_analyzer',
             'hash': self.md5,
             'short_hash': self.short_hash,
             'scan_type': self.scan_type,

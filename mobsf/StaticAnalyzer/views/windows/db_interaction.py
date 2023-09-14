@@ -114,6 +114,7 @@ def save_or_update(update_type,
             if not db_entry.exists():
                 StaticAnalyzerWindows.objects.create(**values)
         else:
+            values['TIMESTAMP'] = timezone.now()
             StaticAnalyzerWindows.objects.filter(
                 MD5=app_dic['md5']).update(**values)
     except Exception:

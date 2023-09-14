@@ -131,8 +131,8 @@ def static_analyzer_ios(request_data, api=False):
                     else:
                         msg = ('IPA is malformed! '
                                'MobSF cannot find Payload directory')
-                        return print_n_send_error_response(
-                            request,
+                        return error_response(
+                            request_data,
                             msg,
                             api)
                     app_dict['bin_dir'] = app_dict['bin_dir'].as_posix() + '/'
@@ -275,16 +275,16 @@ def static_analyzer_ios(request_data, api=False):
                 if api:
                     return context
                 else:
-                    return render(request, template, context)
+                    return render(request_data, template, context)
             else:
                 msg = ('File Type not supported, '
                        'Only IPA, A and DYLIB files are supported')
-                return print_n_send_error_response(request, msg, api)
+                return error_response(request_data, msg, api)
         else:
             msg = 'Hash match failed or Invalid file extension or file type'
-            return print_n_send_error_response(request, msg, api)
+            return error_response(request_data, msg, api)
     except Exception as exp:
         logger.exception('Error Performing Static Analysis')
         msg = str(exp)
         exp_doc = exp.__doc__
-        return print_n_send_error_response(request, msg, api, exp_doc)
+        return error_response(request_data, msg, api, exp_doc)

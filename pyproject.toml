@@ -56,7 +56,11 @@ svgutils = "0.3.4"
 arpy = "2.3.0"
 apksigtool = "0.1.0"
 tzdata = "^2023.3"
-
+# Cyberspect specific dependencies
+boto3 = ">=1.28.48"
+PyJWT = ">=2.8.0"
+siphash = ">=0.0.1"
+django4-background-tasks = ">=1.2.8"
 
 [build-system]
 requires = ["poetry-core"]
