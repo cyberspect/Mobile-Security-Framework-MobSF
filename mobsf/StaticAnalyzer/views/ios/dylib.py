@@ -148,8 +148,5 @@ def dylib_analysis(request, app_dict, rescan, api):
             app_dict['md5_hash'])
     context['appsec'] = {}
     context['average_cvss'] = None
-    template = 'static_analysis/ios_binary_analysis.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    context['template'] = 'static_analysis/ios_binary_analysis.html'
+    return context

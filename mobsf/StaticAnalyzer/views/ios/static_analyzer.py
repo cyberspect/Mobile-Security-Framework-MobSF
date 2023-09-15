@@ -197,11 +197,8 @@ def static_analyzer_ios(request_data, api=False):
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['binary_analysis'])
-                template = 'static_analysis/ios_binary_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request_data, template, context)
+                context['template'] = 'static_analysis/ios_binary_analysis.html'
+                return context
             elif file_type == 'dylib':
                 return dylib_analysis(request_data, app_dict, rescan, api)
             elif file_type == 'a':
@@ -270,11 +267,8 @@ def static_analyzer_ios(request_data, api=False):
                 context['appsec'] = get_ios_dashboard(context, True)
                 context['average_cvss'] = get_avg_cvss(
                     context['code_analysis'])
-                template = 'static_analysis/ios_source_analysis.html'
-                if api:
-                    return context
-                else:
-                    return render(request_data, template, context)
+                context['template'] = 'static_analysis/ios_source_analysis.html'
+                return context
             else:
                 msg = ('File Type not supported, '
                        'Only IPA, A and DYLIB files are supported')
