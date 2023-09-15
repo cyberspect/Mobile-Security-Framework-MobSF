@@ -27,7 +27,6 @@ from mobsf.MobSF.utils import (
     error_response,
     is_md5,
     upstream_proxy,
-    utcnow,
 )
 from mobsf.StaticAnalyzer.views.comparer import (
     generic_compare,
