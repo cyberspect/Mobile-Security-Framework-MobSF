@@ -231,7 +231,7 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Static Library')
-        return self.data
+        return data
 
     def scan_appx(self):
         """Windows appx."""
