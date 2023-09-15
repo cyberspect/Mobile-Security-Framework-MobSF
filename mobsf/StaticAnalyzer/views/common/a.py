@@ -8,7 +8,6 @@ import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 
 from django.conf import settings
-from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     file_size,
@@ -168,5 +167,5 @@ def a_analysis(request, app_dict, rescan, api):
             app_dict['md5_hash'])
     context['appsec'] = {}
     context['average_cvss'] = None
-    context['template'] = 'static_analysis/ios_binary_analysis.html'    
+    context['template'] = 'static_analysis/ios_binary_analysis.html'
     return context
