@@ -33,7 +33,6 @@ from mobsf.MobSF.utils import (
     is_path_traversal,
     is_safe_path,
     key,
-    error_response,
     read_sqlite,
 )
 

@@ -96,7 +96,7 @@ def handle_uploaded_file(content, extension, source_content):
                 destination.write(chunk)
     if (source_content):
         bfr = isinstance(source_content, io.BufferedReader)
-        with open(local_dir + md5sum + typ + '.src', 'wb+') as f:
+        with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:
             if bfr:
                 source_content.seek(0, 0)
                 while chunk := source_content.read(8192):

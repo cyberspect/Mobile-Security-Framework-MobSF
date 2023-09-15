@@ -168,7 +168,7 @@ def static_analyzer(request_data, api=False):
                     if not app_dic['files']:
                         # Can't Analyze APK, bail out.
                         return error_response(
-                            request,
+                            request_data,
                             'APK file is invalid or corrupt',
                             api)
                     app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
@@ -277,8 +277,8 @@ def static_analyzer(request_data, api=False):
                         app_dic['app_path'],
                         app_dic['md5'])
                 context['template'] = \
-                    'static_analysis/android_binary_analysis.html'                
-                return context                
+                    'static_analysis/android_binary_analysis.html'
+                return context
             elif typ == 'jar':
                 return jar_analysis(request_data, app_dic, rescan, api)
             elif typ == 'aar':

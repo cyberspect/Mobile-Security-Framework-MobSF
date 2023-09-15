@@ -254,12 +254,6 @@ def get_avg_cvss(findings):
     return avg_cvss
 
 
-def update_scan_timestamp(scan_hash):
-    # Update the last scan time.
-    tms = utcnow()
-    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
-
-
 def open_firebase(url):
     # Detect Open Firebase Database
     try:

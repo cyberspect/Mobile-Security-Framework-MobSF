@@ -20,7 +20,6 @@ from lxml import etree
 
 from django.conf import settings
 from django.shortcuts import render
-from django.utils import timezone
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (

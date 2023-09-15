@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 from django.conf import settings
-from django.shortcuts import render
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -210,7 +209,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             app_dic['md5'])
     context['template'] = \
         'static_analysis/android_binary_analysis.html'
-    return context    
+    return context
 
 
 def jar_analysis(request, app_dic, rescan, api):

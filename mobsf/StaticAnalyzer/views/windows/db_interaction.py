@@ -2,6 +2,7 @@
 import logging
 
 from django.conf import settings
+from django.utils import timezone
 
 from mobsf.MobSF.utils import python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows

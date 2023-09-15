@@ -1,6 +1,5 @@
 # -*- coding: utf_8 -*-
 """iOS Static Code Analysis."""
-import os
 import logging
 import re
 from pathlib import Path
@@ -202,11 +201,11 @@ def static_analyzer_ios(request_data, api=False):
                 if api:
                     return context
                 else:
-                    return render(request, template, context)
+                    return render(request_data, template, context)
             elif file_type == 'dylib':
-                return dylib_analysis(request, app_dict, rescan, api)
+                return dylib_analysis(request_data, app_dict, rescan, api)
             elif file_type == 'a':
-                return a_analysis(request, app_dict, rescan, api)
+                return a_analysis(request_data, app_dict, rescan, api)
             elif file_type == 'ios':
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])

@@ -17,7 +17,6 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.utils import timezone
 from django.shortcuts import (
     redirect,
     render,
@@ -613,7 +612,7 @@ def generate_download(request):
                 or file_type not in binary + source):
             msg = 'Invalid download type or hash'
             logger.exception(msg)
-            return print_n_send_error_response(request, msg)
+            return error_response(request, msg)
         app_dir = Path(settings.UPLD_DIR) / md5
         dwd_dir = Path(settings.DWD_DIR)
         file_name = ''
@@ -641,7 +640,7 @@ def generate_download(request):
     except Exception:
         msg = 'Generating Downloads'
         logger.exception(msg)
-        return print_n_send_error_response(request, msg)
+        return error_response(request, msg)
 
 
 def delete_scan(request, api=False):

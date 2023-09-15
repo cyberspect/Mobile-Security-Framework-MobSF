@@ -3,7 +3,7 @@
 import logging
 import traceback as tb
 
-from django.http import HttpResponse, QueryDict
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.utils import make_api_response, utcnow
@@ -434,7 +434,7 @@ def scan(request_data):
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
-                response = make_api_response(resp, 200)                
+                response = make_api_response(resp, 200)
 
         # Record scan end time and failure
         if response and response.status_code == 500:

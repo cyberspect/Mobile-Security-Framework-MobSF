@@ -2,7 +2,6 @@
 import logging
 
 from django.conf import settings
-from django.shortcuts import render
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -156,4 +155,3 @@ def so_analysis(request, app_dic, rescan, api):
     context['template'] = \
         'static_analysis/android_binary_analysis.html'
     return context
-

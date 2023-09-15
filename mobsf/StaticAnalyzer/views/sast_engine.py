@@ -2,8 +2,6 @@
 """SAST engine."""
 import logging
 
-from django.conf import settings
-
 from libsast import Scanner
 
 from mobsf.MobSF.utils import (
