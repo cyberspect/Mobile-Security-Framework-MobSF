@@ -754,7 +754,7 @@ def settings_enabled(attr):
 
 
 def is_admin(request):
-    if (not 'META' in request):
+    if ('META' not in request):
         return False
     if ('role' in request.META and request.META['role'] == 'FULL_ACCESS'):
         return True
