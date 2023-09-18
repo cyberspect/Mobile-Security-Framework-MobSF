@@ -8,10 +8,14 @@ import re
 from collections import defaultdict
 from copy import deepcopy
 
+from django.shortcuts import render
 from django.conf import settings
 from django.utils.html import escape
 
-from mobsf.MobSF.utils import error_response
+from mobsf.MobSF.utils import (
+    error_response,
+    is_admin,
+)
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry,
@@ -226,5 +230,11 @@ def generic_compare(request,
 
     diff_browsable_activities(context, first_app, second_app)
 
-    context['template'] = 'static_analysis/compare.html'
-    return context
+    if api:
+        return context
+    else:
+        context['is_admin'] = is_admin(request)
+        return render(
+            request,
+            'static_analysis/compare.html',
+            context)

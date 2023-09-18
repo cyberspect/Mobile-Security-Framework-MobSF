@@ -270,6 +270,7 @@ def static_analyzer_ios(request_data, api=False):
                     context['code_analysis'])
                 context['template'] = \
                     'static_analysis/ios_source_analysis.html'
+                logger.info('Scan complete')
                 return context
             else:
                 msg = ('File Type not supported, '

@@ -138,6 +138,7 @@ def staticanalyzer_windows(request_data, api=False):
                         app_dic['md5'])
                 context['template'] = \
                     'static_analysis/windows_binary_analysis.html'
+                logger.info('Scan complete')
                 return context
             else:
                 msg = 'File type not supported'

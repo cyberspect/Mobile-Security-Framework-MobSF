@@ -278,6 +278,7 @@ def static_analyzer(request_data, api=False):
                         app_dic['md5'])
                 context['template'] = \
                     'static_analysis/android_binary_analysis.html'
+                logger.info('Scan complete')
                 return context
             elif typ == 'jar':
                 return jar_analysis(request_data, app_dic, rescan, api)
@@ -454,6 +455,7 @@ def static_analyzer(request_data, api=False):
                     context['code_analysis'])
                 context['template'] = \
                     'static_analysis/android_source_analysis.html'
+                logger.info('Scan complete')
                 return context
             else:
                 err = ('Only APK, JAR, AAR, SO and Zipped '

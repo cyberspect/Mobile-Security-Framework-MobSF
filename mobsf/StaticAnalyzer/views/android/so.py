@@ -154,4 +154,5 @@ def so_analysis(request, app_dic, rescan, api):
             app_dic['md5'])
     context['template'] = \
         'static_analysis/android_binary_analysis.html'
+    logger.info('Scan complete')
     return context
