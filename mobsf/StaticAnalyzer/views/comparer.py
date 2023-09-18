@@ -227,8 +227,5 @@ def generic_compare(request,
 
     diff_browsable_activities(context, first_app, second_app)
 
-    template = 'static_analysis/compare.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    context['template'] = 'static_analysis/compare.html'
+    return context
