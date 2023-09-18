@@ -8,7 +8,6 @@ import re
 from collections import defaultdict
 from copy import deepcopy
 
-from django.shortcuts import render
 from django.conf import settings
 from django.utils.html import escape
 
