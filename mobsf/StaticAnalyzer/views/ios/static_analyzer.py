@@ -204,7 +204,7 @@ def static_analyzer_ios(request_data, api=False):
                 return dylib_analysis(request_data, app_dict, rescan, api)
             elif file_type == 'a':
                 return a_analysis(request_data, app_dict, rescan, api)
-            elif file_type == 'ios':
+            elif file_type in ('ios', 'zip'):
                 ios_zip_db = StaticAnalyzerIOS.objects.filter(
                     MD5=app_dict['md5_hash'])
                 if ios_zip_db.exists() and not rescan:
