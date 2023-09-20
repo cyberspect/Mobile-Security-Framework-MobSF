@@ -755,7 +755,7 @@ def settings_enabled(attr):
 
 
 def is_admin(request):
-    if (not isinstance(request, WSGIRequest)):        
+    if (not isinstance(request, WSGIRequest)):
         return False
     if ('role' in request.META and request.META['role'] == 'FULL_ACCESS'):
         return True
