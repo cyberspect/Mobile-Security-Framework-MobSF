@@ -381,7 +381,7 @@ def new_cyberspect_scan(scheduled, md5, start_time,
         INTAKE_START=start_time,
         FILE_SIZE_PACKAGE=file_size,
         FILE_SIZE_SOURCE=source_file_size,
-        EMAIL=sso_user
+        EMAIL=sso_user,
     )
     new_db_obj.save()
     logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
