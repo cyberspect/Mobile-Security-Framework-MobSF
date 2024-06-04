@@ -648,7 +648,7 @@ def generate_download(request, api=False):
             return {'file_name': file_name}
     except Exception as exp:
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
-        logger.error(exmsg)        
+        logger.error(exmsg)
         return error_response(request, str(exp), api)
 
 
