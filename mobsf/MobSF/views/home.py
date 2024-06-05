@@ -608,7 +608,8 @@ def download(request):
 def generate_download(request, api=False):
     """Generate downloads for uploaded binaries/source."""
     try:
-        exts = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a', 'zip', 'apk.src', 'ipa.src')
+        exts = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a', \
+                'zip', 'apk.src', 'ipa.src')
         source = ('smali', 'java')
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
