@@ -1,3 +1,5 @@
+import urllib3
+
 from django.urls import re_path
 
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
@@ -8,7 +10,7 @@ from mobsf.DynamicAnalyzer.views.android import (
     tests_frida,
 )
 from mobsf.MobSF import utils
-from mobsf.MobSF.views import home
+from mobsf.MobSF.views import admin, home
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_dynamic_analysis as api_dz
 from mobsf.StaticAnalyzer import tests
@@ -20,7 +22,6 @@ from mobsf.StaticAnalyzer.views.common import (
 )
 from mobsf.StaticAnalyzer.views.android import (
     find,
-    generate_downloads,
     manifest_view,
     source_tree,
     view_source,
@@ -43,6 +44,7 @@ urlpatterns = [
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
+    re_path(r'^api/v1/download$', api_sz.api_download),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
     re_path(r'^api/v1/view_source$', api_sz.api_view_source,
@@ -92,18 +94,25 @@ if settings.API_ONLY == '0':
         re_path(r'^upload/$', home.Upload.as_view),
         re_path(r'^download/', home.download),
         re_path(r'^download_scan/', home.download_apk),
+        re_path(r'^generate_downloads/$', home.generate_download),
         re_path(r'^support$', home.support, name='support'),
         re_path(r'^about$', home.about, name='about'),
+        re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
-        re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
+        re_path(r'^recent_scans$', home.recent_scans, name='recent'),
         re_path(r'^update_scan/$', home.update_scan),
         re_path(r'^delete_scan/$', home.delete_scan),
         re_path(r'^search$', home.search),
+        re_path(r'^app_info$', home.app_info),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),
         re_path(r'^logout$', home.logout_aws),
         re_path(r'^health$', home.health),
+        re_path(r'^admin$', admin.admin_view, name='admin'),
+        re_path(r'^admin/create_api_key$', admin.create_api_key_post),
+        re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
+        re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
 
         # Static Analysis
         # Android
@@ -112,7 +121,6 @@ if settings.API_ONLY == '0':
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
         re_path(r'^find/$', find.run, name='find_files'),
-        re_path(r'^generate_downloads/$', generate_downloads.run),
         re_path(r'^manifest_view/$', manifest_view.run),
         # IOS
         re_path(r'^static_analyzer_ios/$', ios_sa.static_analyzer_ios_request),
@@ -187,4 +195,5 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
+urllib3.disable_warnings()
 utils.print_version()

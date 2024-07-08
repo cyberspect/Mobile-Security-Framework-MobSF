@@ -26,6 +26,7 @@ from mobsf.MobSF.utils import (
     error_response,
     file_size,
     get_config_loc,
+    is_admin,
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
@@ -33,7 +34,6 @@ from mobsf.StaticAnalyzer.tools.strings import strings_util
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
-    update_scan_timestamp,
 )
 from mobsf.StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_analysis,
@@ -57,6 +57,7 @@ config = None
 def staticanalyzer_windows_request(request):
     response = staticanalyzer_windows(request.GET)
     if 'template' in response:
+        response['is_admin'] = is_admin(request)
         return render(request, response['template'], response)
     elif 'error' in response:
         return error_response(request, response['error'])
@@ -71,12 +72,11 @@ def staticanalyzer_windows(request_data, api=False):
         logger.info('Windows Static Analysis Started')
         app_dic = {}  # Dict to store the binary attributes
         typ = request_data['scan_type']
-        re_scan = request_data.get('rescan', 0)
         checksum = request_data['hash']
         filename = request_data['file_name']
-        rescan = False
-        if re_scan == '1':
-            rescan = True
+        rescan = (request_data.get('rescan', 0) == '1')
+        if rescan:
+            logger.info('Performing rescan')
         md5_regex = re.match('^[0-9a-f]{32}$', checksum)
         if (md5_regex) and (typ in ['appx']):
             app_dic['app_name'] = filename  # APP ORIGINAL NAME
@@ -119,7 +119,6 @@ def staticanalyzer_windows(request_data, api=False):
                                        app_dic,
                                        xml_dic,
                                        bin_an_dic)
-                        update_scan_timestamp(app_dic['md5'])
                     else:
                         logger.info('Saving to Database')
                         save_or_update('save',
@@ -136,10 +135,9 @@ def staticanalyzer_windows(request_data, api=False):
                         os.path.join(app_dic['app_dir'], app_dic[
                                      'md5']) + '.appx',
                         app_dic['md5'])
-                context['logo'] = os.getenv('LOGO',
-                                            '/static/img/mobsf_logo.png')
                 context['template'] = \
                     'static_analysis/windows_binary_analysis.html'
+                logger.info('Scan complete')
                 return context
             else:
                 msg = 'File type not supported'

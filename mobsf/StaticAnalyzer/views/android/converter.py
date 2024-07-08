@@ -16,6 +16,7 @@ from mobsf.MobSF.utils import (
     filename_from_path,
     find_java_binary,
     is_file_exists,
+    settings_enabled,
 )
 
 
@@ -31,6 +32,8 @@ def get_dex_files(app_dir):
 def dex_2_smali(app_dir, tools_dir):
     """Run dex2smali."""
     try:
+        if not settings_enabled('DEX2SMALI_ENABLED'):
+            return
         logger.info('DEX -> SMALI')
         dexes = get_dex_files(app_dir)
         for dex_path in dexes:

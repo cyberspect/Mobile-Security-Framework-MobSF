@@ -7,7 +7,6 @@ import os
 import platform
 import re
 import shutil
-import time
 import traceback as tb
 from pathlib import Path
 from wsgiref.util import FileWrapper
@@ -16,11 +15,15 @@ import boto3
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import (
+    redirect,
+    render,
+)
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
-from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -33,6 +36,8 @@ from mobsf.MobSF.utils import (
     is_safe_path,
     key,
     sso_email,
+    tz,
+    utcnow,
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -58,13 +63,14 @@ def index(request):
              + settings.ZIP_MIME
              + settings.APPX_MIME)
     context = {
+        'title': 'Cyberspect: Upload App',
         'version': settings.MOBSF_VER,
         'mimes': mimes,
-        'tenant_static': settings.TENANT_STATIC_URL,
         'is_admin': is_admin(request),
         'email': sso_email(request),
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
-    template = 'general/home.html'
+    template = 'general/home2.html'
     return render(request, template, context)
 
 
@@ -108,7 +114,8 @@ class Upload(object):
                 return self.resp_json(response_data)
 
             if not self.scan.file_type.is_allow_file():
-                msg = 'File format not Supported!'
+                msg = 'File format not supported: ' \
+                    + self.scan.file.content_type
                 logger.error(msg)
                 response_data['description'] = msg
                 return self.resp_json(response_data)
@@ -120,13 +127,14 @@ class Upload(object):
                     response_data['description'] = msg
                     return self.resp_json(response_data)
 
-            start_time = datetime.datetime.now(timezone.utc)
+            start_time = utcnow()
             response_data = self.upload()
             self.scan.cyberspect_scan_id = \
                 new_cyberspect_scan(False, response_data['hash'],
                                     start_time,
                                     self.scan.file_size,
-                                    self.scan.source_file_size)
+                                    self.scan.source_file_size,
+                                    sso_email(self.request))
             cyberspect_scan_intake(self.scan.populate_data_dict())
             return self.resp_json(response_data)
         except Exception as exp:
@@ -144,35 +152,49 @@ class Upload(object):
         if not self.form.is_valid():
             api_response['error'] = FormUtil.errors_message(self.form)
             return api_response, HTTP_BAD_REQUEST
-        self.scan.email = self.request.POST.get('email', '')
-        if not self.scan.file_type.is_allow_file():
-            api_response['error'] = 'File format not Supported!'
+        if not self.scan.email:
+            api_response['error'] = 'User email address not set'
             return api_response, HTTP_BAD_REQUEST
-        start_time = datetime.datetime.now(timezone.utc)
+        if not self.scan.file_type.is_allow_file():
+            api_response['error'] = 'File format not supported!'
+            return api_response, HTTP_BAD_REQUEST
+        start_time = utcnow()
         api_response = self.upload()
         self.scan.cyberspect_scan_id = \
             new_cyberspect_scan(False, api_response['hash'],
                                 start_time,
                                 self.scan.file_size,
-                                self.scan.source_file_size)
-        if (not self.request.GET.get('scan', '1') == '0'):
-            cyberspect_scan_intake(self.scan.populate_data_dict())
+                                self.scan.source_file_size,
+                                sso_email(self.request))
+        api_response['cyberspect_scan_id'] = self.scan.cyberspect_scan_id
+        cyberspect_scan_intake(self.scan.populate_data_dict())
         return api_response, 200
 
     def upload(self):
+        self.scan.rescan = '0'
         content_type = self.scan.file.content_type
         file_name = self.scan.file.name
-        logger.info('MIME Type: %s, File: %s', content_type, file_name)
+        logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.scan.file_type.is_apk():
             return self.scan.scan_apk()
         elif self.scan.file_type.is_xapk():
             return self.scan.scan_xapk()
         elif self.scan.file_type.is_apks():
             return self.scan.scan_apks()
+        elif self.scan.file_type.is_jar():
+            return self.scan.scan_jar()
+        elif self.scan.file_type.is_aar():
+            return self.scan.scan_aar()
+        elif self.scan.file_type.is_so():
+            return self.scan.scan_so()
         elif self.scan.file_type.is_zip():
             return self.scan.scan_zip()
         elif self.scan.file_type.is_ipa():
             return self.scan.scan_ipa()
+        elif self.scan.file_type.is_dylib():
+            return self.scan.scan_dylib()
+        elif self.scan.file_type.is_a():
+            return self.scan.scan_a()
         elif self.scan.file_type.is_appx():
             return self.scan.scan_appx()
 
@@ -184,7 +206,7 @@ class Upload(object):
             'success': False,
             'failure_source': 'SAST',
             'failure_message': error_message,
-            'sast_end': datetime.datetime.utcnow(),
+            'sast_end': utcnow(),
         }
         update_cyberspect_scan(data)
 
@@ -198,7 +220,6 @@ def api_docs(request):
         'title': 'REST API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
-        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/apidocs.html'
     return render(request, template, context)
@@ -209,6 +230,7 @@ def support(request):
     context = {
         'title': 'Support',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
         'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/support.html'
@@ -220,9 +242,19 @@ def about(request):
     context = {
         'title': 'About',
         'version': settings.MOBSF_VER,
-        'tenant_static': settings.TENANT_STATIC_URL,
+        'is_admin': is_admin(request),
     }
     template = 'general/about.html'
+    return render(request, template, context)
+
+
+def donate(request):
+    """Donate Route."""
+    context = {
+        'title': 'Donate',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/donate.html'
     return render(request, template, context)
 
 
@@ -231,6 +263,7 @@ def error(request):
     context = {
         'title': 'Error',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
     }
     template = 'general/error.html'
     return render(request, template, context)
@@ -241,6 +274,7 @@ def zip_format(request):
     context = {
         'title': 'Zipped Source Instruction',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
     }
     template = 'general/zip.html'
     return render(request, template, context)
@@ -259,7 +293,17 @@ def not_found(request):
 def recent_scans(request):
     """Show Recent Scans Route."""
     entries = []
-    db_obj = RecentScansDB.objects.all().order_by('-TIMESTAMP')
+    sfilter = request.GET.get('filter', '')
+    if sfilter:
+        if re.match('[0-9a-f]{32}', sfilter):
+            db_obj = RecentScansDB.objects.filter(MD5=sfilter)
+        else:
+            db_obj = RecentScansDB.objects \
+                .filter(Q(APP_NAME__icontains=sfilter)
+                        | Q(USER_APP_NAME__icontains=sfilter))
+    else:
+        db_obj = RecentScansDB.objects.all()
+    db_obj = db_obj.order_by('-TIMESTAMP')[:100]
     isadmin = is_admin(request)
     if (not isadmin):
         email_filter = sso_email(request)
@@ -279,20 +323,30 @@ def recent_scans(request):
             entry['PACKAGE'] = ''
         logcat = Path(settings.UPLD_DIR) / entry['MD5'] / 'logcat.txt'
         entry['DYNAMIC_REPORT_EXISTS'] = logcat.exists()
-        entry['ERROR'] = (timezone.now()
-                          > entry['TIMESTAMP']
-                          + datetime.timedelta(minutes=15))
-        entry['CAN_RELEASE'] = (timezone.now()
+        entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
+        item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).last()
+        if item:
+            entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
+            entry['COMPLETE'] = item.SAST_END
+            if (item.FAILURE_SOURCE == 'SAST'):
+                entry['ERROR'] = item.FAILURE_MESSAGE
+            else:
+                entry['ERROR'] = None
+        else:
+            entry['DT_PROJECT_ID'] = None
+            entry['COMPLETE'] = entry['TIMESTAMP']
+            entry['ERROR'] = 'Unable to find cyberspect_scans record'
         entries.append(entry)
     context = {
-        'title': 'Recent Scans',
+        'title': 'Scanned Apps',
         'entries': entries,
         'version': settings.MOBSF_VER,
         'is_admin': isadmin,
-        'tenant_static': settings.TENANT_STATIC_URL,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
+        'filter': filter,
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/recent.html'
     return render(request, template, context)
@@ -312,14 +366,14 @@ def get_cyberspect_scan(csid):
     if db_obj:
         cs_obj = model_to_dict(db_obj)
         rs_obj = scan_metadata(cs_obj['MOBSF_MD5'])
-        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE']
-        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME']
+        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE'] if rs_obj else None
+        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME'] if rs_obj else None
         return cs_obj
     return None
 
 
 def new_cyberspect_scan(scheduled, md5, start_time,
-                        file_size, source_file_size):
+                        file_size, source_file_size, sso_user):
     # Insert new record into CyberspectScans
     new_db_obj = CyberspectScans(
         SCHEDULED=scheduled,
@@ -327,6 +381,7 @@ def new_cyberspect_scan(scheduled, md5, start_time,
         INTAKE_START=start_time,
         FILE_SIZE_PACKAGE=file_size,
         FILE_SIZE_SOURCE=source_file_size,
+        EMAIL=sso_user,
     )
     new_db_obj.save()
     logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
@@ -362,6 +417,7 @@ def update_scan(request, api=False):
                 db_obj.EMAIL = request.POST['email']
             if 'release' in request.POST:
                 db_obj.RELEASE = request.POST['release']
+            db_obj.TIMESTAMP = utcnow()
             db_obj.save()
             response = model_to_dict(db_obj)
             data = {'result': 'success'}
@@ -438,15 +494,6 @@ def update_cyberspect_scan(data):
         return {'error': str(ex)}
 
 
-def tz(value):
-    # Parse string into date/time parts and build time zone aware datetime
-    value = value.replace('T', ' ').replace('Z', '')
-    st = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    ts = time.mktime(st.timetuple()) + (st.microsecond / 1000000.0)
-    dt = datetime.datetime.fromtimestamp(ts)
-    return dt.replace(tzinfo=timezone.utc)
-
-
 def logout_aws(request):
     """Remove AWS ALB session cookie."""
     resp = HttpResponse(
@@ -493,6 +540,46 @@ def search(request):
                           + ' valid 32 character alphanumeric value.')
 
 
+@require_http_methods(['GET'])
+def app_info(request):
+    """Get mobile app info by user supplied name."""
+    appname = request.GET['name']
+    db_obj = RecentScansDB.objects \
+        .filter(Q(APP_NAME__icontains=appname)
+                | Q(USER_APP_NAME__icontains=appname)) \
+        .order_by('-TIMESTAMP')
+    user = sso_email(request)
+    if db_obj.exists():
+        e = db_obj[0]
+        if user == e.EMAIL or is_admin(request):
+            context = {
+                'found': True,
+                'version': e.USER_APP_VERSION,
+                'division': e.DIVISION,
+                'country': e.COUNTRY,
+                'environment': e.ENVIRONMENT,
+                'data_privacy_classification': e.DATA_PRIVACY_CLASSIFICATION,
+                'data_privacy_attributes': e.DATA_PRIVACY_ATTRIBUTES,
+                'release': e.RELEASE,
+                'email': e.EMAIL,
+            }
+            logger.info('Found existing mobile app information for %s',
+                        appname)
+            return HttpResponse(json.dumps(context),
+                                content_type='application/json', status=200)
+        else:
+            logger.info('User is not authorized for %s.', appname)
+            payload = {'found': False}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
+    else:
+        logger.info('Unable to find mobile app information for %s',
+                    appname)
+        payload = {'found': False}
+        return HttpResponse(json.dumps(payload),
+                            content_type='application/json', status=200)
+
+
 def download(request):
     """Download from mobsf.MobSF Route."""
     if request.method == 'GET':
@@ -516,6 +603,53 @@ def download(request):
         if filename.endswith(('screen/screen.png', '-icon.png')):
             return HttpResponse('')
     return HttpResponse(status=404)
+
+
+def generate_download(request, api=False):
+    """Generate downloads for uploaded binaries/source."""
+    try:
+        exts = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a',
+                'zip', 'apk.src', 'ipa.src')
+        source = ('smali', 'java')
+        logger.info('Generating Downloads')
+        md5 = request.GET['hash']
+        file_type = request.GET['file_type']
+        match = re.match('^[0-9a-f]{32}$', md5)
+        if (not match
+                or file_type not in exts + source):
+            msg = 'Invalid download type or hash'
+            logger.exception(msg)
+            return error_response(request, msg)
+        app_dir = Path(settings.UPLD_DIR) / md5
+        dwd_dir = Path(settings.DWD_DIR)
+        file_name = ''
+        if file_type == 'java':
+            # For Java zipped source code
+            directory = app_dir / 'java_source'
+            dwd_file = dwd_dir / f'{md5}-java'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-java.zip'
+        elif file_type == 'smali':
+            # For Smali zipped source code
+            directory = app_dir / 'smali_source'
+            dwd_file = dwd_dir / f'{md5}-smali'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-smali.zip'
+        else:
+            src_file_name = f'{md5}.{file_type}'
+            src = app_dir / src_file_name
+            file_name = dwd_dir / src_file_name
+            shutil.copy2(src.as_posix(), file_name.as_posix())
+        if not api:
+            return redirect(f'/download/{file_name}')
+        else:
+            return {'file_name': file_name}
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        return error_response(request, str(exp), api)
 
 
 def delete_scan(request, api=False):
@@ -565,18 +699,22 @@ def delete_scan(request, api=False):
             return error_response(request, msg, False, exp_doc)
 
 
-def cyberspect_rescan(apphash, scheduled):
+def cyberspect_rescan(apphash, scheduled, sso_user):
     """Get cyberspect scan by hash."""
     rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
     if not rs_obj:
         return None
-    cs_obj = CyberspectScans.objects.filter(MOBSF_MD5=apphash) \
-        .order_by('-INTAKE_START').first()
+    # Get file sizes
+    file_path = os.path.join(settings.UPLD_DIR, apphash + '/') \
+        + apphash + '.' + rs_obj.SCAN_TYPE
+    file_size = os.path.getsize(file_path)
+    source_file_size = 0
+    if os.path.exists(file_path + '.src'):
+        source_file_size = os.path.getsize(file_path + '.src')
 
-    scan_id = new_cyberspect_scan(scheduled, apphash,
-                                  datetime.datetime.now(timezone.utc),
-                                  cs_obj.FILE_SIZE_PACKAGE,
-                                  cs_obj.FILE_SIZE_SOURCE)
+    start_time = utcnow()
+    scan_id = new_cyberspect_scan(scheduled, apphash, start_time,
+                                  file_size, source_file_size, sso_user)
     scan_data = {
         'cyberspect_scan_id': scan_id,
         'hash': apphash,
@@ -586,6 +724,7 @@ def cyberspect_rescan(apphash, scheduled):
         'user_app_name': rs_obj.USER_APP_NAME,
         'user_app_version': rs_obj.USER_APP_VERSION,
         'email': rs_obj.EMAIL,
+        'rescan': '1',
     }
     cyberspect_scan_intake(scan_data)
     return scan_data
@@ -610,6 +749,7 @@ def cyberspect_scan_intake(scan):
         'scan_type': scan['scan_type'],
         'email': scan['email'],
         'file_name': file_path,
+        'rescan': scan['rescan'],
     }
     logger.info('Executing Cyberspect intake lambda: %s',
                 settings.AWS_INTAKE_LAMBDA)
@@ -639,13 +779,22 @@ class RecentScans(object):
         result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
@@ -656,62 +805,103 @@ class RecentScans(object):
         result = cs_scans.values().order_by('-INTAKE_START')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
     def cyberspect_completed_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        result = CyberspectScans.objects.filter(SCHEDULED=True) \
-            .exclude(SUCCESS=None).values().order_by('-INTAKE_START')
+        def_date = datetime.datetime.now(datetime.timezone.utc) \
+            - datetime.timedelta(hours=24)
+        from_date = tz(self.request.GET.get('from_date', def_date))
+        result = CyberspectScans.objects.filter(SCHEDULED=True,
+                                                INTAKE_START__gte=from_date) \
+            .values().order_by('ID')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            for scan in content:
-                # Get app details
-                md5 = scan['MOBSF_MD5']
-                scan_result = RecentScansDB.objects.filter(MD5=md5) \
-                    .first()
-                scan['APP_NAME'] = scan_result.APP_NAME
-                scan['VERSION_NAME'] = scan_result.VERSION_NAME
-                scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
-                scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
-                scan['EMAIL'] = scan_result.EMAIL
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                for scan in content:
+                    # Get app details
+                    md5 = scan['MOBSF_MD5']
+                    scan_result = RecentScansDB.objects.filter(MD5=md5) \
+                        .first()
+                    if scan_result:
+                        scan['APP_NAME'] = scan_result.APP_NAME
+                        scan['VERSION_NAME'] = scan_result.VERSION_NAME
+                        scan['PACKAGE_NAME'] = scan_result.PACKAGE_NAME
+                        scan['SCAN_TYPE'] = scan_result.SCAN_TYPE
+                        scan['DATA_PRIVACY_CLASSIFICATION'] = \
+                            scan_result.DATA_PRIVACY_CLASSIFICATION
+                        scan['EMAIL'] = scan_result.EMAIL
 
-                # Get scan vulnerability counts
-                findings = appsec.appsec_dashboard(self.request, md5, True)
-                scan['FINDINGS_HIGH'] = len(findings['high'])
-                scan['FINDINGS_WARNING'] = len(findings['warning'])
-                scan['FINDINGS_INFO'] = len(findings['info'])
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+                        # Get scan vulnerability counts
+                        findings = appsec.appsec_dashboard(self.request, md5,
+                                                           True)
+                        scan['FINDINGS_HIGH'] = len(findings['high']) \
+                            if 'high' in findings else 0
+                        scan['FINDINGS_WARNING'] = len(findings['warning']) \
+                            if 'warning' in findings else 0
+                        scan['FINDINGS_INFO'] = len(findings['info']) \
+                            if 'info' in findings else 0
+                        scan['SECURITY_SCORE'] = findings['security_score']
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data
 
     def release_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
-        scans = RecentScansDB.objects.filter(RELEASE=True)
-        result = scans.values().order_by('-TIMESTAMP')
+        scans = RecentScansDB.objects.filter(RELEASE=True) \
+            .exclude(ENVIRONMENT='Decommissioned')
+        result = scans.values().order_by('APP_NAME', 'VERSION_NAME')
         try:
             paginator = Paginator(result, page_size)
-            content = paginator.page(page)
-            data = {
-                'content': list(content),
-                'count': paginator.count,
-                'num_pages': paginator.num_pages,
-            }
+            if (int(page) > paginator.num_pages):
+                data = {
+                    'content': [],
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
+            else:
+                content = paginator.page(page)
+                data = {
+                    'content': list(content),
+                    'count': paginator.count,
+                    'num_pages': paginator.num_pages,
+                }
         except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
             data = {'error': str(exp)}
         return data

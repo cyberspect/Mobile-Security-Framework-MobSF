@@ -14,6 +14,17 @@ logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
+EXTS = (
+    '.xapk',
+    '.apk',
+    '.ipa',
+    '.appx',
+    '.zip',
+    '.a',
+    '.so',
+    '.dylib',
+    '.aar',
+    '.jar')
 
 
 def static_analysis_test():
@@ -25,12 +36,7 @@ def static_analysis_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
-            if not filename.endswith((
-                    '.xapk',
-                    '.apk',
-                    '.ipa',
-                    '.appx',
-                    '.zip')):
+            if not filename.endswith(EXTS):
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
@@ -174,12 +180,7 @@ def api_test():
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
-            if not filename.endswith((
-                    '.xapk',
-                    '.apk',
-                    '.ipa',
-                    '.appx',
-                    '.zip')):
+            if not filename.endswith(EXTS):
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
@@ -234,19 +235,6 @@ def api_test():
         else:
             logger.error('Scan List API Test 2')
             return True
-        resp = http_client.get('/api/v1/scans', HTTP_X_MOBSF_API_KEY=auth)
-        if resp.status_code == 200:
-            logger.info('Scan List API Test with custom http header 1 success')
-        else:
-            logger.error('Scan List API Test with custom http header 1')
-            return True
-        resp = http_client.get(
-            '/api/v1/scans?page=1&page_size=10', HTTP_X_MOBSF_API_KEY=auth)
-        if resp.status_code == 200:
-            logger.info('Scan List API Test with custom http header 2 success')
-        else:
-            logger.error('Scan List API Test with custom http header 2')
-            return True
         logger.info('[OK] Scan List API tests completed')
         # PDF Tests
         logger.info('Running PDF Generation API Test')
@@ -272,10 +260,7 @@ def api_test():
         for pdf in pdfs:
             resp = http_client.post(
                 '/api/v1/download_pdf', pdf, HTTP_AUTHORIZATION=auth)
-            resp_custom = http_client.post(
-                '/api/v1/download_pdf', pdf, HTTP_X_MOBSF_API_KEY=auth)
             assert (resp.status_code == 200)
-            assert (resp_custom.status_code == 200)
             if (resp.status_code == 200
                     and resp.headers['content-type'] == 'application/pdf'):
                 logger.info('[OK] PDF Report Generated: %s', pdf['hash'])
@@ -290,10 +275,7 @@ def api_test():
         for jsn in pdfs:
             resp = http_client.post(
                 '/api/v1/report_json', jsn, HTTP_AUTHORIZATION=auth)
-            resp_custom = http_client.post(
-                '/api/v1/report_json', jsn, HTTP_X_MOBSF_API_KEY=auth)
             assert (resp.status_code == 200)
-            assert (resp_custom.status_code == 200)
             if (resp.status_code == 200
                     and resp.headers['content-type'] == ctype):
                 logger.info('[OK] JSON Report Generated: %s', jsn['hash'])
@@ -309,9 +291,7 @@ def api_test():
                 continue
             resp = http_client.post(
                 '/api/v1/scorecard', scr, HTTP_AUTHORIZATION=auth)
-            resp_custom = http_client.post(
-                '/api/v1/scorecard', scr, HTTP_X_MOBSF_API_KEY=auth)
-            if resp.status_code == 200 and resp_custom.status_code == 200:
+            if resp.status_code == 200:
                 rp = json.loads(resp.content.decode('utf-8'))
                 if 'security_score' in rp:
                     logger.info(
@@ -342,10 +322,7 @@ def api_test():
         for sfile in files:
             resp = http_client.post(
                 '/api/v1/view_source', sfile, HTTP_AUTHORIZATION=auth)
-            resp_custom = http_client.post(
-                '/api/v1/view_source', sfile, HTTP_X_MOBSF_API_KEY=auth)
             assert (resp.status_code == 200)
-            assert (resp_custom.status_code == 200)
             if resp.status_code == 200:
                 dat = json.loads(resp.content.decode('utf-8'))
                 if dat['title']:
@@ -367,14 +344,6 @@ def api_test():
             },
             HTTP_AUTHORIZATION=auth)
         assert (resp.status_code == 200)
-        resp_custom = http_client.post(
-            '/api/v1/compare',
-            {
-                'hash1': '3a552566097a8de588b8184b059b0158',
-                'hash2': '52c50ae824e329ba8b5b7a0f523efffe',
-            },
-            HTTP_X_MOBSF_API_KEY=auth)
-        assert (resp_custom.status_code == 200)
         if resp.status_code == 200:
             logger.info('[OK] App compare API tests completed')
         else:

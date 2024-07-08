@@ -5,10 +5,15 @@ import io
 import os
 
 from django.conf import settings
-from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.utils import get_siphash, get_usergroups, is_admin, sso_email
+from mobsf.MobSF.utils import (
+    get_siphash,
+    get_usergroups,
+    is_admin,
+    sso_email,
+    utcnow,
+)
 from mobsf.MobSF.views.helpers import FileType
 
 logger = logging.getLogger(__name__)
@@ -28,7 +33,7 @@ def add_to_recent_scan(data):
                 PACKAGE_NAME='',
                 VERSION_NAME='',
                 MD5=data['hash'],
-                TIMESTAMP=timezone.now(),
+                TIMESTAMP=utcnow(),
                 USER_APP_NAME=data['user_app_name'],
                 USER_APP_VERSION=data['user_app_version'],
                 DIVISION=data['division'],
@@ -49,7 +54,7 @@ def add_to_recent_scan(data):
                 scan.USER_GROUPS = (scan.USER_GROUPS + ','
                                     + data['user_groups'])
             scan.FILE_NAME = data['file_name']
-            scan.TIMESTAMP = timezone.now()
+            scan.TIMESTAMP = utcnow()
             scan.USER_APP_NAME = data['user_app_name']
             scan.USER_APP_VERSION = data['user_app_version']
             scan.DIVISION = data['division']
@@ -65,7 +70,7 @@ def add_to_recent_scan(data):
         raise ex
 
 
-def handle_uploaded_file(content, typ, source_content):
+def handle_uploaded_file(content, extension, source_content):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -78,10 +83,10 @@ def handle_uploaded_file(content, typ, source_content):
         for chunk in content.chunks():
             md5.update(chunk)
     md5sum = md5.hexdigest()
-    local_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
-    if not os.path.exists(local_dir):
-        os.makedirs(local_dir)
-    with open(local_dir + md5sum + typ, 'wb+') as destination:
+    anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
+    if not os.path.exists(anal_dir):
+        os.makedirs(anal_dir)
+    with open(f'{anal_dir}{md5sum}{extension}', 'wb+') as destination:
         if bfr:
             content.seek(0, 0)
             while chunk := content.read(8192):
@@ -91,7 +96,7 @@ def handle_uploaded_file(content, typ, source_content):
                 destination.write(chunk)
     if (source_content):
         bfr = isinstance(source_content, io.BufferedReader)
-        with open(local_dir + md5sum + typ + '.src', 'wb+') as f:
+        with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:
             if bfr:
                 source_content.seek(0, 0)
                 while chunk := source_content.read(8192):
@@ -105,10 +110,16 @@ def handle_uploaded_file(content, typ, source_content):
 class Scanning(object):
 
     def __init__(self, request):
-        self.file = request.FILES['file']
-        self.file_name = self.file.name
-        self.file_type = FileType(self.file)
-        self.file_size = self.file.size
+        if ('file' in request.FILES):
+            self.file = request.FILES['file']
+            self.file_name = self.file.name
+            self.file_type = FileType(self.file)
+            self.file_size = self.file.size
+        else:
+            self.file = None
+            self.file_name = None
+            self.file_type = None
+            self.file_size = None
         if ('source_file' in request.FILES):
             self.source_file = request.FILES['source_file']
             self.source_file_name = self.source_file.name
@@ -117,8 +128,8 @@ class Scanning(object):
             self.source_file = None
             self.source_file_name = None
             self.source_file_size = None
-        self.user_app_name = request.POST.get('user_app_name')
-        self.user_app_version = request.POST.get('user_app_version')
+        self.user_app_name = request.POST.get('user_app_name', '')
+        self.user_app_version = request.POST.get('user_app_version', '')
         self.division = request.POST.get('division', '')
         self.environment = request.POST.get('environment', '')
         self.country = request.POST.get('country', '')
@@ -133,6 +144,7 @@ class Scanning(object):
             self.release = (request.POST.get('release', '') == 'true')
             if request.POST.get('email'):
                 self.email = request.POST.get('email')
+        self.rescan = request.POST.get('rescan', '0')
         self.cyberspect_scan_id = 0
         self.md5 = ''
         self.short_hash = ''
@@ -142,7 +154,6 @@ class Scanning(object):
         """Android APK."""
         self.scan_type = 'apk'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android APK')
         return data
@@ -151,7 +162,6 @@ class Scanning(object):
         """Android XAPK."""
         self.scan_type = 'xapk'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android XAPK base APK')
         return data
@@ -160,16 +170,38 @@ class Scanning(object):
         """Android Split APK."""
         self.scan_type = 'apks'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android Split APK')
+        return data
+
+    def scan_jar(self):
+        """Java JAR file."""
+        self.scan_type = 'jar'
+        data = self.populate_data_dict()
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Java JAR')
+        return data
+
+    def scan_aar(self):
+        """Android AAR file."""
+        self.scan_type = 'aar'
+        data = self.populate_data_dict()
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Android AAR')
+        return data
+
+    def scan_so(self):
+        """Shared object file."""
+        self.scan_type = 'so'
+        data = self.populate_data_dict()
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Shared Object')
         return data
 
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         self.scan_type = 'zip'
         data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of Android/iOS Source Code')
         return data
@@ -181,6 +213,24 @@ class Scanning(object):
         data['analyzer'] = 'static_analyzer_ios'
         add_to_recent_scan(data)
         logger.info('Performing Static Analysis of iOS IPA')
+        return data
+
+    def scan_dylib(self):
+        """IOS Dylib."""
+        self.scan_type = 'dylib'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of iOS IPA')
+        return data
+
+    def scan_a(self):
+        """Scan static library."""
+        self.scan_type = 'a'
+        data = self.populate_data_dict()
+        data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(data)
+        logger.info('Performing Static Analysis of Static Library')
         return data
 
     def scan_appx(self):
@@ -197,6 +247,7 @@ class Scanning(object):
                                         self.source_file)
         self.short_hash = get_siphash(self.md5)
         return {
+            'analyzer': 'static_analyzer',
             'hash': self.md5,
             'short_hash': self.short_hash,
             'scan_type': self.scan_type,
@@ -213,4 +264,5 @@ class Scanning(object):
             'user_groups': self.user_groups,
             'release': self.release,
             'cyberspect_scan_id': self.cyberspect_scan_id,
+            'rescan': self.rescan,
         }

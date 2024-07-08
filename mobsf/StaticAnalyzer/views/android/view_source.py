@@ -12,6 +12,7 @@ from django.utils.html import escape
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
     error_response,
+    is_admin,
     is_safe_path,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 def run(request, api=False):
     """View the source of a file."""
     try:
-        logger.info('View Android Source File')
+        logger.info('View Java Source File')
         exp = 'Error Description'
         if api:
             fil = request.POST['file']
@@ -52,7 +53,7 @@ def run(request, api=False):
             try:
                 src, syntax, _ = find_java_source_folder(base)
             except StopIteration:
-                msg = 'Invalid Directory Structure'
+                msg = 'Invalid directory or file extension'
                 return error_response(request, msg, api)
 
         sfile = src / fil
@@ -66,6 +67,7 @@ def run(request, api=False):
             'type': syntax,
             'sqlite': {},
             'version': settings.MOBSF_VER,
+            'is_admin': is_admin(request),
         }
         template = 'general/view.html'
         if api:

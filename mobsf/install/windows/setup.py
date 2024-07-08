@@ -13,7 +13,7 @@ import subprocess
 import sys
 from os.path import expanduser
 
-from six.moves import input
+from six.moves import input  # noqa: A004
 
 try:
     import urllib.request as urlrequest
@@ -179,7 +179,7 @@ def tools_binskim():
 
     # Search for the version number
     folder = re.search(
-        b'Microsoft\\.CodeAnalysis\\.BinSkim\\..*(\'|\") ', output)
+        b'Microsoft\\.CodeAnalysis\\.BinSkim\\..{0,300}(\'|\") ', output)
     try:
         # Substring-Foo for removing b'X's in python3
         if sys.version_info.major == 3:
