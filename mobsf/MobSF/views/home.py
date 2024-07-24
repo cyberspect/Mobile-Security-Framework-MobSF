@@ -303,7 +303,7 @@ def recent_scans(request):
                         | Q(USER_APP_NAME__icontains=sfilter))
     else:
         db_obj = RecentScansDB.objects.all()
-    
+
     isadmin = is_admin(request)
     if (not isadmin):
         email_filter = sso_email(request)
