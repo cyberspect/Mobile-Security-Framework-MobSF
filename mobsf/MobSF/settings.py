@@ -65,6 +65,9 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
     '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.webp': 'image/webp',
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
@@ -74,6 +77,7 @@ ALLOWED_EXTENSIONS = {
     '.so': 'application/octet-stream',
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
+    '.pcap': 'application/vnd.tcpdump.pcap',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -179,7 +183,6 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -194,6 +197,7 @@ AUTHENTICATION_BACKENDS = (
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -337,6 +341,8 @@ else:
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
     # NIAP Scan
     NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '1')
+    # Permission to Code Mapping
+    PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1')
     # Dex 2 Smali Conversion
     DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
     # Android Shared Object Binary Analysis
@@ -373,7 +379,6 @@ else:
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
-    BATIK_BINARY = os.getenv('MOBSF_BATIK_BINARY', '')
     APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
     ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
 
@@ -384,15 +389,11 @@ else:
 
     # COMMON
     JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '')
-    VBOXMANAGE_BINARY = os.getenv('MOBSF_VBOXMANAGE_BINARY', '')
-    PYTHON3_PATH = os.getenv('MOBSF_PYTHON3_PATH', '')
 
     """
     Examples:
     JAVA_DIRECTORY = 'C:/Program Files/Java/jdk1.7.0_17/bin/'
     JAVA_DIRECTORY = '/usr/bin/'
-    VBOXMANAGE_BINARY = '/usr/bin/VBoxManage'
-    PYTHON3_PATH = 'C:/Users/Ajin/AppData/Local/Programs/Python/Python35-32/'
     JADX_BINARY = 'C:/Users/Ajin/AppData/Local/Programs/jadx/bin/jadx.bat'
     JADX_BINARY = '/Users/ajin/jadx/bin/jadx'
     """
@@ -439,7 +440,13 @@ else:
     # https://www.virustotal.com/en/user/<username>/apikey/
     # Files will be uploaded to VirusTotal
     # if VT_UPLOAD is set to True.
-    # ==============================================
+    # ===============================================
+    # =======IOS DYNAMIC ANALYSIS SETTINGS===========
+    CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', '')
+    CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
+    CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')
+    # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
+    # ===============================================
     # ^CONFIG-END^: Do not edit this line
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

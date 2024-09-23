@@ -7,9 +7,16 @@ import traceback as tb
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from wsgiref.util import FileWrapper
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+)
+from mobsf.MobSF.utils import (
+    is_md5,
+    make_api_response,
+    sso_email,
+    utcnow,
+)
 
-from mobsf.MobSF.utils import make_api_response, sso_email, utcnow
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (RecentScans, Upload, cyberspect_rescan,
                                     delete_scan, generate_download,
@@ -85,7 +92,7 @@ def api_scan_metadata(request):
 @csrf_exempt
 def api_scan(request):
     """POST - Scan API."""
-    params = {'cyberspect_scan_id', 'file_name', 'hash', 'scan_type'}
+    params = {'cyberspect_scan_id', 'hash'}
     if set(request.POST).intersection(params) != params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
@@ -188,7 +195,10 @@ def api_pdf_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)
@@ -213,7 +223,11 @@ def api_json_report(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = pdf(request, api=True, jsonres=True)
+    resp = pdf(
+        request,
+        request.POST['hash'],
+        api=True,
+        jsonres=True)
     if 'error' in resp:
         if resp.get('error') == 'Invalid scan hash':
             response = make_api_response(resp, 400)

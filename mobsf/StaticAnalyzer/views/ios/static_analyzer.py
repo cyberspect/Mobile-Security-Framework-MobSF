@@ -1,7 +1,6 @@
 # -*- coding: utf_8 -*-
 """iOS Static Code Analysis."""
 import logging
-import re
 from pathlib import Path
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
@@ -9,13 +8,18 @@ import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 
 from django.conf import settings
 from django.shortcuts import render
+from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
-    error_response,
     file_size,
-    is_admin,
+    is_md5,
+    print_n_send_error_response,
+    relative_path,
 )
-from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+    StaticAnalyzerIOS,
+)
 from mobsf.StaticAnalyzer.views.ios.appstore import app_search
 from mobsf.StaticAnalyzer.views.ios.binary_analysis import (
     binary_analysis,
@@ -31,7 +35,7 @@ from mobsf.StaticAnalyzer.views.ios.db_interaction import (
 from mobsf.StaticAnalyzer.views.ios.dylib import dylib_analysis
 from mobsf.StaticAnalyzer.views.ios.file_analysis import ios_list_files
 from mobsf.StaticAnalyzer.views.ios.icon_analysis import (
-    get_icon,
+    get_icon_from_ipa,
     get_icon_source,
 )
 from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
@@ -60,6 +64,8 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 
 logger = logging.getLogger(__name__)
 
+register.filter('relative_path', relative_path)
+
 ##############################################################
 # iOS Static Code Analysis IPA and Source Code
 ##############################################################
@@ -71,7 +77,7 @@ def static_analyzer_ios_request(request):
         response['is_admin'] = is_admin(request)
         return render(request, response['template'], response)
     elif 'error' in response:
-        return error_response(request, response['error'])
+        return print_n_send_error_response(request, response['error'])
     else:
         return response
 
@@ -101,6 +107,7 @@ def static_analyzer_ios(request_data, api=False):
             tools_dir = app_dict[
                 'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
             app_dict['tools_dir'] = tools_dir.as_posix()
+            app_dict['icon_path'] = ''
             if file_type == 'ipa':
                 app_dict['app_file'] = app_dict[
                     'md5_hash'] + '.ipa'  # NEW FILENAME
@@ -129,7 +136,7 @@ def static_analyzer_ios(request_data, api=False):
                     else:
                         msg = ('IPA is malformed! '
                                'MobSF cannot find Payload directory')
-                        return error_response(
+                        return print_n_send_error_response(
                             request_data,
                             msg,
                             api)
@@ -147,20 +154,23 @@ def static_analyzer_ios(request_data, api=False):
                         app_dict['tools_dir'],
                         app_dict['app_dir'],
                         infoplist_dict.get('bin'))
-                    # Analyze dylibs
-                    dy = library_analysis(app_dict['bin_dir'], 'macho')
-                    bin_dict['dylib_analysis'] = dy['macho_analysis']
-                    # Get Icon
-                    app_dict['icon_found'] = get_icon(
-                        app_dict['md5_hash'],
+                    # Analyze dylibs and frameworks
+                    lb = library_analysis(
                         app_dict['bin_dir'],
+                        app_dict['md5_hash'],
+                        'macho')
+                    bin_dict['dylib_analysis'] = lb['macho_analysis']
+                    bin_dict['framework_analysis'] = lb['framework_analysis']
+                    # Get Icon
+                    get_icon_from_ipa(
+                        app_dict,
                         infoplist_dict.get('bin'))
                     # Extract String metadata
                     code_dict = get_strings_metadata(
                         app_dict,
                         bin_dict,
                         all_files,
-                        dy['macho_strings'])
+                        lb['macho_strings'])
 
                     # Domain Extraction and Malware Check
                     logger.info('Performing Malware Check on '
@@ -274,12 +284,12 @@ def static_analyzer_ios(request_data, api=False):
             else:
                 msg = ('File Type not supported, '
                        'Only IPA, A and DYLIB files are supported')
-                return error_response(request_data, msg, api)
+                return print_n_send_error_response(request_data, msg, api)
         else:
             msg = 'Hash match failed or Invalid file extension or file type'
-            return error_response(request_data, msg, api)
+            return print_n_send_error_response(request_data, msg, api)
     except Exception as exp:
         logger.exception('Error Performing Static Analysis')
         msg = str(exp)
         exp_doc = exp.__doc__
-        return error_response(request_data, msg, api, exp_doc)
+        return print_n_send_error_response(request, msg, api, exp_doc)
