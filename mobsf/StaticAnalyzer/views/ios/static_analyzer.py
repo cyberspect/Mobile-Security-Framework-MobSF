@@ -152,7 +152,7 @@ def static_analyzer_ios(request_data, checksum, api=False):
                         break
                 else:
                     msg = ('IPA is malformed! '
-                            'MobSF cannot find Payload directory')
+                           'MobSF cannot find Payload directory')
                     return print_n_send_error_response(
                         request_data,
                         msg,

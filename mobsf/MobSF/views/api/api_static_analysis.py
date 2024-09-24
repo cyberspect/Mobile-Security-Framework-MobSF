@@ -3,10 +3,10 @@
 import logging
 import os
 import traceback as tb
+from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from wsgiref.util import FileWrapper
 from mobsf.MobSF.utils import (
     make_api_response,
     sso_email,
@@ -22,7 +22,7 @@ from mobsf.MobSF.views.home import (
     get_cyberspect_scan,
     scan_metadata,
     update_cyberspect_scan,
-    update_scan
+    update_scan,
 )
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer

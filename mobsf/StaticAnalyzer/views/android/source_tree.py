@@ -12,9 +12,9 @@ from django.shortcuts import (
 
 from mobsf.MobSF.utils import (
     api_key,
+    is_admin,
     is_md5,
     print_n_send_error_response,
-    is_admin,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,

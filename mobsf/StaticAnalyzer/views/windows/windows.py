@@ -25,10 +25,10 @@ from django.utils.html import escape
 from mobsf.MobSF.utils import (
     file_size,
     get_config_loc,
-    is_admin,
     is_md5,
     print_n_send_error_response,
 )
+from mobsf.MobSF.views.home import update_scan_timestamp
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -58,45 +58,35 @@ config = None
 # Windows Support Functions
 
 
-def staticanalyzer_windows_request(request):
-    response = staticanalyzer_windows(request.GET)
-    if 'template' in response:
-        response['is_admin'] = is_admin(request)
-        return render(request, response['template'], response)
-    elif 'error' in response:
-        return print_n_send_error_response(request, response['error'])
-    else:
-        return response
-
-
-def staticanalyzer_windows(request_data, api=False):
+def staticanalyzer_windows(request, checksum, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
         logger.info('Windows Static Analysis Started')
+        rescan = False
         app_dic = {}  # Dict to store the binary attributes
-        typ = request_data['scan_type']
-        checksum = request_data['hash']
-        filename = request_data['file_name']
-        rescan = (request_data.get('rescan', 0) == '1')
-        if rescan:
-            logger.info('Performing rescan')
+        if api:
+            re_scan = request.POST.get('re_scan', 0)
+        else:
+            re_scan = request.GET.get('rescan', 0)
+        if re_scan == '1':
+            rescan = True
         if not is_md5(checksum):
             return print_n_send_error_response(
-                request_data,
+                request,
                 'Invalid Hash',
                 api)
         robj = RecentScansDB.objects.filter(MD5=checksum)
         if not robj.exists():
             return print_n_send_error_response(
-                request_data,
+                request,
                 'The file is not uploaded/available',
                 api)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         if typ != 'appx':
             return print_n_send_error_response(
-                request_data,
+                request,
                 'File type not supported',
                 api)
 
@@ -106,7 +96,6 @@ def staticanalyzer_windows(request_data, api=False):
             settings.UPLD_DIR, app_dic['md5'] + '/')
         app_dic['tools_dir'] = os.path.join(
             settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
-
         # DB
         db_entry = StaticAnalyzerWindows.objects.filter(
             MD5=app_dic['md5'],
@@ -137,34 +126,36 @@ def staticanalyzer_windows(request_data, api=False):
             if rescan:
                 logger.info('Updating Database...')
                 save_or_update('update',
-                                app_dic,
-                                xml_dic,
-                                bin_an_dic)
+                               app_dic,
+                               xml_dic,
+                               bin_an_dic)
+                update_scan_timestamp(app_dic['md5'])
             else:
                 logger.info('Saving to Database')
                 save_or_update('save',
-                                app_dic,
-                                xml_dic,
-                                bin_an_dic)
+                               app_dic,
+                               xml_dic,
+                               bin_an_dic)
             context = get_context_from_analysis(app_dic,
                                                 xml_dic,
                                                 bin_an_dic)
             context['virus_total'] = None
+        template = 'static_analysis/windows_binary_analysis.html'
+        context['virus_total'] = None
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(
-                os.path.join(app_dic['app_dir'], app_dic[
-                                'md5']) + '.appx',
+                os.path.join(app_dic['app_dir'], app_dic['md5']) + '.appx',
                 app_dic['md5'])
-        context['template'] = \
-            'static_analysis/windows_binary_analysis.html'
-        logger.info('Scan complete')
-        return context
-
+        if api:
+            return context
+        else:
+            return render(request, template, context)
     except Exception as exception:
         logger.exception('Error Performing Static Analysis')
         msg = str(exception)
-        return {'error': msg}
+        exp_doc = exception.__doc__
+        return print_n_send_error_response(request, msg, api, exp_doc)
 
 
 def _get_token():

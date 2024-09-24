@@ -191,8 +191,8 @@ def static_analyzer(request_data, checksum, api=False):
                         request_data,
                         'APK file is invalid or corrupt',
                         api)
-                app_dic['certz'] = get_hardcoded_cert_keystore(app_dic[
-                                                            'files'])
+                app_dic['certz'] = get_hardcoded_cert_keystore(
+                    app_dic['files'])
                 # Manifest XML
                 mani_file, ns, mani_xml = get_manifest(
                     app_dic['app_path'],
@@ -258,7 +258,7 @@ def static_analyzer(request_data, checksum, api=False):
                 tracker_res = tracker.get_trackers()
 
                 apk_2_java(app_dic['app_path'], app_dic['app_dir'],
-                        app_dic['tools_dir'])
+                    app_dic['tools_dir'])
 
                 dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
 
