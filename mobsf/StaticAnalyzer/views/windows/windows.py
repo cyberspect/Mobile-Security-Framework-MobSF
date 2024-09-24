@@ -20,6 +20,7 @@ from lxml import etree
 
 from django.conf import settings
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
@@ -28,7 +29,6 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
-from mobsf.MobSF.views.home import update_scan_timestamp
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -587,3 +587,9 @@ def parse_xml_metadata(xml_dic, xml_node):
         elif child.get('Name') == 'TargetRuntime':
             xml_dic['target_run'] = child.get('Value')
     return xml_dic
+
+
+def update_scan_timestamp(scan_hash):
+    # Update the last scan time.
+    tms = timezone.now()
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
