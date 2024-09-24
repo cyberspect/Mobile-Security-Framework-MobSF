@@ -47,17 +47,6 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
 
 
 logger = logging.getLogger(__name__)
-# Regex to capture strings between quotes or <string> tag
-STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
-# MobSF Custom regex to catch maximum URI like strings
-URL_REGEX = re.compile(
-    (
-        r'((?:https?://|s?ftps?://|'
-        r'file://|javascript:|data:|www\d{0,3}[.])'
-        r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
-    ),
-    re.UNICODE)
-EMAIL_REGEX = re.compile(r'[\w.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 
 
 def hash_gen(app_path) -> tuple:

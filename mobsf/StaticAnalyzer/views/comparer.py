@@ -13,8 +13,8 @@ from django.conf import settings
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
-    print_n_send_error_response,
     is_admin,
+    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.android.db_interaction import (

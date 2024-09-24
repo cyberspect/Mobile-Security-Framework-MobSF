@@ -23,11 +23,10 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
-    print_n_send_error_response,
     file_size,
     get_config_loc,
     is_admin,
-    is_md5,    
+    is_md5,
     print_n_send_error_response,
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -97,7 +96,7 @@ def staticanalyzer_windows(request_data, api=False):
         filename = robj[0].FILE_NAME
         if typ != 'appx':
             return print_n_send_error_response(
-                request,
+                request_data,
                 'File type not supported',
                 api)
 

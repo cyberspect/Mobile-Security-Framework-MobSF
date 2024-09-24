@@ -15,8 +15,8 @@ from django.http import HttpResponse
 
 from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
-    print_n_send_error_response,
     is_admin,
+    print_n_send_error_response,
     sso_email,
     tz,
     utcnow,
@@ -162,7 +162,8 @@ def revoke_api_key_post(request):
 
         key_id = request.POST['id']
         if not key_id:
-            return print_n_send_error_response(request, 'Missing parameter: id')
+            return print_n_send_error_response(request,
+                                               'Missing parameter: id')
         item = revoke_api_key(key_id)
         if item:
             logger.info('API key ID %s revoked by: %s', key_id,

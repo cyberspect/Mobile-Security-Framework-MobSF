@@ -10,8 +10,8 @@ from django.http import JsonResponse
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
-    print_n_send_error_response,
     is_md5,
+    print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     find_java_source_folder,

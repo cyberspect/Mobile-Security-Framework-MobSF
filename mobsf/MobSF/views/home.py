@@ -28,7 +28,6 @@ from django.views.decorators.http import require_http_methods
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
-    print_n_send_error_response,
     get_md5,
     get_siphash,
     is_admin,
@@ -36,6 +35,7 @@ from mobsf.MobSF.utils import (
     is_file_exists,
     is_safe_path,
     key,
+    print_n_send_error_response,
     sso_email,
     tz,
     utcnow,
@@ -558,9 +558,10 @@ def search(request):
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
-    return print_n_send_error_response(request,
-                          'The Scan ID provided is invalid. Please provide a'
-                          + ' valid 32 character alphanumeric value.')
+    return print_n_send_error_response(
+        request,
+        'The Scan ID provided is invalid. Please provide a'
+        + ' valid 32 character alphanumeric value.')
 
 
 @require_http_methods(['GET'])
@@ -928,4 +929,3 @@ class RecentScans(object):
             logger.error(exmsg)
             data = {'error': str(exp)}
         return data
-

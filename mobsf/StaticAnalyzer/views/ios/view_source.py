@@ -16,10 +16,10 @@ from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.utils import (
-    print_n_send_error_response,
     is_admin,
     is_file_exists,
     is_safe_path,
+    print_n_send_error_response,
     read_sqlite,
 )
 from mobsf.StaticAnalyzer.forms import (

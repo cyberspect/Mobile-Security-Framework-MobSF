@@ -6,22 +6,24 @@ import traceback as tb
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
-from mobsf.StaticAnalyzer.models import (
-    RecentScansDB,
-)
+from wsgiref.util import FileWrapper
 from mobsf.MobSF.utils import (
-    is_md5,
     make_api_response,
     sso_email,
     utcnow,
 )
-
 from mobsf.MobSF.views.helpers import request_method
-from mobsf.MobSF.views.home import (RecentScans, Upload, cyberspect_rescan,
-                                    delete_scan, generate_download,
-                                    get_cyberspect_scan, scan_metadata,
-                                    update_cyberspect_scan, update_scan)
+from mobsf.MobSF.views.home import (
+    RecentScans,
+    Upload,
+    cyberspect_rescan,
+    delete_scan,
+    generate_download,
+    get_cyberspect_scan,
+    scan_metadata,
+    update_cyberspect_scan,
+    update_scan
+)
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
