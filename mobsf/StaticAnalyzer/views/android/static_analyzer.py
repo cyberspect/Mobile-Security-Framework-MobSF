@@ -258,7 +258,7 @@ def static_analyzer(request_data, checksum, api=False):
                 tracker_res = tracker.get_trackers()
 
                 apk_2_java(app_dic['app_path'],
-                           app_dic['app_dir'], 
+                           app_dic['app_dir'],
                            app_dic['tools_dir'])
 
                 dex_2_smali(app_dic['app_dir'], app_dic['tools_dir'])
