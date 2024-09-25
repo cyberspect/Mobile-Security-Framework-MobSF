@@ -74,8 +74,8 @@ register.filter('relative_path', relative_path)
 
 def static_analyzer_ios_request(request, checksum):
     response = static_analyzer_ios(request.GET, checksum)
+    response['is_admin'] = is_admin(request)
     if 'template' in response:
-        response['is_admin'] = is_admin(request)
         return render(request, response['template'], response)
     elif 'error' in response:
         return print_n_send_error_response(request, response['error'])
