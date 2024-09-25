@@ -31,7 +31,7 @@ def static_analysis_test():
     """Test Static Analyzer."""
     logger.info('Running Static Analyzer Unit test')
     try:
-        uploaded = []        
+        uploaded = []
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
