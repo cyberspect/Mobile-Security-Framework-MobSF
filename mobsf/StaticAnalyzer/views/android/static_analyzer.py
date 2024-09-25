@@ -321,11 +321,11 @@ def static_analyzer(request_data, checksum, api=False):
             logger.info('Scan complete')
             return context
         elif typ == 'jar':
-            return jar_analysis(request_data, app_dic, rescan, api)
+            return jar_analysis(request_data, app_dic, rescan)
         elif typ == 'aar':
-            return aar_analysis(request_data, app_dic, rescan, api)
+            return aar_analysis(request_data, app_dic, rescan)
         elif typ == 'so':
-            return so_analysis(request_data, app_dic, rescan, api)
+            return so_analysis(request_data, app_dic, rescan)
         elif typ == 'zip':
             ret = f'/static_analyzer_ios/{checksum}/'
             # Check if in DB

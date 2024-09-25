@@ -57,7 +57,7 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 logger = logging.getLogger(__name__)
 
 
-def common_analysis(request, app_dic, rescan, api, analysis_type):
+def common_analysis(request, app_dic, rescan, analysis_type):
     app_dic['app_file'] = f'{app_dic["md5"]}.{analysis_type}'  # NEW FILENAME
     app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
     app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
@@ -212,19 +212,16 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         context['virus_total'] = vt.get_result(
             app_dic['app_path'],
             app_dic['md5'])
-    template = 'static_analysis/android_binary_analysis.html'
-    if api:
-        return context
-    else:
-        return render(request, template, context)
+    context['template'] = 'static_analysis/android_binary_analysis.html'
+    return context
 
 
-def jar_analysis(request, app_dic, rescan, api):
-    return common_analysis(request, app_dic, rescan, api, 'jar')
+def jar_analysis(request, app_dic, rescan):
+    return common_analysis(request, app_dic, rescan, 'jar')
 
 
-def aar_analysis(request, app_dic, rescan, api):
-    return common_analysis(request, app_dic, rescan, api, 'aar')
+def aar_analysis(request, app_dic, rescan):
+    return common_analysis(request, app_dic, rescan, 'aar')
 
 
 def obfuscated_check(src, code_an_dic):
