@@ -31,8 +31,7 @@ def static_analysis_test():
     """Test Static Analyzer."""
     logger.info('Running Static Analyzer Unit test')
     try:
-        uploaded = []
-        logger.info('Running Upload Test')
+        uploaded = []        
         http_client = Client()
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
@@ -40,6 +39,7 @@ def static_analysis_test():
                 continue
             if platform.system() == 'Windows' and filename.endswith('.ipa'):
                 continue
+            logger.info('Running Upload Test for: %s', filename)
             fpath = os.path.join(apk_dir, filename)
             with open(fpath, 'rb') as file_pointer:
                 response = http_client.post(
