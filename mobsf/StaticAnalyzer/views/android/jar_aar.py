@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 from django.conf import settings
-from django.shortcuts import render
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -57,7 +56,7 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 logger = logging.getLogger(__name__)
 
 
-def common_analysis(request, app_dic, rescan, analysis_type):
+def common_analysis(request, app_dic, rescan, api, analysis_type):
     app_dic['app_file'] = f'{app_dic["md5"]}.{analysis_type}'  # NEW FILENAME
     app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
     app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
@@ -216,12 +215,12 @@ def common_analysis(request, app_dic, rescan, analysis_type):
     return context
 
 
-def jar_analysis(request, app_dic, rescan):
-    return common_analysis(request, app_dic, rescan, 'jar')
+def jar_analysis(request, app_dic, rescan, api):
+    return common_analysis(request, app_dic, rescan, api, 'jar')
 
 
-def aar_analysis(request, app_dic, rescan):
-    return common_analysis(request, app_dic, rescan, 'aar')
+def aar_analysis(request, app_dic, rescan, api):
+    return common_analysis(request, app_dic, rescan, api, 'aar')
 
 
 def obfuscated_check(src, code_an_dic):
