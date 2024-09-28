@@ -19,7 +19,6 @@ from lxml import etree
 
 
 from django.conf import settings
-from django.shortcuts import render
 from django.utils import timezone
 from django.utils.html import escape
 
@@ -66,7 +65,7 @@ def staticanalyzer_windows(request, checksum, api=False):
         rescan = (request.get('rescan', 0) == '1')
         if rescan:
             logger.info('Performing rescan')
-        app_dict = {}
+        app_dic = {}
         if not is_md5(checksum):
             return print_n_send_error_response(
                 request,
@@ -142,8 +141,7 @@ def staticanalyzer_windows(request, checksum, api=False):
             context['virus_total'] = vt.get_result(
                 os.path.join(app_dic['app_dir'], app_dic['md5']) + '.appx',
                 app_dic['md5'])
-        context['template'] = \
-                'static_analysis/windows_binary_analysis.html'
+        context['template'] = 'static_analysis/windows_binary_analysis.html'
         logger.info('Scan complete')
         return context
     except Exception as exception:
