@@ -101,6 +101,7 @@ register.filter('relative_path', relative_path)
 
 
 def static_analyzer_request(request, checksum):
+    logger.info(checksum)
     response = static_analyzer(request.GET, checksum, False)
     response['is_admin'] = is_admin(request)
     if 'template' in response:

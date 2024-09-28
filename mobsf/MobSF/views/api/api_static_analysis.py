@@ -459,23 +459,31 @@ def scan(request_data):
         scan_type = request_data['scan_type']
         # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
         if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
-            resp = static_analyzer(request_data, True)
+            resp = static_analyzer(request_data,
+                                   request_data['hash'],
+                                   True)
             if 'type' in resp:
-                resp = static_analyzer_ios(request_data, True)
+                resp = static_analyzer_ios(request_data,
+                                           request_data['hash'],
+                                           True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
                 response = make_api_response(resp, 200)
         # IPA
         elif scan_type in {'ipa', 'dylib', 'a'}:
-            resp = static_analyzer_ios(request_data, True)
+            resp = static_analyzer_ios(request_data,
+                                       request_data['hash'],
+                                       True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
                 response = make_api_response(resp, 200)
         # APPX
         elif scan_type == 'appx':
-            resp = windows.staticanalyzer_windows(request_data, True)
+            resp = windows.staticanalyzer_windows(request_data,
+                                                  request_data['hash'],
+                                                  True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
