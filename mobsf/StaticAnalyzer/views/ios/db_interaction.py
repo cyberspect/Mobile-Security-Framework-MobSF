@@ -142,6 +142,7 @@ def save_or_update(update_type,
                    all_files):
     """Save/Update an IPA/ZIP DB entry."""
     try:
+        logger.info(bin_dict)
         values = {
             'FILE_NAME': app_dict['file_name'],
             'APP_NAME': info_dict['bin_name'],
