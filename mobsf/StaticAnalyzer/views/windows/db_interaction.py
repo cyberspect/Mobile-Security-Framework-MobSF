@@ -3,11 +3,7 @@ import logging
 
 from django.conf import settings
 
-from mobsf.MobSF.utils import (
-    append_scan_status,
-    get_scan_logs,
-    python_list,
-)
+from mobsf.MobSF.utils import python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
 from mobsf.StaticAnalyzer.models import RecentScansDB
 
@@ -42,7 +38,6 @@ def get_context_from_db_entry(db_entry):
             'strings': python_list(db_entry[0].STRINGS),
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'binary_warnings': python_list(db_entry[0].BINARY_WARNINGS),
-            'logs': get_scan_logs(db_entry[0].MD5),
         }
         return context
     except Exception:
@@ -78,13 +73,10 @@ def get_context_from_analysis(app_dic,
             'strings': bin_an_dic['strings'],
             'binary_analysis': bin_an_dic['results'],
             'binary_warnings': bin_an_dic['warnings'],
-            'logs': get_scan_logs(app_dic['md5']),
         }
         return context
-    except Exception as exp:
-        msg = 'Rendering to Template'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+    except Exception:
+        logger.exception('Rendering to Template')
 
 
 def save_or_update(update_type,
@@ -124,10 +116,8 @@ def save_or_update(update_type,
         else:
             StaticAnalyzerWindows.objects.filter(
                 MD5=app_dic['md5']).update(**values)
-    except Exception as exp:
-        msg = 'Failed to Save/Update Database'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+    except Exception:
+        logger.exception('Updating DB')
     try:
         values = {
             'APP_NAME': bin_an_dic['bin_name'],
@@ -136,7 +126,5 @@ def save_or_update(update_type,
         }
         RecentScansDB.objects.filter(
             MD5=app_dic['md5']).update(**values)
-    except Exception as exp:
-        msg = 'Updating RecentScansDB table failed'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+    except Exception:
+        logger.exception('Updating RecentScansDB')

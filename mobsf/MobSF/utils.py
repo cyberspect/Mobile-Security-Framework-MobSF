@@ -892,27 +892,13 @@ def valid_host(host):
             return False
         # Local network
         invalid_prefix = (
-            '100.64.',
             '127.',
             '192.',
-            '198.',
             '10.',
             '172.',
-            '169.',
+            '169',
             '0.',
-            '203.0.',
-            '224.0.',
-            '240.0',
-            '255.255.',
-            'localhost',
-            '::1',
-            '64::ff9b::',
-            '100::',
-            '2001::',
-            '2002::',
-            'fc00::',
-            'fe80::',
-            'ff00::')
+            'localhost')
         if domain.startswith(invalid_prefix):
             return False
         ip = socket.gethostbyname(domain)
@@ -922,41 +908,6 @@ def valid_host(host):
         return True
     except Exception:
         return False
-
-
-def append_scan_status(checksum, status, exception=None):
-    """Append Scan Status to Database."""
-    try:
-        db_obj = RecentScansDB.objects.get(MD5=checksum)
-        if status == 'init':
-            db_obj.SCAN_LOGS = []
-            db_obj.save()
-            return
-        current_logs = python_dict(db_obj.SCAN_LOGS)
-        current_logs.append({
-            'timestamp': utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-            'status': status,
-            'exception': exception})
-        db_obj.SCAN_LOGS = current_logs
-        db_obj.save()
-    except RecentScansDB.DoesNotExist:
-        # Expected to fail for iOS Dynamic Analysis Report Generation
-        # Calls MalwareScan and TrackerScan with different checksum
-        pass
-    except Exception:
-        logger.exception('Appending Scan Status to Database')
-
-
-def get_scan_logs(checksum):
-    """Get the scan logs for the given checksum."""
-    try:
-        db_entry = RecentScansDB.objects.filter(MD5=checksum)
-        if db_entry.exists():
-            return python_list(db_entry[0].SCAN_LOGS)
-    except Exception:
-        msg = 'Fetching scan logs from the DB failed.'
-        logger.exception(msg)
-    return []
 
 
 def is_admin(request):

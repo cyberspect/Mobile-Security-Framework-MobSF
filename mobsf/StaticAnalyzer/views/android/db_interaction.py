@@ -5,12 +5,7 @@ from django.conf import settings
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from mobsf.MobSF.utils import (
-    append_scan_status,
-    get_scan_logs,
-    python_dict,
-    python_list,
-)
+from mobsf.MobSF.utils import python_dict, python_list
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -27,8 +22,7 @@ logger = logging.getLogger(__name__)
 def get_context_from_db_entry(db_entry: QuerySet) -> dict:
     """Return the context for APK/ZIP from DB."""
     try:
-        msg = 'Analysis is already Done. Fetching data from the DB...'
-        logger.info(msg)
+        logger.info('Analysis is already Done. Fetching data from the DB...')
         package = db_entry[0].PACKAGE_NAME
         code = process_suppression(
             python_dict(db_entry[0].CODE_ANALYSIS),
@@ -87,12 +81,10 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
-            'logs': get_scan_logs(db_entry[0].MD5),
         }
         return context
     except Exception:
-        msg = 'Fetching data from the DB failed.'
-        logger.exception(msg)
+        logger.exception('Fetching from DB')
 
 
 def get_context_from_analysis(app_dic,
@@ -161,13 +153,10 @@ def get_context_from_analysis(app_dic,
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
             'secrets': code_an_dic['secrets'],
-            'logs': get_scan_logs(app_dic['md5']),
         }
         return context
-    except Exception as exp:
-        msg = 'Rendering to Template failed.'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+    except Exception:
+        logger.exception('Rendering to Template')
 
 
 def save_or_update(update_type,
@@ -237,10 +226,8 @@ def save_or_update(update_type,
         else:
             StaticAnalyzerAndroid.objects.filter(
                 MD5=app_dic['md5']).update(**values)
-    except Exception as exp:
-        msg = 'Failed to Save/Update Database'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+    except Exception:
+        logger.exception('Updating DB')
     try:
         values = {
             'APP_NAME': app_dic['real_name'],
@@ -249,24 +236,18 @@ def save_or_update(update_type,
         }
         RecentScansDB.objects.filter(
             MD5=app_dic['md5']).update(**values)
-    except Exception as exp:
-        msg = 'Updating RecentScansDB table failed'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+    except Exception:
+        logger.exception('Updating RecentScansDB')
 
 
 def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
     # SAVE TO DB
     if rscn:
-        msg = 'Updating Database...'
-        logger.info(msg)
-        append_scan_status(app['md5'], msg)
+        logger.info('Updating Database...')
         action = 'update'
         update_scan_timestamp(app['md5'])
     else:
-        msg = 'Saving to Database'
-        logger.info(msg)
-        append_scan_status(app['md5'], msg)
+        logger.info('Saving to Database')
         action = 'save'
     save_or_update(
         action,
