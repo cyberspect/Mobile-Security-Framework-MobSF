@@ -142,8 +142,9 @@ def save_or_update(update_type,
                    all_files):
     """Save/Update an IPA/ZIP DB entry."""
     try:
-        logger.info('Save or Update')
-        logger.info(bin_dict)
+        if 'framework_analysis' not in bin_dict:
+            logger.error('Missing framework_analysis in bin_dict')
+            logger.error(list(bin_dict.keys()))
         values = {
             'FILE_NAME': app_dict['file_name'],
             'APP_NAME': info_dict['bin_name'],
