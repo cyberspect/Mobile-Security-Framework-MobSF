@@ -934,7 +934,7 @@ def append_scan_status(checksum, status, exception=None):
             return
         current_logs = python_dict(db_obj.SCAN_LOGS)
         current_logs.append({
-            'timestamp': utcnow(),
+            'timestamp': utcnow().strftime('%Y-%m-%d %H:%M:%S'),
             'status': status,
             'exception': exception})
         db_obj.SCAN_LOGS = current_logs
