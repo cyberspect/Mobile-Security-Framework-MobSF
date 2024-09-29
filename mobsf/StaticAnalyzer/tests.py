@@ -67,6 +67,7 @@ def static_analysis_test():
                 upl['hash'])
             if RESCAN:
                 scan_url = scan_url + '?rescan=1'
+            logger.info(scan_url)
             resp = http_client.get(scan_url, follow=True)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s', scan_url)
