@@ -281,6 +281,7 @@ def static_analyzer_ios(request_data, checksum, api=False):
                     'bin_info': {},
                     'bin_type': code_analysis_dic['source_type'],
                     'dylib_analysis': {},
+                    'framework_analysis': [],
                 }
                 context = save_get_ctx(
                     app_dict,
