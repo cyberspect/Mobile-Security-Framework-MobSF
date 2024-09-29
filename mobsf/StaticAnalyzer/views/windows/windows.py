@@ -57,6 +57,8 @@ config = None
 # Code to support Windows Static Code Analysis
 ##############################################################
 # Windows Support Functions
+
+
 def staticanalyzer_windows_request(request, checksum):
     response = staticanalyzer_windows(request.GET, checksum)
     response['is_admin'] = is_admin(request)
