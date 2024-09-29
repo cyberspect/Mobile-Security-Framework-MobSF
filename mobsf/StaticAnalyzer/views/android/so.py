@@ -32,7 +32,7 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 logger = logging.getLogger(__name__)
 
 
-def so_analysis(request, app_dic, rescan):
+def so_analysis(request, app_dic, rescan, api):
     app_dic['app_file'] = f'{app_dic["md5"]}.so'  # NEW FILENAME
     app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
     app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
