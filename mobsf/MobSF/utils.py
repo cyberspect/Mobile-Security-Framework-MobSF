@@ -38,7 +38,6 @@ from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from mobsf.StaticAnalyzer.models import RecentScansDB
 
 from . import settings
 
