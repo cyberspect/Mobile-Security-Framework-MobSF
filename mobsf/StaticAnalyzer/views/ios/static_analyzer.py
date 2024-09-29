@@ -263,9 +263,7 @@ def static_analyzer_ios(request_data, checksum, api=False):
                 if ios_strs['secrets']:
                     app_dict['secrets'].extend(list(ios_strs['secrets']))
                 # Get App Icon
-                app_dict['icon_found'] = get_icon_source(
-                    app_dict['md5_hash'],
-                    app_dict['app_dir'])
+                get_icon_source(app_dict)
                 # Firebase DB Check
                 code_analysis_dic['firebase'] = firebase_analysis(
                     list(set(code_analysis_dic['urls_list'])))
