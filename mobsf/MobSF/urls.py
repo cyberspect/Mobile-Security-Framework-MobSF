@@ -200,14 +200,14 @@ if settings.API_ONLY == '0':
                 name='manifest_view'),
         # IOS
         re_path(r'^static_analyzer_ios/(?P<checksum>[0-9a-f]{32})/$',
-                ios_sa.static_analyzer_ios,
+                ios_sa.static_analyzer_ios_request,
                 name='static_analyzer_ios'),
         re_path(r'^view_file_ios/$',
                 io_view_source.run,
                 name='view_file_ios'),
         # Windows
         re_path(r'^static_analyzer_windows/(?P<checksum>[0-9a-f]{32})/$',
-                windows.staticanalyzer_windows,
+                windows.staticanalyzer_windows_request,
                 name='static_analyzer_windows'),
         # Shared
         re_path(r'^pdf/(?P<checksum>[0-9a-f]{32})/$', pdf.pdf, name='pdf'),
