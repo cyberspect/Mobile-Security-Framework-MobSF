@@ -213,6 +213,7 @@ def print_n_send_error_response(request,
             'exp': exp,
             'doc': msg,
             'version': settings.MOBSF_VER,
+            'is_admin': False,
         }
         template = 'general/error.html'
         return render(request, template, context, status=500)
