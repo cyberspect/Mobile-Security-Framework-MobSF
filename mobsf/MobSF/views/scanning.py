@@ -24,6 +24,8 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
+            classification = data.get('data_privacy_classification', '')
+            attributes = data.get('data_privacy_attributes', '')
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
@@ -41,10 +43,8 @@ def add_to_recent_scan(data):
                 EMAIL=data.get('email', ''),
                 USER_GROUPS=data.get('user_groups', ''),
                 RELEASE=data.get('release', False),
-                DATA_PRIVACY_CLASSIFICATION=
-                data.get('data_privacy_classification', ''),
-                DATA_PRIVACY_ATTRIBUTES=
-                data.get('data_privacy_attributes', ''))
+                DATA_PRIVACY_CLASSIFICATION=classification,
+                DATA_PRIVACY_ATTRIBUTES=attributes)
 
             new_db_obj.save()
         else:
