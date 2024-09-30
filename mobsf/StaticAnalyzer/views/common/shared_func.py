@@ -394,7 +394,7 @@ def scan_library(request, checksum):
             msg = 'Library File not found'
             return print_n_send_error_response(request, msg)
         with open(sfile, 'rb') as f:
-            libchecksum = handle_uploaded_file(f, ext)
+            libchecksum = handle_uploaded_file(f, ext, None)
         if ext in ('.ipa', '.dylib', '.a'):
             static_analyzer = 'static_analyzer_ios'
         elif ext == '.appx':
