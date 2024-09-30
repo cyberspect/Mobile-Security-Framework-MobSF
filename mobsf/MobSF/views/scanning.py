@@ -25,26 +25,26 @@ def add_to_recent_scan(data):
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
             new_db_obj = RecentScansDB(
-                ANALYZER = data['analyzer'],
-                SCAN_TYPE = data['scan_type'],
-                FILE_NAME = data['file_name'],
-                APP_NAME = '',
-                PACKAGE_NAME = '',
-                VERSION_NAME = '',
-                MD5 = data['hash'],
-                TIMESTAMP = utcnow(),
-                USER_APP_NAME = data.get('user_app_name', ''),
-                USER_APP_VERSION = data.get('user_app_version', ''),
-                DIVISION = data.get('division', ''),
-                ENVIRONMENT = data.get('environment', ''),
-                COUNTRY = data.get('country', ''),
-                EMAIL = data.get('email', ''),
-                USER_GROUPS = data.get('user_groups', ''),
-                RELEASE = data.get('release', False),
-                DATA_PRIVACY_CLASSIFICATION = \
-                    data.get('data_privacy_classification', ''),
-                DATA_PRIVACY_ATTRIBUTES = \
-                    data.get('data_privacy_attributes', ''))
+                ANALYZER=data['analyzer'],
+                SCAN_TYPE=data['scan_type'],
+                FILE_NAME=data['file_name'],
+                APP_NAME='',
+                PACKAGE_NAME='',
+                VERSION_NAME='',
+                MD5=data['hash'],
+                TIMESTAMP=utcnow(),
+                USER_APP_NAME=data.get('user_app_name', ''),
+                USER_APP_VERSION=data.get('user_app_version', ''),
+                DIVISION=data.get('division', ''),
+                ENVIRONMENT=data.get('environment', ''),
+                COUNTRY=data.get('country', ''),
+                EMAIL=data.get('email', ''),
+                USER_GROUPS=data.get('user_groups', ''),
+                RELEASE=data.get('release', False),
+                DATA_PRIVACY_CLASSIFICATION=
+                data.get('data_privacy_classification', ''),
+                DATA_PRIVACY_ATTRIBUTES=
+                data.get('data_privacy_attributes', ''))
 
             new_db_obj.save()
         else:
@@ -58,7 +58,7 @@ def add_to_recent_scan(data):
             scan.TIMESTAMP = utcnow()
             scan.USER_APP_NAME = data.get('user_app_name', '')
             scan.USER_APP_VERSION = data.get('user_app_version', '')
-            scan.DIVISION = data.get('division', ''),
+            scan.DIVISION = data.get('division', '')
             scan.ENVIRONMENT = data.get('environment', '')
             scan.COUNTRY = data.get('country', '')
             scan.RELEASE = data.get('release', '')
