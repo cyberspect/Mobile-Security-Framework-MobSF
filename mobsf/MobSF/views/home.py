@@ -221,6 +221,7 @@ def api_docs(request):
         'title': 'API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
+        'is_admin': True,
     }
     template = 'general/apidocs.html'
     return render(request, template, context)
