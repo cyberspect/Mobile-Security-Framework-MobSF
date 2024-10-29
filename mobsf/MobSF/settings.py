@@ -5,7 +5,6 @@ Django settings for MobSF project.
 MobSF and Django settings
 """
 
-import imp
 import logging
 import os
 
@@ -43,20 +42,8 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Secret File
 SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
 
-# ==========Load MobSF User Settings==========
-try:
-    if USE_HOME:
-        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
-        sett = imp.load_source('user_settings', USER_CONFIG)
-        locals().update(  # lgtm [py/modification-of-locals]
-            {k: v for k, v in list(sett.__dict__.items())
-                if not k.startswith('__')})
-        CONFIG_HOME = True
-    else:
-        CONFIG_HOME = False
-except Exception:
-    logger.exception('Reading Config')
-    CONFIG_HOME = False
+# ==========MobSF User Settings==========
+CONFIG_HOME = False
 
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
 SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
@@ -304,12 +291,10 @@ JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
 EFR_01 = os.getenv('EFR_01', '0')
 # USER CONFIGURATION
 # ===================
-if CONFIG_HOME:
-    logger.info('Loading User config from: %s', USER_CONFIG)
-else:
+if not CONFIG_HOME:
     """
     IMPORTANT
-    If 'USE_HOME' is set to True,
+    If 'CONFIG_HOME' is set to True,
     then below user configuration settings are not considered.
     The user configuration will be loaded from
     .MobSF/config.py in user's home directory.
