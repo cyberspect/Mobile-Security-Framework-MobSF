@@ -390,9 +390,6 @@ def get_cyberspect_scan(csid):
     db_obj = CyberspectScans.objects.filter(ID=csid).first()
     if db_obj:
         cs_obj = model_to_dict(db_obj)
-        rs_obj = scan_metadata(cs_obj['MOBSF_MD5'])
-        cs_obj['SCAN_TYPE'] = rs_obj['SCAN_TYPE'] if rs_obj else None
-        cs_obj['FILE_NAME'] = rs_obj['FILE_NAME'] if rs_obj else None
         return cs_obj
     return None
 

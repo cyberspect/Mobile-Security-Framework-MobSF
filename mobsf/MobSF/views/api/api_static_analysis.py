@@ -115,8 +115,6 @@ def api_async_scan(request):
         scan_data = {
             'cyberspect_scan_id': csdata['ID'],
             'hash': csdata['MOBSF_MD5'],
-            'scan_type': csdata['SCAN_TYPE'],
-            'file_name': csdata['FILE_NAME'],
             'rescan': request.POST.get('rescan', '0'),
         }
     else:
@@ -454,9 +452,9 @@ def scan(request_data):
         }
         update_cyberspect_scan(data)
 
-        # APK, Android ZIP and iOS ZIP
         response = None
-        scan_type = request_data['scan_type']
+        metadata = scan_metadata(request_data['hash'])
+        scan_type = metadata['SCAN_TYPE']
         # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
         if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
             resp = static_analyzer(request_data,
