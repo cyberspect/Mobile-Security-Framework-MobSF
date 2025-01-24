@@ -322,7 +322,7 @@ def recent_scans(request, page_size=10, page_number=1):
         if (not email_filter):
             email_filter = '@@'
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
-    db_obj = db_obj.order_by('-TIMESTAMP').values()[:100]
+    db_obj = db_obj.order_by('-TIMESTAMP').values()
 
     paginator = Paginator(
         db_obj, page_size,
