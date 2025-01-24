@@ -325,7 +325,7 @@ def recent_scans(request, page_size=10, page_number=1):
     db_obj = db_obj.order_by('-TIMESTAMP').values()[:100]
 
     paginator = Paginator(
-        db_obj, page_size
+        db_obj, page_size,
     )
     page_obj = paginator.get_page(page_number)
     page_obj.page_size = page_size
