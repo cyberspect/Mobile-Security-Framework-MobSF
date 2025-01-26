@@ -32,7 +32,8 @@ from mobsf.MobSF.views.home import (
     update_cyberspect_scan,
     update_scan,
 )
-from mobsf.StaticAnalyzer.views.android import view_source
+from mobsf.MobSF.views.api.api_middleware import make_api_response
+from mobsf.StaticAnalyzer.views.android.views import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
@@ -48,7 +49,7 @@ from mobsf.StaticAnalyzer.views.common.pdf import pdf
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
 from mobsf.StaticAnalyzer.views.windows import windows
 
-from background_task import background
+#from background_task import background
 
 
 logger = logging.getLogger(__name__)
@@ -486,7 +487,7 @@ def api_update_cyberspect_scan(request):
         return make_api_response({'id': request.POST['id']}, 404)
 
 
-@background(schedule=None)
+#@background(schedule=None)
 def async_scan(request_data):
     scan(request_data)
 
