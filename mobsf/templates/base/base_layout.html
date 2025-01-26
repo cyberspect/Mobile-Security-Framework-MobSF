@@ -25,8 +25,23 @@
   <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-  {% block extra_css %}
+  <style>
+    body {
+      zoom: 0.8; 
+    }
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1040; /* Ensure it is above most elements but below modal */
+      background-color: rgba(0, 0, 0, 0.5); /* Default backdrop color */
+    }
 
+  </style>
+  {% block extra_css %}
+ 
   {% endblock %}
 </head>
 <body class="hold-transition {% block sidebar_option %} {% endblock %} layout-fixed layout-navbar-fixed">
@@ -89,11 +104,19 @@
 
   <!-- Control Sidebar -->
   <aside class="control-sidebar control-sidebar-dark">
-    <!-- Control sidebar content goes here -->
   </aside>
   <!-- /.control-sidebar -->
 </div>
 <!-- ./wrapper -->
+<div class="modal fade scan-logs-mdl" tabindex="-1" role="dialog" aria-labelledby="scan-logs-mdl-label" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      {% block scan_logs %}
+      {% endblock %}
+    </div>
+  </div>
+</div>
+
 
 <!-- jQuery -->
 <script src="{% static 'adminlte/plugins/jquery.min.js' %}"></script>
@@ -102,6 +125,16 @@
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
   $.widget.bridge('uibutton', $.ui.button)
+  // Replace datatables alert with console.warn
+  window.alert = (function() {
+    var nativeAlert = window.alert;
+    return function(message) {
+        window.alert = nativeAlert;
+        message.indexOf("DataTables warning") === 0 ?
+            console.warn(message) :
+            nativeAlert(message);
+    }
+})();
 </script>
 <!-- Bootstrap 4 -->
 <script src="{% static 'adminlte/plugins/bootstrap/bootstrap.bundle.min.js' %}"></script>

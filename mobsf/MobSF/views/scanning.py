@@ -7,6 +7,7 @@ import os
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF.security import sanitize_filename
 from mobsf.MobSF.utils import (
     get_siphash,
     get_usergroups,
@@ -114,7 +115,7 @@ class Scanning(object):
     def __init__(self, request):
         if ('file' in request.FILES):
             self.file = request.FILES['file']
-            self.file_name = self.file.name
+            self.file_name = sanitize_filename(self.file.name)
             self.file_type = FileType(self.file)
             self.file_size = self.file.size
         else:

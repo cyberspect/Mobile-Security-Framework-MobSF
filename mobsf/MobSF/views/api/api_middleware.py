@@ -1,12 +1,40 @@
 # -*- coding: utf_8 -*-
-import hashlib
+"""REST API Middleware."""
+from hmac import compare_digest
 
-from django.conf import settings
+from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
+from django.conf import settings
 
+from mobsf.MobSF.init import api_key
 from mobsf.MobSF.utils import api_key, make_api_response, utcnow
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.StaticAnalyzer.models import ApiKeys
+
+OK = 200
+
+
+def make_api_response(data, status=OK):
+    """Make API Response."""
+    resp = JsonResponse(
+        data=data,
+        status=status,
+        safe=False)
+    resp['Access-Control-Allow-Origin'] = '*'
+    resp['Access-Control-Allow-Methods'] = 'POST'
+    resp['Access-Control-Allow-Headers'] = 'Authorization, X-Mobsf-Api-Key'
+    resp['Content-Type'] = 'application/json; charset=utf-8'
+    return resp
+
+
+def api_auth(meta):
+    """Check if API Key Matches."""
+    mobsf_api_key = api_key(settings.MOBSF_HOME)
+    if 'HTTP_X_MOBSF_API_KEY' in meta:
+        return compare_digest(mobsf_api_key, meta['HTTP_X_MOBSF_API_KEY'])
+    elif 'HTTP_AUTHORIZATION' in meta:
+        return compare_digest(mobsf_api_key, meta['HTTP_AUTHORIZATION'])
+    return False
 
 
 class RestApiAuthMiddleware(MiddlewareMixin):

@@ -7,8 +7,14 @@ from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+)
 from mobsf.MobSF.utils import (
+    get_scan_logs,
+    is_md5,
     make_api_response,
     sso_email,
     utcnow,
@@ -22,13 +28,15 @@ from mobsf.MobSF.views.home import (
     generate_download,
     get_cyberspect_scan,
     scan_metadata,
+    search,
     update_cyberspect_scan,
     update_scan,
 )
 from mobsf.StaticAnalyzer.views.android import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
-from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
+from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
+from mobsf.StaticAnalyzer.views.common.async_task import list_tasks
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
     delete_suppression,
@@ -152,6 +160,31 @@ def api_rescan(request):
 
 @request_method(['POST'])
 @csrf_exempt
+def api_scan_logs(request):
+    """POST - Get Scan logs."""
+    if 'hash' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = get_scan_logs(request.POST['hash'])
+    if not resp:
+        return make_api_response(
+            {'error': 'No scan logs found'}, 400)
+    return make_api_response({'logs': resp}, 200)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_tasks(request):
+    """POST - Get Scan Queue."""
+    resp = list_tasks(request, True)
+    if not resp:
+        return make_api_response(
+            {'error': 'Scan queue empty'}, 400)
+    return make_api_response(resp, 200)
+
+
+@request_method(['POST'])
+@csrf_exempt
 def api_delete_scan(request):
     """POST - Delete a Scan."""
     if 'hash' not in request.POST:
@@ -242,6 +275,21 @@ def api_json_report(request):
         response = make_api_response(
             {'error': 'JSON Generation Error'}, 500)
     return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_search(request):
+    """Search by checksum or text."""
+    if 'query' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = search(request, api=True)
+    if 'checksum' in resp:
+        request.POST = {'hash': resp['checksum']}
+        return api_json_report(request)
+    elif 'error' in resp:
+        return make_api_response(resp, 404)
 
 
 @request_method(['POST'])
