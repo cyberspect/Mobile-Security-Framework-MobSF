@@ -450,7 +450,3 @@ JADX_THREADS = os.getenv('JADX_THREADS', '4')
 
 # Customization settings
 CZ100 = os.getenv('CZ100', '')
-
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'utils.FasterPageNumberPagination'
-}
