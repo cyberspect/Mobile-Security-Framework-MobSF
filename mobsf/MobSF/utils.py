@@ -37,6 +37,10 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.core.paginator import Paginator
+from django.utils.functional import cached_property
+
+from rest_framework.pagination import PageNumberPagination
 
 from . import settings
 
