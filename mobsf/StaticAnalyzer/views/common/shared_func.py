@@ -207,6 +207,111 @@ def os_unzip(checksum, app_path, ext_path):
         append_scan_status(checksum, msg, repr(exp))
     return []
 
+def lipo_thin(checksum, src, dst):
+    """Thin Fat binary."""
+    new_src = None
+    try:
+        msg = 'Thinning Fat binary'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
+        lipo = shutil.which('lipo')
+        out = Path(dst) / (Path(src).stem + '_thin.a')
+        new_src = out.as_posix()
+        archs = [
+            'armv7', 'armv6', 'arm64', 'x86_64',
+            'armv4t', 'armv5', 'armv6m', 'armv7f',
+            'armv7s', 'armv7k', 'armv7m', 'armv7em',
+            'arm64v8']
+        for arch in archs:
+            args = [
+                lipo,
+                src,
+                '-thin',
+                arch,
+                '-output',
+                new_src]
+            out = subprocess.run(
+                args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT)
+            if out.returncode == 0:
+                break
+    except Exception as exp:
+        msg = 'lipo Fat binary thinning failed'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
+    return new_src
+
+
+def ar_os(src, dst):
+    out = ''
+    """Extract AR using OS utility."""
+    cur = os.getcwd()
+    try:
+        os.chdir(dst)
+        out = subprocess.check_output(
+            [shutil.which('ar'), 'x', src],
+            stderr=subprocess.STDOUT)
+    except Exception as exp:
+        out = exp.output
+    finally:
+        os.chdir(cur)
+    return out
+
+
+def ar_extract(checksum, src, dst):
+    """Extract AR archive."""
+    msg = 'Extracting static library archive'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    try:
+        ar = arpy.Archive(src)
+        ar.read_all_headers()
+        for a, val in ar.archived_files.items():
+            # Handle archive slip attacks
+            filtered = a.decode('utf-8', 'ignore')
+            if is_path_traversal(filtered):
+                msg = f'Zip slip detected. skipped extracting {filtered}'
+                logger.warning(msg)
+                append_scan_status(checksum, msg)
+                continue
+            out = Path(dst) / filtered
+            out.write_bytes(val.read())
+    except Exception:
+        # Possibly dealing with Fat binary, needs Mac host
+        msg = 'Failed to extract .a archive'
+        logger.warning(msg)
+        append_scan_status(checksum, msg)
+        # Use os ar utility
+        plat = platform.system()
+        os_err = 'Possibly a Fat binary. Requires MacOS for Analysis'
+        if plat == 'Windows':
+            logger.warning(os_err)
+            append_scan_status(checksum, os_err)
+            return
+        msg = 'Using OS ar utility to handle archive'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
+        exp = ar_os(src, dst)
+        if len(exp) > 3 and plat == 'Linux':
+            # Can't convert FAT binary in Linux
+            logger.warning(os_err)
+            append_scan_status(checksum, os_err)
+            return
+        if b'lipo(1)' in exp:
+            msg = 'Fat binary archive identified'
+            logger.info(msg)
+            append_scan_status(checksum, msg)
+            # Fat binary archive
+            try:
+                nw_src = lipo_thin(checksum, src, dst)
+                if nw_src:
+                    ar_os(nw_src, dst)
+            except Exception as exp:
+                msg = 'Failed to thin fat archive'
+                logger.exception(msg)
+                append_scan_status(checksum, msg, repr(exp))
+
 
 def url_n_email_extract(dat, relative_path):
     """Extract URLs and Emails from Source Code."""
