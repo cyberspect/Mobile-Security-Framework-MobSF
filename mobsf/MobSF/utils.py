@@ -149,7 +149,7 @@ def print_version():
     logger.info(env_str)
     cores, threads, ram = get_system_resources()
     logger.info('CPU Cores: %s, Threads: %s, RAM: %.2f GB', cores, threads, ram)
-    logger.info('File storage: %s', settings.MobSF_HOME)
+    logger.info('File storage: %s', settings.MOBSF_HOME)
     logger.info('Administrators: %s', settings.ADMIN_USERS)
     find_java_binary()
     check_basic_env()
