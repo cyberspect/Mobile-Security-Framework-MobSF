@@ -40,16 +40,6 @@ def api_auth(meta):
 class RestApiAuthMiddleware(MiddlewareMixin):
     """Middleware for REST API."""
 
-    readonly_funcs = [api_sz.api_upload, api_sz.api_scan_metadata,
-                      api_sz.api_scan, api_sz.api_async_scan,
-                      api_sz.api_rescan, api_sz.api_pdf_report,
-                      api_sz.api_json_report, api_sz.api_view_source,
-                      api_sz.api_recent_scans, api_sz.api_release_scans,
-                      api_sz.api_compare, api_sz.api_scorecard,
-                      api_sz.api_cyberspect_get_scan,
-                      api_sz.api_cyberspect_recent_scans,
-                      api_sz.api_cyberspect_completed_scans]
-
     def process_request(self, request):
         """Handle API authentication."""
         request.META['email'] = ''
@@ -66,6 +56,16 @@ class RestApiAuthMiddleware(MiddlewareMixin):
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         """Handle API authorization."""
+        readonly_funcs = [api_sz.api_upload, api_sz.api_scan_metadata,
+                      api_sz.api_scan, api_sz.api_async_scan,
+                      api_sz.api_rescan, api_sz.api_pdf_report,
+                      api_sz.api_json_report, api_sz.api_view_source,
+                      api_sz.api_recent_scans, api_sz.api_release_scans,
+                      api_sz.api_compare, api_sz.api_scorecard,
+                      api_sz.api_cyberspect_get_scan,
+                      api_sz.api_cyberspect_recent_scans,
+                      api_sz.api_cyberspect_completed_scans]
+
         if not request.path.startswith('/api/'):
             return
         if (self.restricted_endpoint(request)
