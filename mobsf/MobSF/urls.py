@@ -229,6 +229,7 @@ if settings.API_ONLY == '0':
                 name='list_tasks'),
         re_path(r'^logout$', home.logout_aws),
         re_path(r'^health$', home.health),
+        re_path(r'^app_info$', home.app_info, name='app_info'),
         re_path(r'^admin$', admin.admin_view, name='admin'),
         re_path(r'^admin/create_api_key$', admin.create_api_key_post),
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
