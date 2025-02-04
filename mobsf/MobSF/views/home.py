@@ -343,8 +343,17 @@ def not_found(request):
     return render(request, template, context)
 
 
-@login_required
-def recent_scans(request, page_size=10, page_number=1):
+def not_found(request):
+    """Not Found Route."""
+    context = {
+        'title': 'Not Found',
+        'version': settings.MOBSF_VER,
+    }
+    template = 'general/not_found.html'
+    return render(request, template, context)
+
+
+def recent_scans(request, page_size=20, page_number=1):
     """Show Recent Scans Route."""
     entries = []
     query = RecentScansDB.objects.all().order_by('-TIMESTAMP')
@@ -353,8 +362,10 @@ def recent_scans(request, page_size=10, page_number=1):
         email_filter = sso_email(request)
         if (not email_filter):
             email_filter = '@@'
-        query = query.filter(EMAIL__contains=email_filter)
-    paginator = Paginator(query.values(), page_size)
+        db_obj = db_obj.filter(EMAIL__contains=email_filter)
+    db_obj = db_obj.order_by('-TIMESTAMP').values()
+
+    paginator = Paginator(db_obj, page_size)
     page_obj = paginator.get_page(page_number)
     page_obj.page_size = page_size
     md5_list = [i['MD5'] for i in page_obj]
@@ -373,7 +384,6 @@ def recent_scans(request, page_size=10, page_number=1):
         icon_mapping[item.MD5] = item.ICON_PATH
     for item in ios:
         icon_mapping[item.MD5] = item.ICON_PATH
-
     for entry in page_obj:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
@@ -403,6 +413,12 @@ def recent_scans(request, page_size=10, page_number=1):
             entry['COMPLETE'] = entry['TIMESTAMP']
             entry['ERROR'] = 'Unable to find cyberspect_scans record'
         entries.append(entry)
+
+    paginator_range = page_obj.paginator.get_elided_page_range(
+        page_number,
+        on_each_side=3,
+        on_ends=1,
+    )
     context = {
         'title': 'Scanned Apps',
         'entries': entries,
@@ -413,6 +429,8 @@ def recent_scans(request, page_size=10, page_number=1):
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
+        'page_obj': page_obj,
+        'paginator_range': paginator_range,
     }
     template = 'general/recent.html'
     return render(request, template, context)
