@@ -55,6 +55,8 @@ from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
+bundle_id_regex = r'(?P<bundle_id>([a-zA-Z0-9]{1}[\w.-]{1,255}))$'
+checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
 
 urlpatterns = [
