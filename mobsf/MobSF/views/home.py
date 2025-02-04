@@ -356,7 +356,17 @@ def not_found(request):
 def recent_scans(request, page_size=20, page_number=1):
     """Show Recent Scans Route."""
     entries = []
-    query = RecentScansDB.objects.all().order_by('-TIMESTAMP')
+    sfilter = request.GET.get('filter', '')
+    if sfilter:
+        if re.match('[0-9a-f]{32}', sfilter):
+            db_obj = RecentScansDB.objects.filter(MD5=sfilter)
+        else:
+            db_obj = RecentScansDB.objects \
+                .filter(Q(APP_NAME__icontains=sfilter)
+                        | Q(USER_APP_NAME__icontains=sfilter))
+    else:
+        db_obj = RecentScansDB.objects.all()
+
     isadmin = is_admin(request)
     if (not isadmin):
         email_filter = sso_email(request)
