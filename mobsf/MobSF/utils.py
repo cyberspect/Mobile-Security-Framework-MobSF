@@ -42,6 +42,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render
+from mobsf.MobSF.init import api_key
 
 from . import settings
 
