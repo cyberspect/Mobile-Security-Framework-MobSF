@@ -27,6 +27,7 @@ from mobsf.MobSF.views.authentication import (
 from mobsf.MobSF.utils import (
     append_scan_status,
     get_scan_logs,
+    is_admin,
 )
 
 logger = logging.getLogger(__name__)
@@ -176,5 +177,6 @@ def list_tasks(request, api=False):
     context = {
         'title': 'Scan Tasks',
         'version': settings.MOBSF_VER,
+        'is_admin': is_admin(request),
     }
     return render(request, 'general/tasks.html', context)
