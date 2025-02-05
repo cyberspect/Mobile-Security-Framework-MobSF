@@ -231,7 +231,11 @@ sidebar-collapse
           i = 1;
         }
       }, 2000);
-      window.location.href = "/recent_scans";
+
+      var url = json.analyzer + '/' + json.hash + '/'
+      setTimeout(function () {
+        window.location.href = url;
+      }, 1000); // Adjust delay as needed
     }
   }
   function progressHandler(event) {
