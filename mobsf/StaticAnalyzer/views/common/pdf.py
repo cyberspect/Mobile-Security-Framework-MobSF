@@ -84,7 +84,7 @@ def pdf(request, checksum, api=False, jsonres=False):
         # Do VT Scan only on binaries
         context['virus_total'] = None
         ext = os.path.splitext(context['file_name'].lower())[1]
-        if settings.VT_ENABLED and ext != '.zip':            
+        if settings.VT_ENABLED and ext != '.zip':
             app_bin = os.path.join(
                 settings.UPLD_DIR,
                 checksum + '/',
