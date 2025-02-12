@@ -18,6 +18,7 @@ from mobsf.MobSF.utils import (
     relative_path,
 )
 from mobsf.StaticAnalyzer.models import (
+    CyberspectScans,
     RecentScansDB,
 )
 from mobsf.StaticAnalyzer.views.android.xapk import (
@@ -72,6 +73,12 @@ def static_analyzer(request, checksum, api=False):
                 request,
                 'The file is not uploaded/available',
                 api)
+        cobj = CyberspectScans.objects.filter(MOBSF_MD5=checksum).last()
+        if not cobj:
+            return print_n_send_error_response(
+                request,
+                'Could not find associated cyberspect scan',
+                api)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         allowed_exts = tuple(f'.{i}' for i in settings.ANDROID_EXTS)
@@ -91,6 +98,7 @@ def static_analyzer(request, checksum, api=False):
         app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
         app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
         app_dic['icon_path'] = ''
+        app_dic['cyberspect_scan_id'] = cobj.ID
         msg = f'Starting Analysis on: {filename}'
         logger.info(msg)
         if typ == 'xapk':

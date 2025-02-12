@@ -14,6 +14,7 @@ from mobsf.MobSF.utils import (
     relative_path,
 )
 from mobsf.StaticAnalyzer.models import (
+    CyberspectScans,
     RecentScansDB,
 )
 from mobsf.StaticAnalyzer.views.common.a import (
@@ -58,6 +59,12 @@ def static_analyzer_ios(request, checksum, api=False):
                 request,
                 'The file is not uploaded/available',
                 api)
+        cobj = CyberspectScans.objects.filter(MOBSF_MD5=checksum).last()
+        if not cobj:
+            return print_n_send_error_response(
+                request,
+                'Could not find associated cyberspect scan',
+                api)
         file_type = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         if file_type == 'dylib' and not Path(filename).suffix:
@@ -81,6 +88,7 @@ def static_analyzer_ios(request, checksum, api=False):
             'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
         app_dict['tools_dir'] = tools_dir.as_posix()
         app_dict['icon_path'] = ''
+        app_dic['cyberspect_scan_id'] = cobj.ID
         if file_type == 'ipa':
             return ipa_analysis(request, app_dict, rescan, api)
         elif file_type == 'dylib':

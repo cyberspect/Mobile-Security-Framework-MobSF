@@ -30,9 +30,9 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
-from mobsf.MobSF.views.home import update_scan_timestamp
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
+    CyberspectScans,
     RecentScansDB,
     StaticAnalyzerWindows,
 )
@@ -91,6 +91,12 @@ def staticanalyzer_windows(request, checksum, api=False):
                 request,
                 'The file is not uploaded/available',
                 api)
+        cobj = CyberspectScans.objects.filter(MOBSF_MD5=checksum).last()
+        if not cobj:
+            return print_n_send_error_response(
+                request,
+                'Could not find associated cyberspect scan',
+                api)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         if typ not in settings.WINDOWS_EXTS:
@@ -98,13 +104,13 @@ def staticanalyzer_windows(request, checksum, api=False):
                 request,
                 'File type not supported',
                 api)
-
         app_dic['app_name'] = filename  # APP ORIGINAL NAME
         app_dic['md5'] = checksum
         app_dic['app_dir'] = os.path.join(
             settings.UPLD_DIR, checksum + '/')
         app_dic['tools_dir'] = os.path.join(
             settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
+        app_dic['cyberspect_scan_id'] = cobj.ID
         # DB
         db_entry = StaticAnalyzerWindows.objects.filter(
             MD5=checksum,

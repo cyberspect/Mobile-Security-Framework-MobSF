@@ -232,7 +232,24 @@ sidebar-collapse
         }
       }, 2000);
 
-      var url = json.analyzer + '/' + json.hash + '/'
+      //var url = json.analyzer + '/' + json.hash + '/'
+      $.ajax({
+        url: "queue_scan",
+        type: "POST",
+        dataType: "json",
+        data: {
+          cyberspect_scan_id: json.cyberspect_scan_id,
+          hash: json.hash
+        },
+        success: function () {
+          setTimeout(function () {
+            window.location.href = '/tasks';
+          }, 1000); // Adjust delay as needed
+        },
+        error: function (xhr, errmsg, err) {
+          //no need to do anything here    
+        }
+      })
       setTimeout(function () {
         window.location.href = url;
       }, 1000); // Adjust delay as needed

@@ -18,7 +18,7 @@ from django.conf import settings
 from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.shortcuts import (
@@ -71,6 +71,9 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     permission_required,
 )
+from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
+from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
+from mobsf.StaticAnalyzer.views.windows import windows
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
@@ -166,7 +169,8 @@ class Upload(object):
                                     self.scan.file_size,
                                     self.scan.source_file_size,
                                     sso_email(self.request))
-            cyberspect_scan_intake(self.scan.populate_data_dict())
+            cyberspect_scan_intake(self.scan.populate_data_dict()) #TODO: REMOVE?
+            response_data['cyberspect_scan_id'] = self.scan.cyberspect_scan_id
             return self.resp_json(response_data)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
@@ -198,7 +202,7 @@ class Upload(object):
                                 self.scan.source_file_size,
                                 sso_email(self.request))
         api_response['cyberspect_scan_id'] = self.scan.cyberspect_scan_id
-        cyberspect_scan_intake(self.scan.populate_data_dict())
+        cyberspect_scan_intake(self.scan.populate_data_dict()) #TODO: REMOVE?
         return api_response, 200
 
     def upload(self):
@@ -1067,11 +1071,11 @@ def cyberspect_rescan(apphash, scheduled, sso_user):
         'email': rs_obj.EMAIL,
         'rescan': '1',
     }
-    cyberspect_scan_intake(scan_data)
+    cyberspect_scan_intake(scan_data) #TODO: REMOVE?
     return scan_data
 
 
-def cyberspect_scan_intake(scan):
+def cyberspect_scan_intake(scan): #TODO: REMOVE?
     if not settings.AWS_INTAKE_LAMBDA:
         logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
         return
@@ -1107,6 +1111,85 @@ def health(request):
     data = {'status': 'OK'}
     return HttpResponse(json.dumps(data),
                         content_type='application/json; charset=utf-8')
+
+@require_http_methods(['POST'])
+def queue_scan(request):
+    try:
+        # Track scan start time
+        data = {
+            'id': request.POST['cyberspect_scan_id'],
+            'sast_start': utcnow(),
+        }
+        update_cyberspect_scan(data)
+
+        response = None
+        metadata = scan_metadata(request.POST['hash'])
+        scan_type = metadata['SCAN_TYPE']
+        # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
+        if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
+            resp = static_analyzer(request,
+                                   request.POST['hash'],
+                                   True)
+            if 'type' in resp:
+                resp = static_analyzer_ios(request,
+                                           request.POST['hash'],
+                                           True)
+            if 'error' in resp:
+                response = JsonResponse(data=resp, status=500, safe=False)
+                #response = make_api_response(resp, 500)
+            else:
+                print(resp)
+                response = JsonResponse(data=resp, status=200, safe=False)
+                #response = make_api_response(resp, 200)
+        # IPA
+        elif scan_type in {'ipa', 'dylib', 'a'}:
+            resp = static_analyzer_ios(request,
+                                       request.POST['hash'],
+                                       True)
+            if 'error' in resp:
+                response = JsonResponse(data=resp, status=500, safe=False)
+                #response = make_api_response(resp, 500)
+            else:
+                response = JsonResponse(data=resp, status=200, safe=False)
+                #response = make_api_response(resp, 200)
+        # APPX
+        elif scan_type == 'appx':
+            resp = windows.staticanalyzer_windows(request,
+                                                  request.POST['hash'],
+                                                  True)
+            if 'error' in resp:
+                response = JsonResponse(data=resp, status=500, safe=False)
+                #response = make_api_response(resp, 500)
+            else:
+                response = JsonResponse(data=resp, status=200, safe=False)
+                #response = make_api_response(resp, 200)
+
+        # Record scan end time and failure
+        if response and response.status_code == 500:
+            data['success'] = False
+            data['failure_source'] = 'SAST'
+            data['failure_message'] = resp['error']
+            data['sast_end'] = utcnow()
+        data['sast_start'] = None
+        #data['sast_end'] = utcnow()
+        update_cyberspect_scan(data)
+        return response
+
+    except Exception as exp:
+        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+        logger.error(exmsg)
+        msg = str(exp)
+        data = {
+            'id': request.POST['cyberspect_scan_id'],
+            'success': False,
+            'failure_source': 'SAST',
+            'failure_message': msg,
+            'sast_end': utcnow(),
+        }
+        update_cyberspect_scan(data)
+        response = JsonResponse(data=resp, status=500, safe=False)
+        return response
+        #return make_api_response(data, 500)
 
 
 class RecentScans(object):
