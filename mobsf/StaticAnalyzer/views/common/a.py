@@ -71,6 +71,9 @@ def a_analysis(request, app_dict, rescan, api):
     ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
+        if settings.VT_ENABLED:
+            vt = VirusTotal.VirusTotal()
+            context['virus_total'] = vt.get_result(app_dict['app_path'])
     else:
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
@@ -177,11 +180,7 @@ def a_analysis(request, app_dict, rescan, api):
             code_dict,
             bin_dict,
             rescan)
-    context['virus_total'] = None
-    if settings.VT_ENABLED:
-        vt = VirusTotal.VirusTotal(checksum)
-        context['virus_total'] = vt.get_result(
-            app_dict['app_path'])
+        context['virus_total'] = None
     context['appsec'] = {}
     context['average_cvss'] = None
     template = 'static_analysis/ios_binary_analysis.html'

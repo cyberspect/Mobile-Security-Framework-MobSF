@@ -48,6 +48,9 @@ def so_analysis(request, app_dic, rescan, api):
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        if settings.VT_ENABLED:
+            vt = VirusTotal.VirusTotal()
+            context['virus_total'] = vt.get_result(app_dic['app_path'])
     else:
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
@@ -159,14 +162,10 @@ def so_analysis(request, app_dic, rescan, api):
             trackers,
             rescan,
         )
+        context['virus_total'] = None
     context['appsec'] = {}
     context['average_cvss'] = None
     context['dynamic_analysis_done'] = False
-    context['virus_total'] = None
-    if settings.VT_ENABLED:
-        vt = VirusTotal.VirusTotal(checksum)
-        context['virus_total'] = vt.get_result(
-            app_dic['app_path'])
     template = 'static_analysis/android_binary_analysis.html'
     if api:
         return context
