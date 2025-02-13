@@ -247,7 +247,8 @@ sidebar-collapse
           }, 1000); // Adjust delay as needed
         },
         error: function (xhr, errmsg, err) {
-          //no need to do anything here    
+          alert("Error:" + err);
+          window.location.href = '/recent_scans'; 
         }
       })
       setTimeout(function () {
