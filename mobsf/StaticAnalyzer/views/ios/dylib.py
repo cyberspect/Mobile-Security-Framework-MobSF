@@ -11,6 +11,7 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     append_scan_status,
+    is_admin,
     file_size,
     print_n_send_error_response,
 )
@@ -165,6 +166,7 @@ def dylib_analysis(request, app_dict, rescan, api):
         context['virus_total'] = None
     context['appsec'] = {}
     context['average_cvss'] = None
+    context['is_admin'] = is_admin(request)
     template = 'static_analysis/ios_binary_analysis.html'
     if api:
         return context
