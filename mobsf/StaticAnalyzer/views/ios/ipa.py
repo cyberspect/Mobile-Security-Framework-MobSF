@@ -11,6 +11,7 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     append_scan_status,
+    is_admin,
     file_size,
     print_n_send_error_response,
 )
@@ -243,6 +244,7 @@ def generate_dynamic_context(request, app_dic, context, checksum, api):
         context['virus_total'] = vt.get_result(app_dic['app_path'])
     context['appsec'] = get_ios_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(context['binary_analysis'])
+    context['is_admin'] = is_admin(request)
     template = 'static_analysis/ios_binary_analysis.html'
     return context if api else render(request, template, context)
 
