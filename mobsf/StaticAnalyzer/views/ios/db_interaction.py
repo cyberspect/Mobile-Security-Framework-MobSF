@@ -225,11 +225,11 @@ def save_or_update(update_type,
             'SAST_END': utcnow()
         }
         CyberspectScans.objects.filter(
-            ID=app_dic['cyberspect_scan_id']).update(**values)
+            ID=app_dict['cyberspect_scan_id']).update(**values)
     except Exception as exp:
         msg = 'Updating CyberspectScans table failed'
         logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+        append_scan_status(app_dict['md5'], msg, repr(exp))
 
 
 def save_get_ctx(app_dict, code_dict, bin_dict, rescan):

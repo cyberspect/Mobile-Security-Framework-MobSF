@@ -88,7 +88,7 @@ def static_analyzer_ios(request, checksum, api=False):
             'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
         app_dict['tools_dir'] = tools_dir.as_posix()
         app_dict['icon_path'] = ''
-        app_dic['cyberspect_scan_id'] = cobj.ID
+        app_dict['cyberspect_scan_id'] = cobj.ID
         if file_type == 'ipa':
             return ipa_analysis(request, app_dict, rescan, api)
         elif file_type == 'dylib':
