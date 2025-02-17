@@ -241,19 +241,20 @@ sidebar-collapse
           cyberspect_scan_id: json.cyberspect_scan_id,
           hash: json.hash
         },
-        success: function () {
-          setTimeout(function () {
-            window.location.href = '/tasks';
-          }, 1000); // Adjust delay as needed
+        success: function (response) {
+          if (response.message) {
+            setTimeout(function () {
+              window.location.href = '/tasks';
+            }, 1000); // Adjust delay as needed
+          } else {
+            window.location.href = '/recent_scans';
+          }
         },
         error: function (xhr, errmsg, err) {
           alert("Error:" + err);
-          window.location.href = '/recent_scans'; 
+          window.location.href = '/recent_scans';
         }
       })
-      setTimeout(function () {
-        window.location.href = url;
-      }, 1000); // Adjust delay as needed
     }
   }
   function progressHandler(event) {
