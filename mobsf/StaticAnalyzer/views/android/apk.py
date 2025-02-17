@@ -18,6 +18,7 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     append_scan_status,
+    is_admin,
     file_size,
     print_n_send_error_response,
 )
@@ -251,6 +252,7 @@ def generate_dynamic_context(request, app_dic, checksum, context, api):
     context['average_cvss'] = get_avg_cvss(context['code_analysis'])
     logcat_file = Path(app_dic['app_dir']) / 'logcat.txt'
     context['dynamic_analysis_done'] = logcat_file.exists()
+    context['is_admin'] = is_admin(request)
     context['virus_total'] = None
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
