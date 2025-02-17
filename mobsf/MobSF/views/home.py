@@ -1138,7 +1138,6 @@ def queue_scan(request):
                 response = JsonResponse(data=resp, status=500, safe=False)
                 #response = make_api_response(resp, 500)
             else:
-                print(resp)
                 response = JsonResponse(data=resp, status=200, safe=False)
                 #response = make_api_response(resp, 200)
         # IPA
