@@ -332,6 +332,7 @@ def generate_dynamic_ios_context(request, context, api):
     """Generate Dynamic Context for IOS."""
     context['appsec'] = get_ios_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(context['code_analysis'])
+    context['is_admin'] = is_admin(request)
     template = 'static_analysis/ios_source_analysis.html'
     return context if api else render(request, template, context)
 
