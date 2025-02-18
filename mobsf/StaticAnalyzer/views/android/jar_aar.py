@@ -12,6 +12,7 @@ from mobsf.MalwareAnalyzer.views.android import (
 )
 from mobsf.MobSF.utils import (
     append_scan_status,
+    is_admin,
     file_size,
     print_n_send_error_response,
 )
@@ -72,6 +73,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        context['virus_total'] = None
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(app_dic['app_path'])
@@ -211,6 +213,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
     context['average_cvss'] = get_avg_cvss(
         context['code_analysis'])
     context['dynamic_analysis_done'] = False
+    context['is_admin'] = is_admin(request)
     template = 'static_analysis/android_binary_analysis.html'
     if api:
         return context
