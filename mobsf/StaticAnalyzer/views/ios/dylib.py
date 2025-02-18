@@ -62,6 +62,7 @@ def dylib_analysis(request, app_dict, rescan, api):
         MD5=checksum)
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
+        context['virus_total'] = None
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(app_dict['app_path'])
