@@ -368,6 +368,7 @@ def generate_dynamic_src_context(request, context, api):
     """Generate Dynamic Source Context."""
     context['appsec'] = get_android_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(context['code_analysis'])
+    context['is_admin'] = is_admin(request)
     template = 'static_analysis/android_source_analysis.html'
     return context if api else render(request, template, context)
 
