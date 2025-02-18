@@ -231,7 +231,30 @@ sidebar-collapse
           i = 1;
         }
       }, 2000);
-      window.location.href = "/recent_scans";
+
+      //var url = json.analyzer + '/' + json.hash + '/'
+      $.ajax({
+        url: "queue_scan",
+        type: "POST",
+        dataType: "json",
+        data: {
+          cyberspect_scan_id: json.cyberspect_scan_id,
+          hash: json.hash
+        },
+        success: function (response) {
+          if (response.message) {
+            setTimeout(function () {
+              window.location.href = '/tasks';
+            }, 1000); // Adjust delay as needed
+          } else {
+            window.location.href = '/recent_scans';
+          }
+        },
+        error: function (xhr, errmsg, err) {
+          alert("Error:" + err);
+          window.location.href = '/recent_scans';
+        }
+      })
     }
   }
   function progressHandler(event) {
