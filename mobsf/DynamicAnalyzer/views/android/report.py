@@ -24,6 +24,7 @@ from mobsf.DynamicAnalyzer.views.android.tests_frida import (
     dependency_analysis,
 )
 from mobsf.MobSF.utils import (
+    is_admin,
     is_file_exists,
     is_md5,
     key,
@@ -96,7 +97,8 @@ def view_report(request, checksum, api=False):
                    'runtime_dependencies': list(deps),
                    'package': package,
                    'version': settings.MOBSF_VER,
-                   'title': 'Dynamic Analysis'}
+                   'title': 'Dynamic Analysis',
+                   'is_admin': is_admin(request)}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:
             return context
