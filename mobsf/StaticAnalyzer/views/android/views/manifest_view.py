@@ -8,6 +8,7 @@ from django.conf import settings
 from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
+    is_admin,
     is_md5,
     print_n_send_error_response,
 )
@@ -48,6 +49,7 @@ def run(request, checksum):
                 'type': 'xml',
                 'sqlite': {},
                 'version': settings.MOBSF_VER,
+                'is_admin': is_admin(request)
             }
             template = 'general/view.html'
             return render(request, template, context)
