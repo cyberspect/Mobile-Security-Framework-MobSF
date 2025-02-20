@@ -12,6 +12,7 @@ from django.shortcuts import (
 
 from mobsf.MobSF.init import api_key
 from mobsf.MobSF.utils import (
+    is_admin,
     is_md5,
     print_n_send_error_response,
 )
@@ -72,6 +73,7 @@ def run(request):
             'source_type': typ,
             'version': settings.MOBSF_VER,
             'api_key': api_key(settings.MOBSF_HOME),
+            'is_admin': is_admin(request),
         }
         template = 'static_analysis/source_tree.html'
         return render(request, template, context)
