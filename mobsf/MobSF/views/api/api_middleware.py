@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """REST API Middleware."""
+import hashlib
 from hmac import compare_digest
 
 from django.http import JsonResponse
@@ -72,7 +73,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
                 and not view_func == api_sz.api_upload):
             return self.unauthorized()
         apikey = self.get_api_key(request.META)
-        if apikey == api_key():
+        if apikey == api_key(settings.MOBSF_HOME):
             request.META['role'] = 'FULL_ACCESS'
             request.META['email'] = 'admin@cyberspect.com'
             return
