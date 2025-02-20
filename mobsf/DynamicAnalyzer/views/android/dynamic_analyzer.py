@@ -32,6 +32,7 @@ from mobsf.MobSF.utils import (
     get_config_loc,
     get_device,
     get_proxy_ip,
+    is_admin,
     is_md5,
     print_n_send_error_response,
     python_dict,
@@ -223,7 +224,8 @@ def dynamic_analyzer(request, checksum, api=False):
                    'activities': activities,
                    'exported_activities': exported_activities,
                    'deeplinks': deeplinks,
-                   'title': 'Dynamic Analyzer'}
+                   'title': 'Dynamic Analyzer',
+                   'is_admin': is_admin(request)}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         if api:
             return context
