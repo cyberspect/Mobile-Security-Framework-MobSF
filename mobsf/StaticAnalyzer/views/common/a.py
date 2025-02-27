@@ -12,9 +12,10 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     append_scan_status,
-    is_admin,
     file_size,
+    is_admin,
     print_n_send_error_response,
+    update_cyberspect_sast_end,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
@@ -72,6 +73,7 @@ def a_analysis(request, app_dict, rescan, api):
     ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
+        update_cyberspect_sast_end(app_dict['cyberspect_scan_id'], app_dict['md5_hash'])
         context['virus_total'] = None
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal()

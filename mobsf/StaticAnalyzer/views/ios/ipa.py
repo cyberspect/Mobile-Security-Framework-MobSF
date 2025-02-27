@@ -11,9 +11,10 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     append_scan_status,
-    is_admin,
     file_size,
+    is_admin,
     print_n_send_error_response,
+    update_cyberspect_sast_end,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerIOS,
@@ -255,6 +256,7 @@ def ipa_analysis(request, app_dic, rescan, api):
     ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
+        update_cyberspect_sast_end(app_dic['cyberspect_scan_id'], app_dic['md5_hash'])
         return generate_dynamic_context(request, app_dic, context, checksum, api)
     else:
         # IPA Analysis
@@ -343,6 +345,7 @@ def ios_analysis(request, app_dic, rescan, api):
     ios_zip_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
     if ios_zip_db.exists() and not rescan:
         context = get_context_from_db_entry(ios_zip_db)
+        update_cyberspect_sast_end(app_dic['cyberspect_scan_id'], app_dic['md5_hash'])
         return generate_dynamic_ios_context(request, context, api)
     else:
         # IOS Source Analysis

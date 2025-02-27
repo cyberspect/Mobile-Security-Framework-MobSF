@@ -8,9 +8,10 @@ import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF.utils import (
     append_scan_status,
-    is_admin,
     file_size,
+    is_admin,
     print_n_send_error_response,
+    update_cyberspect_sast_end,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     get_symbols,
@@ -49,6 +50,7 @@ def so_analysis(request, app_dic, rescan, api):
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        update_cyberspect_sast_end(app_dic['cyberspect_scan_id'], app_dic['md5'])
         context['virus_total'] = None
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal()

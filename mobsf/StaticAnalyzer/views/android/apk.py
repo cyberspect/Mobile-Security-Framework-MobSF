@@ -18,9 +18,10 @@ from django.shortcuts import render
 
 from mobsf.MobSF.utils import (
     append_scan_status,
-    is_admin,
     file_size,
+    is_admin,
     print_n_send_error_response,
+    update_cyberspect_sast_end,
 )
 from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
@@ -267,6 +268,7 @@ def apk_analysis(request, app_dic, rescan, api):
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        update_cyberspect_sast_end(app_dic['cyberspect_scan_id'], app_dic['md5'])
         return generate_dynamic_context(request, app_dic, checksum, context, api)
     else:
         # APK Analysis
@@ -383,6 +385,7 @@ def src_analysis(request, app_dic, rescan, api):
         MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        update_cyberspect_sast_end(app_dic['cyberspect_scan_id'], app_dic['md5'])
         return generate_dynamic_src_context(request, context, api)
     elif ios_db_entry.exists() and not rescan:
         return {'type': 'ios'} if api else HttpResponseRedirect(ret)
