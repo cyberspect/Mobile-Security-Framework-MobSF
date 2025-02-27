@@ -30,6 +30,7 @@ from mobsf.MobSF.utils import (
     is_admin,
     is_md5,
     print_n_send_error_response,
+    update_cyberspect_sast_end,
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
@@ -121,6 +122,7 @@ def staticanalyzer_windows(request, checksum, api=False):
                 'Analysis is already Done.'
                 ' Fetching data from the DB...')
             context = get_context_from_db_entry(db_entry)
+            update_cyberspect_sast_end(app_dic['cyberspect_scan_id'], app_dic['md5'])
         else:
             if not has_permission(request, Permissions.SCAN, api):
                 return print_n_send_error_response(
