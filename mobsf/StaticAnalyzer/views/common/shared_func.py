@@ -28,11 +28,15 @@ from mobsf.MobSF.utils import (
     STRINGS_REGEX,
     URL_REGEX,
     append_scan_status,
+    get_usergroups,
     is_md5,
     is_path_traversal,
     is_safe_path,
+    new_cyberspect_scan,
     print_n_send_error_response,
     set_permissions,
+    sso_email,
+    utcnow,
 )
 from mobsf.MobSF.views.scanning import (
     add_to_recent_scan,
@@ -206,6 +210,7 @@ def os_unzip(checksum, app_path, ext_path):
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
     return []
+
 
 def lipo_thin(checksum, src, dst):
     """Thin Fat binary."""
@@ -496,6 +501,11 @@ def scan_library(request, checksum):
             return print_n_send_error_response(request, msg)
         with open(sfile, 'rb') as f:
             libchecksum = handle_uploaded_file(f, ext)
+        new_cyberspect_scan(False, libchecksum,
+                            utcnow(),
+                            sfile.stat().st_size,
+                            None,
+                            sso_email(request))
         if ext in [f'.{i}' for i in settings.IOS_EXTS]:
             static_analyzer = 'static_analyzer_ios'
         elif ext == '.appx':
@@ -512,6 +522,11 @@ def scan_library(request, checksum):
             'hash': libchecksum,
             'scan_type': ext.replace('.', ''),
             'file_name': sfile.name,
+            'email': sso_email(request),
+            'user_groups': get_usergroups(request),
+            'release': False,
+            'user_app_name': sfile.name.split('.')[0],
+            'user_app_version': '1.0',
         }
         add_to_recent_scan(data)
         return HttpResponseRedirect(f'/{static_analyzer}/{libchecksum}/')
