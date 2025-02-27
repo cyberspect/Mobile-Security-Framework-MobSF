@@ -7,12 +7,11 @@ from mobsf.MobSF.utils import (
     append_scan_status,
     get_scan_logs,
     python_list,
-    utcnow,
+    update_cyberspect_sast_end,
 )
 from mobsf.StaticAnalyzer.models import (
-    CyberspectScans,
     RecentScansDB,
-    StaticAnalyzerWindows
+    StaticAnalyzerWindows,
 )
 
 logger = logging.getLogger(__name__)
@@ -144,13 +143,4 @@ def save_or_update(update_type,
         msg = 'Updating RecentScansDB table failed'
         logger.exception(msg)
         append_scan_status(app_dic['md5'], msg, repr(exp))
-    try:
-        values = {
-            'SAST_END': utcnow()
-        }
-        CyberspectScans.objects.filter(
-            ID=app_dic['cyberspect_scan_id']).update(**values)
-    except Exception as exp:
-        msg = 'Updating CyberspectScans table failed'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+    update_cyberspect_sast_end(app_dic['cyberspect_scan_id'], app_dic['md5'])

@@ -9,12 +9,11 @@ from mobsf.MobSF.utils import (
     get_scan_logs,
     python_dict,
     python_list,
-    utcnow
+    update_cyberspect_sast_end,
 )
 from mobsf.StaticAnalyzer.models import (
-    CyberspectScans,
     RecentScansDB,
-    StaticAnalyzerIOS
+    StaticAnalyzerIOS,
 )
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
@@ -220,16 +219,7 @@ def save_or_update(update_type,
         msg = 'Updating RecentScansDB table failed'
         logger.exception(msg)
         append_scan_status(app_dict['md5_hash'], msg, repr(exp))
-    try:
-        values = {
-            'SAST_END': utcnow()
-        }
-        CyberspectScans.objects.filter(
-            ID=app_dict['cyberspect_scan_id']).update(**values)
-    except Exception as exp:
-        msg = 'Updating CyberspectScans table failed'
-        logger.exception(msg)
-        append_scan_status(app_dict['md5'], msg, repr(exp))
+    update_cyberspect_sast_end(app_dict['cyberspect_scan_id'], app_dict['md5_hash'])
 
 
 def save_get_ctx(app_dict, code_dict, bin_dict, rescan):
@@ -261,4 +251,3 @@ def update_scan_timestamp(scan_hash):
     # Update the last scan time.
     tms = timezone.now()
     RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
-
