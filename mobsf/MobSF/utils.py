@@ -43,8 +43,10 @@ from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+
 from mobsf.MobSF.init import api_key
 from mobsf.StaticAnalyzer.models import (
+    CyberspectScans,
     RecentScansDB,
 )
 
@@ -1098,3 +1100,32 @@ def tz(value):
 def utcnow():
     return datetime.datetime.now(datetime.timezone.utc)
 
+
+def update_cyberspect_sast_end(cyberspect_scan_id, md5_hash):
+    """Update SAST_END in CyberspectScans table."""
+    try:
+        values = {
+            'SAST_END': utcnow(),
+        }
+        CyberspectScans.objects.filter(
+            ID=cyberspect_scan_id).update(**values)
+    except Exception as exp:
+        msg = 'Updating CyberspectScans table failed'
+        logger.exception(msg)
+        append_scan_status(md5_hash, msg, repr(exp))
+
+
+def new_cyberspect_scan(scheduled, md5, start_time,
+                        file_size, source_file_size, sso_user):
+    # Insert new record into CyberspectScans
+    new_db_obj = CyberspectScans(
+        SCHEDULED=scheduled,
+        MOBSF_MD5=md5,
+        INTAKE_START=start_time,
+        FILE_SIZE_PACKAGE=file_size,
+        FILE_SIZE_SOURCE=source_file_size,
+        EMAIL=sso_user,
+    )
+    new_db_obj.save()
+    logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
+    return new_db_obj.ID
