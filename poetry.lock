@@ -243,17 +243,17 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.36.25"
+version = "1.37.2"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.36.25-py3-none-any.whl", hash = "sha256:41fb90a516995946563ec91b9d891e2516c58617e9556d5e86dfa62da3fdebe6"},
-    {file = "boto3-1.36.25.tar.gz", hash = "sha256:a057c19adffb48737c192bdb10f9d85e0d9dcecd21327f51520c15db9022a835"},
+    {file = "boto3-1.37.2-py3-none-any.whl", hash = "sha256:e58136d52d79425ce26c3c1578bf94d4b2e91ead55fed9f6950406ee9713e6af"},
+    {file = "boto3-1.37.2.tar.gz", hash = "sha256:d64491bd4142c2c6dfe44479bf89c4ab7fa8d00210c2aaa7361931e61898b608"},
 ]
 
 [package.dependencies]
-botocore = ">=1.36.25,<1.37.0"
+botocore = ">=1.37.2,<1.38.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.11.0,<0.12.0"
 
@@ -262,13 +262,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.36.25"
+version = "1.37.2"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.36.25-py3-none-any.whl", hash = "sha256:04c8ff03531e8d92baa8c98d1850bdf01668a805467f4222b65e5325f94aa8af"},
-    {file = "botocore-1.36.25.tar.gz", hash = "sha256:3b0a857d2621c336fb82a36cb6da4b6e062d346451ac46d110b074e5e5fd7cfc"},
+    {file = "botocore-1.37.2-py3-none-any.whl", hash = "sha256:5f59b966f3cd0c8055ef6f7c2600f7db5f8218071d992e5f95da3f9156d4370f"},
+    {file = "botocore-1.37.2.tar.gz", hash = "sha256:3f460f3c32cd6d747d5897a9cbde011bf1715abc7bf0a6ea6fdb0b812df63287"},
 ]
 
 [package.dependencies]
@@ -999,13 +999,13 @@ all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2
 
 [[package]]
 name = "ip2location"
-version = "8.10.4"
+version = "8.10.5"
 description = "This is an IP geolocation library that enables the user to find the country, region, city, latitude and longitude, ZIP code, time zone, ISP, domain name, area code, weather info, mobile info, elevation, usage type, address type and IAB category from an IP address. It supports both IPv4 and IPv6 lookup."
 optional = false
 python-versions = "*"
 files = [
-    {file = "IP2Location-8.10.4-py3-none-any.whl", hash = "sha256:4323b6a25c6afb29c2f2b0b8aca3c3d1868a0199b705afaded1174cdbd8dacef"},
-    {file = "ip2location-8.10.4.tar.gz", hash = "sha256:395b3db260c0fa1de6b003808fdea144b0aa76ceed26c7a49de929b454e903c5"},
+    {file = "IP2Location-8.10.5-py3-none-any.whl", hash = "sha256:eb7e2a54d168a2f082927ca71e166e5c767d48a6c04851e3230cddebc4d34c79"},
+    {file = "ip2location-8.10.5.tar.gz", hash = "sha256:e26bdd214be15a41030f4e7e6771df6ccbc75d743c8853933252369993a6368b"},
 ]
 
 [[package]]
@@ -2123,13 +2123,13 @@ files = [
 
 [[package]]
 name = "s3transfer"
-version = "0.11.2"
+version = "0.11.3"
 description = "An Amazon S3 Transfer Manager"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "s3transfer-0.11.2-py3-none-any.whl", hash = "sha256:be6ecb39fadd986ef1701097771f87e4d2f821f27f6071c872143884d2950fbc"},
-    {file = "s3transfer-0.11.2.tar.gz", hash = "sha256:3b39185cb72f5acc77db1a58b6e25b977f28d20496b6e58d6813d75f464d632f"},
+    {file = "s3transfer-0.11.3-py3-none-any.whl", hash = "sha256:ca855bdeb885174b5ffa95b9913622459d4ad8e331fc98eb01e6d5eb6a30655d"},
+    {file = "s3transfer-0.11.3.tar.gz", hash = "sha256:edae4977e3a122445660c7c114bba949f9d191bae3b34a096f18a1c8c354527a"},
 ]
 
 [package.dependencies]
