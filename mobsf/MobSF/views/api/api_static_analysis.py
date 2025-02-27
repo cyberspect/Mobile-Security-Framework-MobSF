@@ -2,22 +2,14 @@
 """MobSF REST API V 1."""
 import logging
 import os
-import traceback as tb
 from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
 
-from mobsf.StaticAnalyzer.models import (
-    RecentScansDB,
-)
 from mobsf.MobSF.utils import (
     get_scan_logs,
-    is_md5,
-    make_api_response,
     sso_email,
-    utcnow,
 )
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (
@@ -27,16 +19,15 @@ from mobsf.MobSF.views.home import (
     delete_scan,
     generate_download,
     get_cyberspect_scan,
+    scan,
     scan_metadata,
     search,
     update_cyberspect_scan,
     update_scan,
 )
-from mobsf.MobSF.views.api.api_middleware import make_api_response
+from mobsf.MobSF.utils import make_api_response
 from mobsf.StaticAnalyzer.views.android.views import view_source
-from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
-from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from mobsf.StaticAnalyzer.views.common.async_task import list_tasks
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -47,10 +38,6 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
 )
 from mobsf.StaticAnalyzer.views.common.pdf import pdf
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
-from mobsf.StaticAnalyzer.views.windows import windows
-
-#from background_task import background
-
 
 logger = logging.getLogger(__name__)
 
@@ -109,32 +96,7 @@ def api_scan(request):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
 
-    return scan(request.POST)
-
-
-@request_method(['POST'])
-@csrf_exempt
-def api_async_scan(request):
-    """POST - Async Scan API."""
-    if ('cyberspect_scan_id' in request.POST):
-        csdata = get_cyberspect_scan(request.POST['cyberspect_scan_id'])
-        if not csdata:
-            return make_api_response({'error': 'cyberspect_scan_id not found'},
-                                     404)
-        scan_data = {
-            'cyberspect_scan_id': csdata['ID'],
-            'hash': csdata['MOBSF_MD5'],
-            'rescan': request.POST.get('rescan', '0'),
-        }
-    else:
-        return make_api_response(
-            {'error': 'Missing parameter: cyberspect_scan_id'}, 422)
-
-    async_scan(scan_data)
-    response_message = 'Scan ID ' + request.POST['cyberspect_scan_id'] \
-        + ' queued for background scanning'
-    logging.info(response_message)
-    return make_api_response({'message': response_message}, 202)
+    return scan(request)
 
 
 @request_method(['POST'])
