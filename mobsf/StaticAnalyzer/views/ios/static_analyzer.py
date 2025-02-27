@@ -8,7 +8,6 @@ from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
     append_scan_status,
-    is_admin,
     is_md5,
     print_n_send_error_response,
     relative_path,
