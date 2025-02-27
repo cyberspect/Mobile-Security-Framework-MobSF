@@ -49,7 +49,7 @@ def run(request, checksum):
                 'type': 'xml',
                 'sqlite': {},
                 'version': settings.MOBSF_VER,
-                'is_admin': is_admin(request)
+                'is_admin': is_admin(request),
             }
             template = 'general/view.html'
             return render(request, template, context)

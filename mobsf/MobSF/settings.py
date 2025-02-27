@@ -13,7 +13,6 @@ from mobsf.MobSF.init import (
     get_mobsf_home,
     get_mobsf_version,
     get_secret_from_file_or_env,
-    load_source,
 )
 
 logger = logging.getLogger(__name__)

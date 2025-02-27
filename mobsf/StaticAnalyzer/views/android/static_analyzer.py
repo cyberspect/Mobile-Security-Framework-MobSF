@@ -10,7 +10,6 @@ from django.template.defaulttags import register
 from mobsf.MobSF.utils import (
     android_component,
     append_scan_status,
-    is_admin,
     is_md5,
     key,
     pathify,
