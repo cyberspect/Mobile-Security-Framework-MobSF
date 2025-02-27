@@ -7,6 +7,7 @@ import platform
 from mobsf.MobSF.init import api_key
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.test import Client, TestCase
 
@@ -24,6 +25,8 @@ def static_analysis_test():
         uploaded = []
         logger.info('Running Upload Test')
         http_client = Client()
+        user = User.objects.create_superuser(username='mobsf')
+        http_client.force_login(user)
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
             if not filename.endswith(EXTS):
