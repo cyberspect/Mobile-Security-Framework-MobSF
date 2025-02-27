@@ -18,8 +18,7 @@ from django.conf import settings
 from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
-from django.views.decorators.http import require_http_methods
+from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
 from django.shortcuts import (
     redirect,
@@ -40,6 +39,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     is_safe_path,
     key,
+    new_cyberspect_scan,
     print_n_send_error_response,
     python_dict,
     sso_email,
@@ -48,7 +48,7 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.MobSF.init import api_key
 from mobsf.MobSF.security import sanitize_filename
-from mobsf.MobSF.views.helpers import FileType
+from mobsf.MobSF.utils import make_api_response
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
@@ -72,6 +72,7 @@ from mobsf.MobSF.views.authorization import (
     permission_required,
 )
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
+from mobsf.StaticAnalyzer.views.common import appsec
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from mobsf.StaticAnalyzer.views.windows import windows
 
@@ -169,7 +170,7 @@ class Upload(object):
                                     self.scan.file_size,
                                     self.scan.source_file_size,
                                     sso_email(self.request))
-            cyberspect_scan_intake(self.scan.populate_data_dict()) #TODO: REMOVE?
+            cyberspect_scan_intake(self.scan.populate_data_dict())  # TODO: REMOVE?
             response_data['cyberspect_scan_id'] = self.scan.cyberspect_scan_id
             return self.resp_json(response_data)
         except Exception as exp:
@@ -202,7 +203,7 @@ class Upload(object):
                                 self.scan.source_file_size,
                                 sso_email(self.request))
         api_response['cyberspect_scan_id'] = self.scan.cyberspect_scan_id
-        cyberspect_scan_intake(self.scan.populate_data_dict()) #TODO: REMOVE?
+        cyberspect_scan_intake(self.scan.populate_data_dict())  # TODO: REMOVE?
         return api_response, 200
 
     def upload(self):
@@ -337,8 +338,8 @@ def zip_format(request):
     return render(request, template, context)
 
 
-def not_found(request):
-    """Not Found Route."""
+def dynamic_analysis(request):
+    """Dynamic Analysis Landing."""
     context = {
         'title': 'Dynamic Analysis',
         'version': settings.MOBSF_VER,
@@ -437,7 +438,6 @@ def recent_scans(request, page_size=20, page_number=1):
         'title': 'Scanned Apps',
         'entries': entries,
         'version': settings.MOBSF_VER,
-        'page_obj': page_obj,
         'async_scans': settings.ASYNC_ANALYSIS,
         'is_admin': isadmin,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
@@ -467,22 +467,6 @@ def get_cyberspect_scan(csid):
     return None
 
 
-def new_cyberspect_scan(scheduled, md5, start_time,
-                        file_size, source_file_size, sso_user):
-    # Insert new record into CyberspectScans
-    new_db_obj = CyberspectScans(
-        SCHEDULED=scheduled,
-        MOBSF_MD5=md5,
-        INTAKE_START=start_time,
-        FILE_SIZE_PACKAGE=file_size,
-        FILE_SIZE_SOURCE=source_file_size,
-        EMAIL=sso_user,
-    )
-    new_db_obj.save()
-    logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
-    return new_db_obj.ID
-
-
 def update_scan(request, api=False):
     """Update RecentScansDB record."""
     try:
@@ -543,156 +527,6 @@ def update_cyberspect_scan(data):
         else:
             db_obj = CyberspectScans.objects.filter(ID=data['id']).first()
             csid = data['id']
-
-        if db_obj:
-            if 'mobsf_md5' in data:
-                db_obj.MOBSF_MD5 = data['mobsf_md5']
-            if 'dt_project_id' in data and data['dt_project_id']:
-                db_obj.DT_PROJECT_ID = data['dt_project_id']
-            if 'intake_end' in data and data['intake_end']:
-                db_obj.INTAKE_END = tz(data['intake_end'])
-            if 'sast_start' in data and data['sast_start']:
-                db_obj.SAST_START = tz(data['sast_start'])
-            if 'sast_end' in data and data['sast_end']:
-                db_obj.SAST_END = tz(data['sast_end'])
-            if 'sbom_start' in data and data['sbom_start']:
-                db_obj.SBOM_START = tz(data['sbom_start'])
-            if 'sbom_end' in data and data['sbom_end']:
-                db_obj.SBOM_END = tz(data['sbom_end'])
-            if 'dependency_start' in data and data['dependency_start']:
-                db_obj.DEPENDENCY_START = tz(data['dependency_start'])
-            if 'dependency_end' in data and data['dependency_end']:
-                db_obj.DEPENDENCY_END = tz(data['dependency_end'])
-            if 'notification_start' in data and data['notification_start']:
-                db_obj.NOTIFICATION_START = tz(data['notification_start'])
-            if 'notification_end' in data and data['notification_end']:
-                db_obj.NOTIFICATION_END = tz(data['notification_end'])
-            if 'success' in data:
-                db_obj.SUCCESS = data['success']
-            if 'failure_source' in data and data['failure_source']:
-                db_obj.FAILURE_SOURCE = data['failure_source']
-            if 'failure_message' in data and data['failure_message']:
-                db_obj.FAILURE_MESSAGE = data['failure_message']
-            if 'file_size_package' in data and data['file_size_package']:
-                db_obj.FILE_SIZE_PACKAGE = data['file_size_package']
-            if 'file_size_source' in data and data['file_size_source']:
-                db_obj.FILE_SIZE_SOURCE = data['file_size_source']
-            if 'dependency_types' in data:
-                db_obj.DEPENDENCY_TYPES = data['dependency_types']
-            db_obj.save()
-            return model_to_dict(db_obj)
-        else:
-            return {'error': f'Scan ID {csid} not found'}
-    except Exception as ex:
-        exmsg = ''.join(tb.format_exception(None, ex, ex.__traceback__))
-        logger.error(exmsg)
-        return {'error': str(ex)}
-
-
-def logout_aws(request):
-    """Remove AWS ALB session cookie."""
-    resp = HttpResponse(
-        '{}',
-        content_type='application/json; charset=utf-8')
-    for cookie in request.COOKIES:
-        resp.set_cookie(cookie, None, -1, -1)
-    return resp
-
-
-def scan_metadata(md5):
-    """Get scan metadata."""
-    if re.match('[0-9a-f]{32}', md5):
-        db_obj = RecentScansDB.objects.filter(MD5=md5).first()
-        if db_obj:
-            return model_to_dict(db_obj)
-    return None
-
-
-def get_cyberspect_scan(csid):
-    db_obj = CyberspectScans.objects.filter(ID=csid).first()
-    if db_obj:
-        cs_obj = model_to_dict(db_obj)
-        return cs_obj
-    return None
-
-
-def new_cyberspect_scan(scheduled, md5, start_time,
-                        file_size, source_file_size, sso_user):
-    # Insert new record into CyberspectScans
-    new_db_obj = CyberspectScans(
-        SCHEDULED=scheduled,
-        MOBSF_MD5=md5,
-        INTAKE_START=start_time,
-        FILE_SIZE_PACKAGE=file_size,
-        FILE_SIZE_SOURCE=source_file_size,
-        EMAIL=sso_user,
-    )
-    new_db_obj.save()
-    logger.info('Hash: %s, Cyberspect Scan ID: %s', md5, new_db_obj.ID)
-    return new_db_obj.ID
-
-
-def update_scan(request, api=False):
-    """Update RecentScansDB record."""
-    try:
-        if (not is_admin(request) and not api):
-            return HttpResponse(status=403)
-        md5 = request.POST['hash']
-        response = {'error': f'Scan {md5} not found'}
-        db_obj = RecentScansDB.objects.filter(MD5=md5).first()
-        if db_obj:
-            if 'user_app_name' in request.POST:
-                db_obj.USER_APP_NAME = request.POST['user_app_name']
-            if 'user_app_version' in request.POST:
-                db_obj.USER_APP_VERSION = request.POST['user_app_version']
-            if 'division' in request.POST:
-                db_obj.DIVISION = request.POST['division']
-            if 'environment' in request.POST:
-                db_obj.ENVIRONMENT = request.POST['environment']
-            if 'country' in request.POST:
-                db_obj.COUNTRY = request.POST['country']
-            if 'data_privacy_classification' in request.POST:
-                dpc = request.POST['data_privacy_classification']
-                db_obj.DATA_PRIVACY_CLASSIFICATION = dpc
-            if 'data_privacy_attributes' in request.POST:
-                dpa = request.POST['data_privacy_attributes']
-                db_obj.DATA_PRIVACY_ATTRIBUTES = dpa
-            if 'email' in request.POST:
-                db_obj.EMAIL = request.POST['email']
-            if 'release' in request.POST:
-                db_obj.RELEASE = request.POST['release']
-            db_obj.TIMESTAMP = utcnow()
-            db_obj.save()
-            response = model_to_dict(db_obj)
-            data = {'result': 'success'}
-        if api:
-            return response
-        else:
-            ctype = 'application/json; charset=utf-8'
-            return HttpResponse(json.dumps(data), content_type=ctype)
-    except Exception as exp:
-        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
-        logger.error(exmsg)
-        msg = str(exp)
-        exp_doc = exp.__doc__
-        if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
-        else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
-
-
-def update_cyberspect_scan(data):
-    """Update Cyberspect scan record."""
-    try:
-        if (('id' not in data) and ('dt_project_id' in data)):
-            db_obj = CyberspectScans.objects \
-                .filter(DT_PROJECT_ID=data['dt_project_id']) \
-                .order_by('-ID').first()
-            csid = data['dt_project_id']
-        else:
-            db_obj = CyberspectScans.objects.filter(ID=data['id']).first()
-            csid = data['id']
-
         if db_obj:
             if 'mobsf_md5' in data:
                 db_obj.MOBSF_MD5 = data['mobsf_md5']
@@ -1071,11 +905,11 @@ def cyberspect_rescan(apphash, scheduled, sso_user):
         'email': rs_obj.EMAIL,
         'rescan': '1',
     }
-    cyberspect_scan_intake(scan_data) #TODO: REMOVE?
+    cyberspect_scan_intake(scan_data)  # TODO: REMOVE?
     return scan_data
 
 
-def cyberspect_scan_intake(scan): #TODO: REMOVE?
+def cyberspect_scan_intake(scan):  # TODO: REMOVE?
     if not settings.AWS_INTAKE_LAMBDA:
         logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
         return
@@ -1112,56 +946,55 @@ def health(request):
     return HttpResponse(json.dumps(data),
                         content_type='application/json; charset=utf-8')
 
+
 @require_http_methods(['POST'])
 def queue_scan(request):
+    return scan(request)
+
+
+def scan(request_data):
     try:
         # Track scan start time
         data = {
-            'id': request.POST['cyberspect_scan_id'],
+            'id': request_data.POST['cyberspect_scan_id'],
             'sast_start': utcnow(),
         }
         update_cyberspect_scan(data)
 
         response = None
-        metadata = scan_metadata(request.POST['hash'])
+        metadata = scan_metadata(request_data.POST['hash'])
         scan_type = metadata['SCAN_TYPE']
         # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
         if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
-            resp = static_analyzer(request,
-                                   request.POST['hash'],
+            resp = static_analyzer(request_data,
+                                   request_data.POST['hash'],
                                    True)
             if 'type' in resp:
-                resp = static_analyzer_ios(request,
-                                           request.POST['hash'],
+                resp = static_analyzer_ios(request_data,
+                                           request_data.POST['hash'],
                                            True)
             if 'error' in resp:
-                response = JsonResponse(data=resp, status=500, safe=False)
-                #response = make_api_response(resp, 500)
+                response = make_api_response(resp, 500)
             else:
-                response = JsonResponse(data=resp, status=200, safe=False)
-                #response = make_api_response(resp, 200)
+                response = make_api_response(resp, 200)
         # IPA
         elif scan_type in {'ipa', 'dylib', 'a'}:
-            resp = static_analyzer_ios(request,
-                                       request.POST['hash'],
+            resp = static_analyzer_ios(request_data,
+                                       request_data.POST['hash'],
                                        True)
             if 'error' in resp:
-                response = JsonResponse(data=resp, status=500, safe=False)
-                #response = make_api_response(resp, 500)
+                response = make_api_response(resp, 500)
             else:
-                response = JsonResponse(data=resp, status=200, safe=False)
-                #response = make_api_response(resp, 200)
+                response = make_api_response(resp, 200)
         # APPX
         elif scan_type == 'appx':
-            resp = windows.staticanalyzer_windows(request,
-                                                  request.POST['hash'],
+            resp = windows.staticanalyzer_windows(request_data,
+                                                  request_data.POST['hash'],
                                                   True)
             if 'error' in resp:
-                response = JsonResponse(data=resp, status=500, safe=False)
-                #response = make_api_response(resp, 500)
+                response = make_api_response(resp, 500)
             else:
-                response = JsonResponse(data=resp, status=200, safe=False)
-                #response = make_api_response(resp, 200)
+                response = make_api_response(resp, 200)
 
         # Record scan end time and failure
         if response and response.status_code == 500:
@@ -1170,7 +1003,6 @@ def queue_scan(request):
             data['failure_message'] = resp['error']
             data['sast_end'] = utcnow()
         data['sast_start'] = None
-        #data['sast_end'] = utcnow()
         update_cyberspect_scan(data)
         return response
 
@@ -1179,16 +1011,14 @@ def queue_scan(request):
         logger.error(exmsg)
         msg = str(exp)
         data = {
-            'id': request.POST['cyberspect_scan_id'],
+            'id': request_data.POST['cyberspect_scan_id'],
             'success': False,
             'failure_source': 'SAST',
             'failure_message': msg,
             'sast_end': utcnow(),
         }
         update_cyberspect_scan(data)
-        response = JsonResponse(data=resp, status=500, safe=False)
-        return response
-        #return make_api_response(data, 500)
+        return make_api_response(data, 500)
 
 
 class RecentScans(object):
