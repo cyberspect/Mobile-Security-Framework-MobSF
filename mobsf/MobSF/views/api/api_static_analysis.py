@@ -2,16 +2,14 @@
 """MobSF REST API V 1."""
 import logging
 import os
-import traceback as tb
 from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.utils import (
-    make_api_response,
+    get_scan_logs,
     sso_email,
-    utcnow,
 )
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (
@@ -21,14 +19,16 @@ from mobsf.MobSF.views.home import (
     delete_scan,
     generate_download,
     get_cyberspect_scan,
+    scan,
     scan_metadata,
+    search,
     update_cyberspect_scan,
     update_scan,
 )
-from mobsf.StaticAnalyzer.views.android import view_source
-from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
-from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
-from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
+from mobsf.MobSF.utils import make_api_response
+from mobsf.StaticAnalyzer.views.android.views import view_source
+from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
+from mobsf.StaticAnalyzer.views.common.async_task import list_tasks
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
     delete_suppression,
@@ -38,10 +38,6 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
 )
 from mobsf.StaticAnalyzer.views.common.pdf import pdf
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
-from mobsf.StaticAnalyzer.views.windows import windows
-
-from background_task import background
-
 
 logger = logging.getLogger(__name__)
 
@@ -100,32 +96,7 @@ def api_scan(request):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
 
-    return scan(request.POST)
-
-
-@request_method(['POST'])
-@csrf_exempt
-def api_async_scan(request):
-    """POST - Async Scan API."""
-    if ('cyberspect_scan_id' in request.POST):
-        csdata = get_cyberspect_scan(request.POST['cyberspect_scan_id'])
-        if not csdata:
-            return make_api_response({'error': 'cyberspect_scan_id not found'},
-                                     404)
-        scan_data = {
-            'cyberspect_scan_id': csdata['ID'],
-            'hash': csdata['MOBSF_MD5'],
-            'rescan': request.POST.get('rescan', '0'),
-        }
-    else:
-        return make_api_response(
-            {'error': 'Missing parameter: cyberspect_scan_id'}, 422)
-
-    async_scan(scan_data)
-    response_message = 'Scan ID ' + request.POST['cyberspect_scan_id'] \
-        + ' queued for background scanning'
-    logging.info(response_message)
-    return make_api_response({'message': response_message}, 202)
+    return scan(request)
 
 
 @request_method(['POST'])
@@ -148,6 +119,31 @@ def api_rescan(request):
         + str(scan_data['cyberspect_scan_id'])
     logging.info(response_message)
     return make_api_response({'message': response_message}, 202)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_scan_logs(request):
+    """POST - Get Scan logs."""
+    if 'hash' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = get_scan_logs(request.POST['hash'])
+    if not resp:
+        return make_api_response(
+            {'error': 'No scan logs found'}, 400)
+    return make_api_response({'logs': resp}, 200)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_tasks(request):
+    """POST - Get Scan Queue."""
+    resp = list_tasks(request, True)
+    if not resp:
+        return make_api_response(
+            {'error': 'Scan queue empty'}, 400)
+    return make_api_response(resp, 200)
 
 
 @request_method(['POST'])
@@ -242,6 +238,21 @@ def api_json_report(request):
         response = make_api_response(
             {'error': 'JSON Generation Error'}, 500)
     return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_search(request):
+    """Search by checksum or text."""
+    if 'query' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = search(request, api=True)
+    if 'checksum' in resp:
+        request.POST = {'hash': resp['checksum']}
+        return api_json_report(request)
+    elif 'error' in resp:
+        return make_api_response(resp, 404)
 
 
 @request_method(['POST'])
@@ -436,77 +447,3 @@ def api_update_cyberspect_scan(request):
             return make_api_response(resp, 200)
     else:
         return make_api_response({'id': request.POST['id']}, 404)
-
-
-@background(schedule=None)
-def async_scan(request_data):
-    scan(request_data)
-
-
-def scan(request_data):
-    try:
-        # Track scan start time
-        data = {
-            'id': request_data['cyberspect_scan_id'],
-            'sast_start': utcnow(),
-        }
-        update_cyberspect_scan(data)
-
-        response = None
-        metadata = scan_metadata(request_data['hash'])
-        scan_type = metadata['SCAN_TYPE']
-        # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
-        if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
-            resp = static_analyzer(request_data,
-                                   request_data['hash'],
-                                   True)
-            if 'type' in resp:
-                resp = static_analyzer_ios(request_data,
-                                           request_data['hash'],
-                                           True)
-            if 'error' in resp:
-                response = make_api_response(resp, 500)
-            else:
-                response = make_api_response(resp, 200)
-        # IPA
-        elif scan_type in {'ipa', 'dylib', 'a'}:
-            resp = static_analyzer_ios(request_data,
-                                       request_data['hash'],
-                                       True)
-            if 'error' in resp:
-                response = make_api_response(resp, 500)
-            else:
-                response = make_api_response(resp, 200)
-        # APPX
-        elif scan_type == 'appx':
-            resp = windows.staticanalyzer_windows(request_data,
-                                                  request_data['hash'],
-                                                  True)
-            if 'error' in resp:
-                response = make_api_response(resp, 500)
-            else:
-                response = make_api_response(resp, 200)
-
-        # Record scan end time and failure
-        if response and response.status_code == 500:
-            data['success'] = False
-            data['failure_source'] = 'SAST'
-            data['failure_message'] = resp['error']
-        data['sast_start'] = None
-        data['sast_end'] = utcnow()
-        update_cyberspect_scan(data)
-        return response
-
-    except Exception as exp:
-        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
-        logger.error(exmsg)
-        msg = str(exp)
-        data = {
-            'id': request_data['cyberspect_scan_id'],
-            'success': False,
-            'failure_source': 'SAST',
-            'failure_message': msg,
-            'sast_end': utcnow(),
-        }
-        update_cyberspect_scan(data)
-        return make_api_response(data, 500)

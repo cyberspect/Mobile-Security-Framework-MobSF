@@ -7,6 +7,7 @@ import os
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF.security import sanitize_filename
 from mobsf.MobSF.utils import (
     get_siphash,
     get_usergroups,
@@ -72,7 +73,7 @@ def add_to_recent_scan(data):
         raise ex
 
 
-def handle_uploaded_file(content, extension, source_content):
+def handle_uploaded_file(content, extension):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -96,16 +97,6 @@ def handle_uploaded_file(content, extension, source_content):
         else:
             for chunk in content.chunks():
                 destination.write(chunk)
-    if (source_content):
-        bfr = isinstance(source_content, io.BufferedReader)
-        with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:
-            if bfr:
-                source_content.seek(0, 0)
-                while chunk := source_content.read(8192):
-                    f.write(chunk)
-            else:
-                for chunk in source_content.chunks():
-                    f.write(chunk)
     return md5sum
 
 
@@ -114,7 +105,7 @@ class Scanning(object):
     def __init__(self, request):
         if ('file' in request.FILES):
             self.file = request.FILES['file']
-            self.file_name = self.file.name
+            self.file_name = sanitize_filename(self.file.name)
             self.file_type = FileType(self.file)
             self.file_size = self.file.size
         else:
@@ -245,8 +236,7 @@ class Scanning(object):
         return data
 
     def populate_data_dict(self):
-        self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,
-                                        self.source_file)
+        self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type)
         self.short_hash = get_siphash(self.md5)
         return {
             'analyzer': 'static_analyzer',
