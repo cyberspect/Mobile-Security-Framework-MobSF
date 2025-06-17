@@ -535,6 +535,9 @@
       // Countries select box      
       populateCountries(uploadedApps["app_"+appHash].appCountry);
 
+      //Data Privacy dropdown
+      $("#data_privacy_classification").val(uploadedApps["app_"+appHash].appDataPrivacyClassification)
+
       // Data Privacy Attributes select box
       populateDataPrivacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
 
