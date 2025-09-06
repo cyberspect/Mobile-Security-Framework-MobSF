@@ -550,11 +550,12 @@
     }
 
     function admin_edit_modal(appHash){
+      window.clearTimeout();
       $("#edit_scan").modal('show');
-      populateModalData(appHash);
+      populate_modal_data(appHash);
     }
 
-    function populateModalData(appHash) {
+    function populate_modal_data(appHash) {
       var modal = document.getElementById("edit_scan");
       modal.setAttribute('data-id', appHash);
 
@@ -592,16 +593,16 @@
       }
 
       // Division dynamic dropdown
-      populateDivisions(uploadedApps["app_"+appHash].appDivision);      
+      populate_divisions(uploadedApps["app_"+appHash].appDivision);      
 
       // Countries select box      
-      populateCountries(uploadedApps["app_"+appHash].appCountry);
+      populate_countries(uploadedApps["app_"+appHash].appCountry);
 
       //Data Privacy dropdown
       $("#data_privacy_classification").val(uploadedApps["app_"+appHash].appDataPrivacyClassification)
 
       // Data Privacy Attributes select box
-      populateDataPrivacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
+      populate_data_privacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
 
       // Email Address(es) text field
       $("#override_email").val(uploadedApps["app_"+appHash].appEmail);
@@ -630,7 +631,7 @@
         } 
     }    
 
-    function checkRequired() {
+    function check_required() {
       if (!_('appname').value) {
         _('err_name').classList.remove('hidden');
         return false;
@@ -720,7 +721,7 @@
                                   'success'
                               ).then(function () {
                                   $('#edit_scan').modal('hide');
-                                  location.reload(true);
+                                  location.reload();
                                 });
                           }
                           else {
@@ -744,7 +745,7 @@
       }); 
     }
 
-    function populateDivisions(selectedDivision) {
+    function populate_divisions(selectedDivision) {
       var divisionsUrl = '{{tenant_static}}divisions.json';
       fetch(divisionsUrl)
         .then(response => response.json())
@@ -759,8 +760,8 @@
         });
     }
 
-    function populateCountries(selectedCountry) {
-      var countryValue = splitData(selectedCountry);
+    function populate_countries(selectedCountry) {
+      var countryValue = split_data(selectedCountry);
       
       var countriesUrl = '{{tenant_static}}countries.json';
       fetch(countriesUrl)
@@ -774,8 +775,8 @@
         });
     }
 
-    function populateDataPrivacy(selectedDataPrivacyAttributes) {
-      var dataPrivacyAttributeValue = splitData(selectedDataPrivacyAttributes)
+    function populate_data_privacy(selectedDataPrivacyAttributes) {
+      var dataPrivacyAttributeValue = split_data(selectedDataPrivacyAttributes)
 
       var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
       fetch(privacyAttributesUrl)
@@ -789,7 +790,7 @@
         });
     }
 
-    function splitData(dataString) {
+    function split_data(dataString) {
       return dataString.split(',').map(data => data.trim());
     }
   
@@ -799,18 +800,23 @@
       $('#data_privacy_attributes').val([]);
       $('#override_email').val([]);
       $('#edit_scan').modal('hide');
+      refresh_page();
+    }
+
+    function refresh_page()
+    {
+      if ($("span.badge.bg-warning").length > 0 && ($("#edit_scan").is(":hidden"))) {
+          window.setTimeout(function() {
+              window.location.reload();
+          }, 30000);
+      }
     }
 
     $(document).ready(function() {
 
         enable_diff_button(); 
-
-        if ($("span.badge.bg-warning").length > 0 && (!$("#edit_scan").is(":hidden"))) {
-            window.setTimeout(function() {
-                window.location.reload();
-            }, 30000);
-        }
-
+        refresh_page();
+        
         $('#country').change(function() {
           // If GLOBAL and other options are selected in country dropdown, remove GLOBAL
           if ($('#country').val().indexOf('GLOBAL') >= 0 && $('#country').val().length > 1) {
