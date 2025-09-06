@@ -592,7 +592,7 @@
       }
 
       // Division dynamic dropdown
-      populateDivisions(uploadedApps["app_"+appHash].appDivision);
+      populateDivisions(uploadedApps["app_"+appHash].appDivision);      
 
       // Countries select box      
       populateCountries(uploadedApps["app_"+appHash].appCountry);
@@ -668,7 +668,6 @@
   }
 
     function admin_save(){
-
       const formData = document.getElementById('edit_scan_form');
 
       var item = $(formData.querySelector('#md5-hash')).val();
@@ -683,83 +682,84 @@
         return $(this).val();
       }).get().join(', ');
 
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "This will update the modified fields for this scan",
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, update the modified fields.',
-            cancelButtonText: 'No, take me back to the edit panel.',
-            confirmButtonColor: '#2da532',
-            cancelButtonColor: '#d33',
-        }).then((result) => {
-            if (result.value) {            
-                var cleanEmails = get_clean_emails();
-                var release = ($(formData.querySelector('#release')).prop("checked") ? "True" : "False");
-                $.ajax({
-                        url: '../../../update_scan/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
-                            csrfmiddlewaretoken: '{{csrf_token}}',
-                            hash: item,
-                            user_app_name: $(formData.querySelector('#appname')).val(),
-                            user_app_version: $(formData.querySelector('#version')).val(),
-                            division: $(formData.querySelector('#division')).val(),
-                            environment: $(formData.querySelector('#environment')).val(),
-                            country: countryString,
-                            data_privacy_classification: $(formData.querySelector('#data_privacy_classification')).val(),
-                            data_privacy_attributes: dataPrivacyAttributesString,
-                            email: cleanEmails,
-                            release: release
-                        },
-                        success : function(json) {
-                            if (json.result === 'success') {
-                                Swal.fire(
-                                    'Updated!',
-                                    'The scan has been successfully updated.',
-                                    'success'
-                                ).then(function () {
-                                    $('#edit_scan').modal('hide');
-                                    location.reload(true);
-                                  });
-                            }
-                            else {
-                                Swal.fire(
-                                'Scan Update Failed',
-                                'Cannot update the scan!',
-                                'error'
-                                )
-                            }
-                        },
-                        error : function(xhr,errmsg,err) {
-                            Swal.fire(
-                                'Updating Scan Failed',
-                                errmsg,
-                                'error'
-                                )
-                        }
-                    });
-                    
-            }
-        }); 
+      Swal.fire({
+          title: 'Are you sure?',
+          text: "This will update the modified fields for this scan",
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, update the modified fields.',
+          cancelButtonText: 'No, take me back to the edit panel.',
+          confirmButtonColor: '#2da532',
+          cancelButtonColor: '#d33',
+      }).then((result) => {
+          if (result.value) {            
+              var cleanEmails = get_clean_emails();
+              var release = ($(formData.querySelector('#release')).prop("checked") ? "True" : "False");
+              $.ajax({
+                      url: '../../../update_scan/',
+                      type: 'POST',
+                      dataType: 'json',
+                      data: {
+                          csrfmiddlewaretoken: '{{csrf_token}}',
+                          hash: item,
+                          user_app_name: $(formData.querySelector('#appname')).val(),
+                          user_app_version: $(formData.querySelector('#version')).val(),
+                          division: $(formData.querySelector('#division')).val(),
+                          environment: $(formData.querySelector('#environment')).val(),
+                          country: countryString,
+                          data_privacy_classification: $(formData.querySelector('#data_privacy_classification')).val(),
+                          data_privacy_attributes: dataPrivacyAttributesString,
+                          email: cleanEmails,
+                          release: release
+                      },
+                      success : function(json) {
+                          if (json.result === 'success') {
+                              Swal.fire(
+                                  'Updated!',
+                                  'The scan has been successfully updated.',
+                                  'success'
+                              ).then(function () {
+                                  $('#edit_scan').modal('hide');
+                                  location.reload(true);
+                                });
+                          }
+                          else {
+                              Swal.fire(
+                              'Scan Update Failed',
+                              'Cannot update the scan!',
+                              'error'
+                              )
+                          }
+                      },
+                      error : function(xhr,errmsg,err) {
+                          Swal.fire(
+                              'Updating Scan Failed',
+                              errmsg,
+                              'error'
+                              )
+                      }
+                  });
+                  
+          }
+      }); 
     }
 
     function populateDivisions(selectedDivision) {
-    var divisionsUrl = '{{tenant_static}}divisions.json';
-    fetch(divisionsUrl)
-      .then(response => response.json())
-      .then(data => {
-        var options = '<option value=""></option>';
-        for (i = 0; i < data.length; i++) {
-          options += '<option value="' + data[i].id + '"' + (data[i].name.toLowerCase() == selectedDivision ? ' selected="selected"' : '') + '>' + data[i].name + '</option>';
-        }
-        _('division').innerHTML = options;
-      });
-  }
+      var divisionsUrl = '{{tenant_static}}divisions.json';
+      fetch(divisionsUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '<option value=""></option>';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+          }
+          _('division').innerHTML = options;
+          $("#division").val(selectedDivision);
+          console.log('selected division: ' + selectedDivision);
+        });
+    }
 
     function populateCountries(selectedCountry) {
-
       var countryValue = splitData(selectedCountry);
       
       var countriesUrl = '{{tenant_static}}countries.json';
@@ -775,7 +775,6 @@
     }
 
     function populateDataPrivacy(selectedDataPrivacyAttributes) {
-
       var dataPrivacyAttributeValue = splitData(selectedDataPrivacyAttributes)
 
       var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
