@@ -37,6 +37,9 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
+
+from mobsf.StaticAnalyzer.models import RecentScansDB
 
 from . import settings
 
@@ -55,11 +58,12 @@ URL_REGEX = re.compile(
     ),
     re.UNICODE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
 
 
 class Color(object):
     GREEN = '\033[92m'
-    ORANGE = '\033[33m'
+    GREY = '\033[0;37m'
     RED = '\033[91m'
     BOLD = '\033[1m'
     END = '\033[0m'
@@ -121,9 +125,12 @@ def print_version():
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
         print('REST API Key: ' + api_key())
+        print('Default Credentials: mobsf/mobsf')
     else:
-        logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
-        print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
+        logger.info(
+            '%sMobile Security Framework %s%s', Color.GREY, ver, Color.END)
+        print(f'REST API Key: {Color.BOLD}{api_key()}{Color.END}')
+        print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
     dist = ' '.join(distro.linux_distribution(
@@ -640,7 +647,7 @@ def strict_package_check(user_input):
 
     For android package and ios bundle id
     """
-    pat = re.compile(r'^([\w-]*\.)+[\w-]{2,155}$')
+    pat = re.compile(r'^([a-zA-Z]{1}[\w.-]{1,255})$')
     resp = re.match(pat, user_input)
     if not resp or '..' in user_input:
         logger.error('Invalid package name/bundle id/class name')
@@ -891,13 +898,27 @@ def valid_host(host):
             return False
         # Local network
         invalid_prefix = (
+            '100.64.',
             '127.',
             '192.',
+            '198.',
             '10.',
             '172.',
-            '169',
+            '169.',
             '0.',
-            'localhost')
+            '203.0.',
+            '224.0.',
+            '240.0',
+            '255.255.',
+            'localhost',
+            '::1',
+            '64::ff9b::',
+            '100::',
+            '2001::',
+            '2002::',
+            'fc00::',
+            'fe80::',
+            'ff00::')
         if domain.startswith(invalid_prefix):
             return False
         ip = socket.gethostbyname(domain)
@@ -907,6 +928,41 @@ def valid_host(host):
         return True
     except Exception:
         return False
+
+
+def append_scan_status(checksum, status, exception=None):
+    """Append Scan Status to Database."""
+    try:
+        db_obj = RecentScansDB.objects.get(MD5=checksum)
+        if status == 'init':
+            db_obj.SCAN_LOGS = []
+            db_obj.save()
+            return
+        current_logs = python_dict(db_obj.SCAN_LOGS)
+        current_logs.append({
+            'timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'status': status,
+            'exception': exception})
+        db_obj.SCAN_LOGS = current_logs
+        db_obj.save()
+    except RecentScansDB.DoesNotExist:
+        # Expected to fail for iOS Dynamic Analysis Report Generation
+        # Calls MalwareScan and TrackerScan with different checksum
+        pass
+    except Exception:
+        logger.exception('Appending Scan Status to Database')
+
+
+def get_scan_logs(checksum):
+    """Get the scan logs for the given checksum."""
+    try:
+        db_entry = RecentScansDB.objects.filter(MD5=checksum)
+        if db_entry.exists():
+            return python_list(db_entry[0].SCAN_LOGS)
+    except Exception:
+        msg = 'Fetching scan logs from the DB failed.'
+        logger.exception(msg)
+    return []
 
 
 def is_admin(request):

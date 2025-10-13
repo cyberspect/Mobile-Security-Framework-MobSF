@@ -14,17 +14,7 @@ logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
-EXTS = (
-    '.xapk',
-    '.apk',
-    '.ipa',
-    '.appx',
-    '.zip',
-    '.a',
-    '.so',
-    '.dylib',
-    '.aar',
-    '.jar')
+EXTS = settings.ANDROID_EXTS + settings.IOS_EXTS + settings.WINDOWS_EXTS
 
 
 def static_analysis_test():
@@ -239,6 +229,21 @@ def api_test():
             logger.error('Scan List API Test 2')
             return True
         logger.info('[OK] Scan List API tests completed')
+        # Scan logs tests
+        logger.info('Running Scan Logs API tests')
+        for upl in uploaded:
+            resp = http_client.post(
+                '/api/v1/scan_logs',
+                {'hash': upl['hash']},
+                HTTP_AUTHORIZATION=auth)
+            if resp.status_code == 200:
+                logs = json.loads(resp.content.decode('utf-8'))
+                if 'logs' in logs and len(logs['logs']) > 0:
+                    logger.info('[OK] Scan Logs API test: %s', upl['hash'])
+            else:
+                logger.error('Scan Logs API test: %s', upl['hash'])
+                return True
+        logger.info('[OK] Static Analysis API test completed')
         # PDF Tests
         logger.info('Running PDF Generation API Test')
         if platform.system() in ['Darwin', 'Linux']:
@@ -347,6 +352,14 @@ def api_test():
             },
             HTTP_AUTHORIZATION=auth)
         assert (resp.status_code == 200)
+        resp_custom = http_client.post(
+            '/api/v1/compare',
+            {
+                'hash1': '82ab8b2193b3cfb1c737e3a786be363a',
+                'hash2': '52c50ae824e329ba8b5b7a0f523efffe',
+            },
+            HTTP_X_MOBSF_API_KEY=auth)
+        assert (resp_custom.status_code == 200)
         if resp.status_code == 200:
             logger.info('[OK] App compare API tests completed')
         else:

@@ -7,11 +7,17 @@ from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+)
 from mobsf.MobSF.utils import (
     make_api_response,
     sso_email,
     utcnow,
+    get_scan_logs,
+    is_md5,
 )
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (
@@ -25,9 +31,10 @@ from mobsf.MobSF.views.home import (
     update_cyberspect_scan,
     update_scan,
 )
-from mobsf.StaticAnalyzer.views.android import view_source
+from mobsf.MobSF.views.api.api_middleware import make_api_response
+from mobsf.StaticAnalyzer.views.android.views import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
-from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
+from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -99,6 +106,39 @@ def api_scan(request):
     if set(request.POST).intersection(params) != params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
+    checksum = request.POST['hash']
+    if not is_md5(checksum):
+        return make_api_response(
+            {'error': 'Invalid Checksum'}, 500)
+    robj = RecentScansDB.objects.filter(MD5=checksum)
+    if not robj.exists():
+        return make_api_response(
+            {'error': 'The file is not uploaded/available'}, 500)
+    scan_type = robj[0].SCAN_TYPE
+    # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
+    if scan_type in settings.ANDROID_EXTS:
+        resp = static_analyzer(request, checksum, True)
+        if 'type' in resp:
+            resp = static_analyzer_ios(request, checksum, True)
+        if 'error' in resp:
+            response = make_api_response(resp, 500)
+        else:
+            response = make_api_response(resp, 200)
+    # IPA
+    elif scan_type in settings.IOS_EXTS:
+        resp = static_analyzer_ios(request, checksum, True)
+        if 'error' in resp:
+            response = make_api_response(resp, 500)
+        else:
+            response = make_api_response(resp, 200)
+    # APPX
+    elif scan_type in settings.WINDOWS_EXTS:
+        resp = windows.staticanalyzer_windows(request, checksum, True)
+        if 'error' in resp:
+            response = make_api_response(resp, 500)
+        else:
+            response = make_api_response(resp, 200)
+    return response
 
     return scan(request.POST)
 
@@ -148,6 +188,23 @@ def api_rescan(request):
         + str(scan_data['cyberspect_scan_id'])
     logging.info(response_message)
     return make_api_response({'message': response_message}, 202)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_scan_logs(request):
+    """POST - Get Scan logs."""
+    if 'hash' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = get_scan_logs(request.POST['hash'])
+    if not resp:
+        return make_api_response(
+            {'error': 'No scan logs found'}, 400)
+    response = make_api_response({
+        'logs': resp,
+    }, 200)
+    return response
 
 
 @request_method(['POST'])
