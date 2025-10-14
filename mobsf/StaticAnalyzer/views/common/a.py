@@ -178,9 +178,9 @@ def a_analysis(request, app_dict, rescan, api):
     context['virus_total'] = None
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
-            context['virus_total'] = vt.get_result(
-                app_dict['app_path'],
-                app_dict['md5_hash'])
+        context['virus_total'] = vt.get_result(
+            app_dict['app_path'],
+            app_dict['md5_hash'])
     context['appsec'] = {}
     context['average_cvss'] = None
     template = 'static_analysis/ios_binary_analysis.html'

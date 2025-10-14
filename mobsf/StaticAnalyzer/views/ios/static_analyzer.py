@@ -15,7 +15,6 @@ from mobsf.MobSF.utils import (
     file_size,
     is_admin,
     is_md5,
-    is_md5,
     print_n_send_error_response,
     relative_path,
 )
@@ -241,9 +240,9 @@ def static_analyzer_ios(request, checksum, api=False):
             context['virus_total'] = None
             if settings.VT_ENABLED:
                 vt = VirusTotal.VirusTotal(checksum)
-                    context['virus_total'] = vt.get_result(
-                        app_dict['app_path'],
-                        app_dict['md5_hash'])
+                context['virus_total'] = vt.get_result(
+                    app_dict['app_path'],
+                    app_dict['md5_hash'])
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
