@@ -23,11 +23,13 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.html import escape
 
+from cyberspect.MobSF.utils import (
+    is_admin,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
     get_config_loc,
-    is_admin,
     is_md5,
     is_md5,
     print_n_send_error_response,

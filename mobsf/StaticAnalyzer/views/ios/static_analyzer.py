@@ -10,10 +10,12 @@ from django.conf import settings
 from django.shortcuts import render
 from django.template.defaulttags import register
 
+from cyberspect.MobSF.utils import (
+    is_admin,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
-    is_admin,
     is_md5,
     print_n_send_error_response,
     relative_path,

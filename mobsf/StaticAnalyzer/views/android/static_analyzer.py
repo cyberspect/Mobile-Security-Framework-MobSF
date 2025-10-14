@@ -20,11 +20,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 
+from cyberspect.MobSF.utils import (
+    is_admin,
+)
 from mobsf.MobSF.utils import (
     android_component,
     append_scan_status,
     file_size,
-    is_admin,
     is_dir_exists,
     is_file_exists,
     is_md5,

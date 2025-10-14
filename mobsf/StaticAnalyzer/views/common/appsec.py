@@ -9,8 +9,10 @@ import logging
 from django.shortcuts import render
 
 from mobsf.MobSF import settings
-from mobsf.MobSF.utils import (
+from cyberspect.MobSF.utils import (
     is_admin,
+)
+from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )

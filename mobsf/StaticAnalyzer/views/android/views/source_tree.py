@@ -10,9 +10,11 @@ from django.shortcuts import (
     render,
 )
 
+from cyberspect.MobSF.utils import (
+    is_admin,
+)
 from mobsf.MobSF.utils import (
     api_key,
-    is_admin,
     is_md5,
     print_n_send_error_response,
 )

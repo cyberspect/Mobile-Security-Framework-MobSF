@@ -12,8 +12,10 @@ from django.shortcuts import render
 from django.conf import settings
 from django.utils.html import escape
 
-from mobsf.MobSF.utils import (
+from cyberspect.MobSF.utils import (
     is_admin,
+)
+from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
