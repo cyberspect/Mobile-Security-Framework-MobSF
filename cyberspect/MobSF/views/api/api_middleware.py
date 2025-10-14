@@ -4,7 +4,8 @@ import hashlib
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 
-from mobsf.MobSF.utils import api_key, make_api_response, utcnow
+from cyberspect.MobSF.utils import make_api_response, utcnow
+from mobsf.MobSF.utils import api_key
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.StaticAnalyzer.models import ApiKeys
 

@@ -13,11 +13,13 @@ from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
 )
 from mobsf.MobSF.utils import (
+    get_scan_logs,
+    is_md5,
+)
+from cyberspect.MobSF.utils import (
     make_api_response,
     sso_email,
     utcnow,
-    get_scan_logs,
-    is_md5,
 )
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (

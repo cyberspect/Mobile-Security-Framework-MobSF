@@ -31,8 +31,6 @@ from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     api_key,
     get_md5,
-    get_siphash,
-    is_admin,
     is_dir_exists,
     is_file_exists,
     is_md5,
@@ -40,6 +38,10 @@ from mobsf.MobSF.utils import (
     key,
     print_n_send_error_response,
     python_dict,
+)
+from cyberspect.MobSF.utils import (
+    get_siphash,
+    is_admin,
     sso_email,
     tz,
     utcnow,

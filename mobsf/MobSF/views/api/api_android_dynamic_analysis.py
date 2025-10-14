@@ -2,8 +2,8 @@
 """MobSF REST API V 1."""
 from django.views.decorators.csrf import csrf_exempt
 
-from mobsf.MobSF.utils import make_api_response
 from mobsf.MobSF.views.helpers import request_method
+from cyberspect.MobSF.utils import make_api_response
 from mobsf.DynamicAnalyzer.views.android import (
     dynamic_analyzer,
     operations,

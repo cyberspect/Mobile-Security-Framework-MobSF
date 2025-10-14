@@ -15,8 +15,10 @@ from django.http import HttpResponse
 
 from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
-    is_admin,
     print_n_send_error_response,
+)
+from cyberspect.MobSF.utils import (
+    is_admin,
     sso_email,
     tz,
     utcnow,
