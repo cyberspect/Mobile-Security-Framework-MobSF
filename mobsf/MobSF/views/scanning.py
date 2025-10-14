@@ -7,7 +7,7 @@ import os
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.utils import (
+from cyberspect.MobSF.utils import (
     get_siphash,
     get_usergroups,
     is_admin,
@@ -24,8 +24,10 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
+            # Cyberspect mods
             classification = data.get('data_privacy_classification', '')
             attributes = data.get('data_privacy_attributes', '')
+            # End Cyberspect mods
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
@@ -34,6 +36,7 @@ def add_to_recent_scan(data):
                 PACKAGE_NAME='',
                 VERSION_NAME='',
                 MD5=data['hash'],
+                # Cyberspect mods
                 TIMESTAMP=utcnow(),
                 USER_APP_NAME=data.get('user_app_name', ''),
                 USER_APP_VERSION=data.get('user_app_version', ''),
@@ -45,8 +48,9 @@ def add_to_recent_scan(data):
                 RELEASE=data.get('release', False),
                 DATA_PRIVACY_CLASSIFICATION=classification,
                 DATA_PRIVACY_ATTRIBUTES=attributes)
-
+                # End Cyberspect mods
             new_db_obj.save()
+        # Cyberspect mods
         else:
             scan = db_obj.first()
             if (not data['email'] in scan.EMAIL):
@@ -67,12 +71,15 @@ def add_to_recent_scan(data):
             scan.DATA_PRIVACY_ATTRIBUTES = \
                 data.get('data_privacy_attributes', '')
             scan.save()
+    # End Cyberspect mods
     except Exception as ex:
         logger.exception('Adding Scan URL to Database')
+        # Cyberspect mod
         raise ex
+        # End Cyberspect mod
 
 
-def handle_uploaded_file(content, extension):
+def handle_uploaded_file(content, extension, source_content):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -96,6 +103,7 @@ def handle_uploaded_file(content, extension):
         else:
             for chunk in content.chunks():
                 destination.write(chunk)
+    # Cyberspect mods
     if (source_content):
         bfr = isinstance(source_content, io.BufferedReader)
         with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:
@@ -106,24 +114,19 @@ def handle_uploaded_file(content, extension):
             else:
                 for chunk in source_content.chunks():
                     f.write(chunk)
+    # End Cyberspect mods
     return md5sum
 
 
 class Scanning(object):
 
     def __init__(self, request):
+        # Cyberspect mods
         if ('file' in request.FILES):
             self.file = request.FILES['file']
             self.file_name = self.file.name
             self.file_type = FileType(self.file)
             self.file_size = self.file.size
-        self.data = {
-            'analyzer': 'static_analyzer',
-            'status': 'success',
-            'hash': '',
-            'scan_type': '',
-            'file_name': self.file_name,
-        }
         else:
             self.file = None
             self.file_name = None
@@ -158,6 +161,14 @@ class Scanning(object):
         self.md5 = ''
         self.short_hash = ''
         self.scan_type = ''
+        # Cyberspect mods end
+        self.data = {
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': '',
+            'scan_type': '',
+            'file_name': self.file_name,
+        }
 
 
     def scan_apk(self):
@@ -272,7 +283,9 @@ class Scanning(object):
         logger.info('Windows APPX uploaded')
         return self.data
 
+    
     def populate_data_dict(self):
+        """Cyberspect specific function: Populates the data dictionary."""
         self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,
                                         self.source_file)
         self.short_hash = get_siphash(self.md5)
