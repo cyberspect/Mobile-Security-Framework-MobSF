@@ -1008,7 +1008,7 @@ class RecentScans(object):
         return data
 
 
-def update_scan_timestamp(scan_hash):
-    # Update the last scan time.
-    tms = timezone.now()
-    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
+# def update_scan_timestamp(scan_hash):
+#     # Update the last scan time.
+#     tms = timezone.now()
+#     RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
