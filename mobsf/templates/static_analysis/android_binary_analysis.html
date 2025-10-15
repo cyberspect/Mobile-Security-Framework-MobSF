@@ -50,7 +50,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Scan Details</a>
+          <a href="#" class="d-block">Static Analyzer</a>
         </div>
       </div>
 
@@ -342,7 +342,7 @@
               </p>
              </a>
             </li>
-            <!-- {% if dynamic_analysis_done %}
+            {% if dynamic_analysis_done %}
             <li class="nav-item">
               <a href="{% url "dynamic_report" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-alt"></i>
@@ -679,6 +679,7 @@
                  </p>
 
               </div>
+            </div><!-- /.card -->
             </div>
             {% if app_type not in 'so' %}
             <div class="col-lg-8">
@@ -1406,6 +1407,7 @@
                          {% endif %}
                           <th>NX</th>
                           <th>STACK CANARY</th>
+                          <th>RELRO</th>
                           <th>RPATH</th>
                           <th>RUNPATH</th>
                           <th>FORTIFY</th>
@@ -1432,6 +1434,10 @@
                   <br/>
                   <span class="badge bg-{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>
                   <br/>{{so.stack_canary.description}}</td>
+              <td><b>{{so.relocation_readonly.relro}}</b>
+                <br/>
+                <span class="badge bg-{% if so.relocation_readonly.severity == 'high' %}danger{% elif so.relocation_readonly.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.relocation_readonly.severity}}</span>
+                <br/>{{so.relocation_readonly.description}}</td>
               <td><b>{{so.rpath.rpath}}</b>
                 <br/>
                 <span class="badge bg-{% if so.rpath.severity == 'high' %}danger{% elif so.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.rpath.severity}}</span>
@@ -1948,7 +1954,7 @@
                         </td>
 
                        <td>
-                          <a target="_blank" href="{% url 'view_source' %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
+                          <a href="{% url "view_source" %}?file={{urldict|key:"path"}}&amp;md5={{ md5}}&amp;type={{app_type}}">{{urldict|key:"path"}}</a>
                        </td>
                     </tr>
                   {% endfor %} 

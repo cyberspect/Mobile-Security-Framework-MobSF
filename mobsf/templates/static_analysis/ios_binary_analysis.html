@@ -36,7 +36,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Scan Details</a>
+          <a href="#" class="d-block">Static Analyzer</a>
         </div>
       </div>
 
@@ -442,7 +442,7 @@
             <div class="card">
               <div class="card-body">
                 <p>
-                  <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
+                <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                  <a role="button" class="btn btn-info" href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" ><i class="fa fa-sync"></i> Rescan</a>
                  <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> Manage Suppressions</a>
