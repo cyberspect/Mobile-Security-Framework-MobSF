@@ -26,6 +26,10 @@ USE_HOME = True
 
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Cyberspect addition
+# need to determine the base directory for Cyberspect relsted files
+CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
+# Cyberspect addition end
 MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Download Directory
 DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
@@ -209,6 +213,11 @@ TEMPLATES = [
         'APP_DIRS': True,
         'DIRS':
             [
+                # Cyberspect addition
+                # when Django looks for a template (e.g., index.html), it will
+                # find and use the version in cyberspect/templates/ before it
+                # looks in the original templates/ directory
+                os.path.join(CYBERSPECT_BASE_DIR, 'cyberspect/templates'),
                 os.path.join(BASE_DIR, 'templates'),
             ],
         'OPTIONS':
