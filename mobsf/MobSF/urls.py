@@ -25,6 +25,7 @@ from mobsf.MobSF.security import (
     store_exec_hashes_at_first_run,
 )
 from mobsf.MobSF.views import (
+    admin,
     authentication,
     authorization,
     home,
