@@ -117,6 +117,7 @@ def frida_logs(request, api=False):
                       {'hash': apphash,
                        'package': request.GET.get('package', ''),
                        'version': settings.MOBSF_VER,
+                       'cversion': settings.CYBERSPECT_VER,
                        'title': 'Live Frida logs'})
     except Exception:
         logger.exception('Frida log streaming')

@@ -168,6 +168,7 @@ def live_api(request, api=False):
                       {'hash': apphash,
                        'package': request.GET.get('package', ''),
                        'version': settings.MOBSF_VER,
+                       'cversion': settings.CYBERSPECT_VER,
                        'title': 'Live API Monitor'})
     except Exception:
         logger.exception('API monitor streaming')

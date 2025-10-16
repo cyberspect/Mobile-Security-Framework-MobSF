@@ -88,6 +88,7 @@ def index(request):
     context = {
         'title': 'Cyberspect: Upload App',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'mimes': mimes,
         'exts': '|'.join(exts),
         'is_admin': is_admin(request),
@@ -256,6 +257,7 @@ def api_docs(request):
         'title': 'API Docs',
         'api_key': api_key(),
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': True,
     }
     template = 'general/apidocs.html'
@@ -267,6 +269,7 @@ def support(request):
     context = {
         'title': 'Support',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
         'tenant_static': settings.TENANT_STATIC_URL,
     }
@@ -279,6 +282,7 @@ def about(request):
     context = {
         'title': 'About',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
     }
     template = 'general/about.html'
@@ -290,6 +294,7 @@ def donate(request):
     context = {
         'title': 'Donate',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
     }
     template = 'general/donate.html'
     return render(request, template, context)
@@ -300,6 +305,7 @@ def error(request):
     context = {
         'title': 'Error',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
     }
     template = 'general/error.html'
@@ -311,6 +317,7 @@ def zip_format(request):
     context = {
         'title': 'Zipped Source Instruction',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
     }
     template = 'general/zip.html'
@@ -333,6 +340,7 @@ def dynamic_analysis(request):
     context = {
         'title': 'Dynamic Analysis',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
     }
     template = 'general/dynamic.html'
     return render(request, template, context)
@@ -419,6 +427,7 @@ def recent_scans(request, page_size=20, page_number=1):
         'title': 'Scanned Apps',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': isadmin,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,

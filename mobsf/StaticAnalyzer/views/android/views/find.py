@@ -71,6 +71,7 @@ def run(request):
             'found': str(flz),
             'search_type': search_type,
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
         }
         return JsonResponse(json.dumps(context), safe=False)
     except Exception:

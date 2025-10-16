@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-BANNER, VERSION, MOBSF_VER = get_mobsf_version()
+BANNER, VERSION, MOBSF_VER, CYBERSPECT_VER = get_mobsf_version()
 USE_HOME = True
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
@@ -194,7 +194,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.RemoteUserBackend',
 )
 MIDDLEWARE = (
-    'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

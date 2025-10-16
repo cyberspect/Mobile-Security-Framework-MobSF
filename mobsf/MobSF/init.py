@@ -11,6 +11,9 @@ from mobsf.install.windows.setup import windows_config_local
 logger = logging.getLogger(__name__)
 
 VERSION = '4.0.7'
+# Cyberspect version - a non-emmpty string below will display the
+# Cyberspect version number in the footer and VERSION as the MobSF version
+CYBERSPECT_VERSION = '2025.10'
 BANNER = """
   __  __       _    ____  _____       _  _    ___  
  |  \/  | ___ | |__/ ___||  ___|_   _| || |  / _ \ 
@@ -143,4 +146,4 @@ def get_mobsf_home(use_home, base_dir):
 
 
 def get_mobsf_version():
-    return BANNER, VERSION, f'v{VERSION}'
+    return BANNER, VERSION, f'v{VERSION}', CYBERSPECT_VERSION

@@ -115,6 +115,7 @@ def generic_compare(request,
     context = {
         'title': 'Compare report',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'first_app': {},
         'second_app': {},
         'urls': {},
