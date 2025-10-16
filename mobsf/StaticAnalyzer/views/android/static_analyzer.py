@@ -109,9 +109,17 @@ register.filter('key', key)
 register.filter('android_component', android_component)
 register.filter('relative_path', relative_path)
 
-register.filter('key', key)
-register.filter('android_component', android_component)
-register.filter('relative_path', relative_path)
+# Cyberspect function
+def static_analyzer_request(request, checksum):
+    logger.info(checksum)
+    response = static_analyzer(request.GET, checksum, False)
+    response['is_admin'] = is_admin(request)
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
+        return print_n_send_error_response(request, response['error'])
+    else:
+        return response
 
 @login_required
 def static_analyzer(request, checksum, api=False):
@@ -184,11 +192,13 @@ def static_analyzer(request, checksum, api=False):
             db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
             if db_entry.exists() and not rescan:
                 context = get_context_from_db_entry(db_entry)
+                # Cyberspect mod
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal()
                     context['virus_total'] = vt.get_result(
                         app_dic['app_path'],
                         app_dic['md5'])
+                # Cyberspect mod end
             else:
                 if not has_permission(request, Permissions.SCAN, api):
                     return print_n_send_error_response(
@@ -539,6 +549,7 @@ def static_analyzer(request, checksum, api=False):
                         ctx = {
                             'title': 'Invalid ZIP archive',
                             'version': settings.MOBSF_VER,
+                            'cversion': settings.CYBERSPECT_VER,
                         }
                         template = 'general/zip.html'
                         return render(request, template, ctx)
