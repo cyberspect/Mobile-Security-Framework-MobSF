@@ -28,6 +28,7 @@ class RecentScansDB(models.Model):
     MD5 = models.CharField(max_length=32, default='', primary_key=True)
     TIMESTAMP = models.DateTimeField(default=datetime.now)
     SCAN_LOGS = models.TextField(default=[])
+    # Cyberspect mods
     USER_APP_NAME = models.CharField(max_length=260, default='')
     USER_APP_VERSION = models.CharField(max_length=50, default='')
     DIVISION = models.CharField(max_length=260, default='')
@@ -38,7 +39,7 @@ class RecentScansDB(models.Model):
     COUNTRY = models.CharField(max_length=260, default='')
     DATA_PRIVACY_CLASSIFICATION = models.CharField(max_length=100, default='')
     DATA_PRIVACY_ATTRIBUTES = models.CharField(max_length=100, default='')
-
+    # End Cyberspect mods
 
 class StaticAnalyzerAndroid(models.Model):
     class Meta:
