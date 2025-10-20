@@ -177,4 +177,3 @@ def so_analysis(request, app_dic, rescan, api):
         return context
     else:
         return render(request, template, context)
-
