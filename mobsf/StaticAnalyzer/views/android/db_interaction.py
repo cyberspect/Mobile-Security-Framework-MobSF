@@ -3,7 +3,6 @@ import logging
 
 from django.conf import settings
 from django.db.models import QuerySet
-from django.utils import timezone
 
 from mobsf.MobSF.utils import (
     append_scan_status,
@@ -11,13 +10,14 @@ from mobsf.MobSF.utils import (
     python_dict,
     python_list,
 )
-from cyberspect.MobSF.utils import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
     process_suppression_manifest,
 )
+
+from cyberspect.MobSF.utils import update_scan_timestamp
 
 """Module holding the functions for the db."""
 

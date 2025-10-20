@@ -10,9 +10,6 @@ from django.shortcuts import (
     render,
 )
 
-from cyberspect.MobSF.utils import (
-    is_admin,
-)
 from mobsf.MobSF.utils import (
     api_key,
     is_md5,
@@ -23,6 +20,10 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
+)
+
+from cyberspect.MobSF.utils import (
+    is_admin,
 )
 
 logger = logging.getLogger(__name__)

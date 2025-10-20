@@ -8,9 +8,6 @@ from pathlib import Path
 from django.conf import settings
 from django.shortcuts import render
 
-from cyberspect.MobSF.utils import (
-    is_admin,
-)
 from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
@@ -20,6 +17,10 @@ from mobsf.StaticAnalyzer.views.android.manifest_utils import (
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
+)
+
+from cyberspect.MobSF.utils import (
+    is_admin,
 )
 
 logger = logging.getLogger(__name__)

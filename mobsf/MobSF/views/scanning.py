@@ -7,6 +7,8 @@ import os
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF.views.helpers import FileType
+
 from cyberspect.MobSF.utils import (
     get_siphash,
     get_usergroups,
@@ -14,7 +16,6 @@ from cyberspect.MobSF.utils import (
     sso_email,
     utcnow,
 )
-from mobsf.MobSF.views.helpers import FileType
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +37,7 @@ def add_to_recent_scan(data):
                 PACKAGE_NAME='',
                 VERSION_NAME='',
                 MD5=data['hash'],
-                # Cyberspect mods
-                TIMESTAMP=utcnow(),
+                TIMESTAMP=utcnow(),  # Begin Cyberspect mods
                 USER_APP_NAME=data.get('user_app_name', ''),
                 USER_APP_VERSION=data.get('user_app_version', ''),
                 DIVISION=data.get('division', ''),
@@ -47,8 +47,7 @@ def add_to_recent_scan(data):
                 USER_GROUPS=data.get('user_groups', ''),
                 RELEASE=data.get('release', False),
                 DATA_PRIVACY_CLASSIFICATION=classification,
-                DATA_PRIVACY_ATTRIBUTES=attributes)
-                # End Cyberspect mods
+                DATA_PRIVACY_ATTRIBUTES=attributes)  # End Cyberspect mods
             new_db_obj.save()
         # Cyberspect mods
         else:
@@ -170,7 +169,6 @@ class Scanning(object):
             'file_name': self.file_name,
         }
 
-
     def scan_apk(self):
         """Android APK."""
         md5 = handle_uploaded_file(self.file, '.apk')
@@ -283,7 +281,6 @@ class Scanning(object):
         logger.info('Windows APPX uploaded')
         return self.data
 
-    
     def populate_data_dict(self):
         """Cyberspect specific function: Populates the data dictionary."""
         self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,

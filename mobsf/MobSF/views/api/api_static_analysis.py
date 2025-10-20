@@ -16,11 +16,6 @@ from mobsf.MobSF.utils import (
     get_scan_logs,
     is_md5,
 )
-from cyberspect.MobSF.utils import (
-    make_api_response,
-    sso_email,
-    utcnow,
-)
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (
     RecentScans,
@@ -33,7 +28,6 @@ from mobsf.MobSF.views.home import (
     update_cyberspect_scan,
     update_scan,
 )
-from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android.views import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
@@ -48,6 +42,12 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
 from mobsf.StaticAnalyzer.views.common.pdf import pdf
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
 from mobsf.StaticAnalyzer.views.windows import windows
+
+from cyberspect.MobSF.utils import (
+    make_api_response,
+    sso_email,
+    utcnow,
+)
 
 from background_task import background
 

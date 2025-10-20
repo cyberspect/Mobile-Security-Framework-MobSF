@@ -2,7 +2,6 @@
 import logging
 
 from django.conf import settings
-from django.utils import timezone
 
 from mobsf.MobSF.utils import (
     append_scan_status,
@@ -10,12 +9,13 @@ from mobsf.MobSF.utils import (
     python_dict,
     python_list,
 )
-from cyberspect.MobSF.utils import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
 )
+
+from cyberspect.MobSF.utils import update_scan_timestamp
 
 logger = logging.getLogger(__name__)
 

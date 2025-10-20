@@ -20,9 +20,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 
-from cyberspect.MobSF.utils import (
-    is_admin,
-)
 from mobsf.MobSF.utils import (
     android_component,
     append_scan_status,
@@ -103,11 +100,15 @@ from mobsf.MobSF.views.authorization import (
     has_permission,
 )
 
+from cyberspect.MobSF.utils import (
+    is_admin,
+)
 
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 register.filter('android_component', android_component)
 register.filter('relative_path', relative_path)
+
 
 # Cyberspect function
 def static_analyzer_request(request, checksum):
@@ -120,6 +121,7 @@ def static_analyzer_request(request, checksum):
         return print_n_send_error_response(request, response['error'])
     else:
         return response
+
 
 @login_required
 def static_analyzer(request, checksum, api=False):

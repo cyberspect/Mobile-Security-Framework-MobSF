@@ -15,9 +15,6 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
-from cyberspect.MobSF.utils import (
-    is_admin,
-)
 from mobsf.MobSF.utils import (
     is_file_exists,
     is_safe_path,
@@ -30,6 +27,10 @@ from mobsf.StaticAnalyzer.forms import (
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
+)
+
+from cyberspect.MobSF.utils import (
+    is_admin,
 )
 
 logger = logging.getLogger(__name__)

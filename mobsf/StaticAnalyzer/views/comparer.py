@@ -12,15 +12,16 @@ from django.shortcuts import render
 from django.conf import settings
 from django.utils.html import escape
 
-from cyberspect.MobSF.utils import (
-    is_admin,
-)
 from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry,
+)
+
+from cyberspect.MobSF.utils import (
+    is_admin,
 )
 
 
