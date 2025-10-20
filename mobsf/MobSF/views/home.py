@@ -18,14 +18,12 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
-from django.utils import timezone
 from django.shortcuts import (
     redirect,
     render,
 )
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
-from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -39,6 +37,7 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     python_dict,
 )
+
 from cyberspect.MobSF.utils import (
     get_siphash,
     is_admin,
@@ -46,6 +45,7 @@ from cyberspect.MobSF.utils import (
     tz,
     utcnow,
 )
+
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
@@ -209,7 +209,7 @@ class Upload(object):
         elif self.scan.file_type.is_apks():
             return self.scan.scan_apks()
         elif self.file_type.is_aab():
-            return scanning.scan_aab()
+            return self.scan.scan_aab()
         elif self.scan.file_type.is_jar():
             return self.scan.scan_jar()
         elif self.scan.file_type.is_aar():
@@ -239,6 +239,7 @@ class Upload(object):
         }
         update_cyberspect_scan(data)
 
+
 @login_required
 def api_docs(request):
     """Api Docs Route."""
@@ -255,7 +256,7 @@ def api_docs(request):
         logger.exception('[ERROR] Failed to get API key')
     context = {
         'title': 'API Docs',
-        'api_key': api_key(),
+        'api_key': key,
         'version': settings.MOBSF_VER,
         'cversion': settings.CYBERSPECT_VER,
         'is_admin': True,
@@ -617,7 +618,7 @@ def search(request):
         db_obj = RecentScansDB.objects.filter(MD5=md5)
         if db_obj.exists():
             e = db_obj[0]
-            url = f'/{e.ANALYZER }/{e.MD5}/'
+            url = f'/{e.ANALYZER}/{e.MD5}/'
             return HttpResponseRedirect(url)
         else:
             return HttpResponseRedirect('/not_found/')
@@ -626,8 +627,8 @@ def search(request):
         'The Scan ID provided is invalid. Please provide a'
         + ' valid 32 character alphanumeric value.')
 
-# AJAX
 
+# AJAX
 @require_http_methods(['GET'])
 def app_info(request):
     """Get mobile app info by user supplied name."""
@@ -666,7 +667,6 @@ def app_info(request):
         payload = {'found': False}
         return HttpResponse(json.dumps(payload),
                             content_type='application/json', status=200)
-
 
 
 @login_required
@@ -715,7 +715,7 @@ def download(request):
 
 
 @login_required
-def generate_download(request):
+def generate_download(request, api=False):
     """Generate downloads for uploaded binaries/source."""
     try:
         exts = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a',
@@ -1015,9 +1015,3 @@ class RecentScans(object):
             logger.error(exmsg)
             data = {'error': str(exp)}
         return data
-
-
-# def update_scan_timestamp(scan_hash):
-#     # Update the last scan time.
-#     tms = timezone.now()
-#     RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
