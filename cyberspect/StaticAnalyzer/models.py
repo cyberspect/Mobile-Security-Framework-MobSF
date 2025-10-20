@@ -1,19 +1,13 @@
 from datetime import datetime
-from enum import Enum
 
 from django.db import models
 
 
-class DjangoPermissions(Enum):
-    SCAN = ('can_scan', 'Scan Files')
-    SUPPRESS = ('can_suppress', 'Suppress Findings')
-    DELETE = ('can_delete', 'Delete Scans')
-
-
-P = DjangoPermissions
-
-
 class CyberspectScans(models.Model):
+    class Meta:
+        """Meta class for CyberspectScans model."""
+        app_label = 'StaticAnalyzer'
+
     ID = models.BigAutoField(primary_key=True)
     MOBSF_MD5 = models.CharField(max_length=32, null=True)
     DT_PROJECT_ID = models.UUIDField(null=True)
@@ -39,6 +33,10 @@ class CyberspectScans(models.Model):
 
 class ApiKeys(models.Model):
 
+    class Meta:
+        """Meta class for ApiKeys model."""
+        app_label = 'StaticAnalyzer'
+    
     class Role(models.IntegerChoices):
         """API Key role options."""
 
