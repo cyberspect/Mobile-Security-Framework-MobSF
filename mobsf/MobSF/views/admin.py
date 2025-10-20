@@ -13,11 +13,11 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 
-from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 
+from cyberspect.StaticAnalyzer.models import ApiKeys
 from cyberspect.MobSF.utils import (
     is_admin,
     sso_email,

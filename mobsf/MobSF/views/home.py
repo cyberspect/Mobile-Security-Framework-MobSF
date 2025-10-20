@@ -45,11 +45,13 @@ from cyberspect.MobSF.utils import (
     tz,
     utcnow,
 )
+from cyberspect.StaticAnalyzer.models import (
+    CyberspectScans,
+)
 
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
-    CyberspectScans,
     RecentScansDB,
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
