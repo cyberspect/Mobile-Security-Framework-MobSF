@@ -4,6 +4,8 @@ from django.db import models
 
 
 class CyberspectScans(models.Model):
+    """Model for storing Cyberspect scan data."""
+    
     class Meta:
         """Meta class for CyberspectScans model."""
 
@@ -33,6 +35,7 @@ class CyberspectScans(models.Model):
 
 
 class ApiKeys(models.Model):
+    """Model for storing API keys."""        
 
     class Meta:
         """Meta class for ApiKeys model."""
