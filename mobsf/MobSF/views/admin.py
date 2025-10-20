@@ -17,6 +17,7 @@ from mobsf.StaticAnalyzer.models import ApiKeys
 from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
+
 from cyberspect.MobSF.utils import (
     is_admin,
     sso_email,
@@ -126,8 +127,8 @@ def create_api_key_post(request):
             payload = {'msg': 'Missing parameter: description'}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=200)
-        regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
-                '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
+        regx = (r'^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
+                r'([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
         if not re.search(regx, email):
             payload = {'msg': 'Invalid email address was entered.'}
             return HttpResponse(json.dumps(payload),
@@ -207,8 +208,8 @@ def edit_api_key_post(request):
             payload = {'msg': 'Missing parameter: description'}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=200)
-        regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
-                '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
+        regx = (r'^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
+                r'([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
         if not re.search(regx, email):
             payload = {'msg': 'Invalid email address was entered.'}
             return HttpResponse(json.dumps(payload),

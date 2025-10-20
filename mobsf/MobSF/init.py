@@ -14,7 +14,7 @@ VERSION = '4.0.7'
 # Cyberspect version - a non-emmpty string below will display the
 # Cyberspect version number in the footer and VERSION as the MobSF version
 CYBERSPECT_VERSION = '2025.10'
-BANNER = """
+BANNER = r"""
   __  __       _    ____  _____       _  _    ___  
  |  \/  | ___ | |__/ ___||  ___|_   _| || |  / _ \ 
  | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_| | | |
