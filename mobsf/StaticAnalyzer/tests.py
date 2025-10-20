@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 import json
 import logging
@@ -535,14 +534,14 @@ def api_test():
 def start_test(request):
     """Static Analyzer Unit test."""
     item = request.GET.get('module', 'static')
-    
+
     # Extract test headers from request
     headers = {}
     if 'HTTP_X_MOBSF_EMAIL' in request.META:
         headers['HTTP_X_MOBSF_EMAIL'] = request.META['HTTP_X_MOBSF_EMAIL']
     if 'HTTP_X_MOBSF_ROLE' in request.META:
         headers['HTTP_X_MOBSF_ROLE'] = request.META['HTTP_X_MOBSF_ROLE']
-    
+
     if item == 'static':
         comp = 'static_analyzer'
         failed_stat = static_analysis_test(headers)
@@ -575,23 +574,27 @@ class StaticAnalyzerAndAPI(TestCase):
     def test_static_analyzer(self):
         resp = self.http_client.get(
             '/tests/?module=static',
-            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com', 'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'}
+            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com',
+               'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'}
         )
         # Test should verify the endpoint is accessible and returns valid JSON
         # Status code may be 200 (all tests passed) or 403 (some tests failed)
         self.assertIn(resp.status_code, [200, 403])
         data = json.loads(resp.content.decode('utf-8'))
         self.assertIn('static_analyzer', data)
-        self.assertIn(data['static_analyzer'], ['all tests completed', 'some tests failed'])
+        self.assertIn(data['static_analyzer'],
+                      ['all tests completed', 'some tests failed'])
 
     def test_rest_api(self):
         resp = self.http_client.get(
             '/tests/?module=api',
-            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com', 'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'}
+            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com',
+               'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'}
         )
         # Test should verify the endpoint is accessible and returns valid JSON
         # Status code may be 200 (all tests passed) or 403 (some tests failed)
         self.assertIn(resp.status_code, [200, 403])
         data = json.loads(resp.content.decode('utf-8'))
         self.assertIn('static_analyzer_api', data)
-        self.assertIn(data['static_analyzer_api'], ['all tests completed', 'some tests failed'])
+        self.assertIn(data['static_analyzer_api'],
+                      ['all tests completed', 'some tests failed'])

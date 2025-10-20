@@ -26,24 +26,23 @@ class RestApiAuthMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         """Process API Request."""
-        
         # Skip middleware for test endpoints
         if request.path.startswith('/tests'):
             request.META['email'] = 'test@cyberspect.com'
             request.META['role'] = 'FULL_ACCESS'
             return None
-        
+
         # Skip middleware for health check
         if request.path == '/health':
             request.META['email'] = ''
             request.META['role'] = ''
             return None
-        
+
         # Check restricted endpoint AFTER test bypass
         if self.restricted_endpoint(request):
             return make_api_response(
                 {'error': 'Access Denied'}, 403)
-        
+
         request.META['email'] = ''
         request.META['role'] = ''
 
@@ -58,15 +57,14 @@ class RestApiAuthMiddleware(MiddlewareMixin):
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         """Handle API authorization."""
-        
         # Skip middleware for test endpoints
         if request.path.startswith('/tests'):
             return None
-        
+
         # Skip middleware for health check
         if request.path == '/health':
             return None
-        
+
         if not request.path.startswith('/api/'):
             return
         if (self.restricted_endpoint(request)
@@ -119,5 +117,5 @@ class RestApiAuthMiddleware(MiddlewareMixin):
     def restricted_endpoint(self, request):
         if request.path == '/health':
             return False
-        result = settings.CZ100 and request.META.get('HTTP_HOST') == settings.CZ100
-        return result
+        return (settings.CZ100
+                and request.META.get('HTTP_HOST') == settings.CZ100)

@@ -12,9 +12,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.core.handlers.wsgi import WSGIRequest
 
-from mobsf.StaticAnalyzer.models import (
-    RecentScansDB,
-)
+from mobsf.StaticAnalyzer.models import RecentScansDB
 
 logger = logging.getLogger(__name__)
 
