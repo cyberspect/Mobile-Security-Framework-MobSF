@@ -366,6 +366,7 @@ def static_analyzer(request, checksum, api=False):
                 vt = VirusTotal.VirusTotal(checksum)
                 context['virus_total'] = vt.get_result(
                     app_dic['app_path'])
+            context['is_admin'] = is_admin(request)
             template = 'static_analysis/android_binary_analysis.html'
             if api:
                 return context
@@ -558,6 +559,7 @@ def static_analyzer(request, checksum, api=False):
             context['appsec'] = get_android_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
+            context['is_admin'] = is_admin(request)
             template = 'static_analysis/android_source_analysis.html'
             if api:
                 return context

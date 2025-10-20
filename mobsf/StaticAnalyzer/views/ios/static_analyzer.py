@@ -70,6 +70,10 @@ from mobsf.MobSF.views.authorization import (
     has_permission,
 )
 
+from cyberspect.MobSF.utils import (
+    is_admin,
+)
+
 logger = logging.getLogger(__name__)
 register.filter('relative_path', relative_path)
 
@@ -245,6 +249,7 @@ def static_analyzer_ios(request, checksum, api=False):
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
+            context['is_admin'] = is_admin(request)
             template = 'static_analysis/ios_binary_analysis.html'
             if api:
                 return context
@@ -335,6 +340,7 @@ def static_analyzer_ios(request, checksum, api=False):
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
+            context['is_admin'] = is_admin(request)
             template = 'static_analysis/ios_source_analysis.html'
             if api:
                 return context
