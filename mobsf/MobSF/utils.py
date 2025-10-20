@@ -22,7 +22,6 @@ import unicodedata
 import threading
 from urllib.parse import urlparse
 from pathlib import Path
-
 from distutils.version import StrictVersion
 
 import distro
