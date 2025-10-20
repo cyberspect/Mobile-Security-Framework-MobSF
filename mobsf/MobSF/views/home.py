@@ -210,7 +210,7 @@ class Upload(object):
             return self.scan.scan_xapk()
         elif self.scan.file_type.is_apks():
             return self.scan.scan_apks()
-        elif self.file_type.is_aab():
+        elif self.scan.file_type.is_aab():
             return self.scan.scan_aab()
         elif self.scan.file_type.is_jar():
             return self.scan.scan_jar()

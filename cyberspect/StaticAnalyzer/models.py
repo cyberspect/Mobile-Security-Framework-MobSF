@@ -6,6 +6,7 @@ from django.db import models
 class CyberspectScans(models.Model):
     class Meta:
         """Meta class for CyberspectScans model."""
+
         app_label = 'StaticAnalyzer'
 
     ID = models.BigAutoField(primary_key=True)
@@ -35,8 +36,9 @@ class ApiKeys(models.Model):
 
     class Meta:
         """Meta class for ApiKeys model."""
+
         app_label = 'StaticAnalyzer'
-    
+
     class Role(models.IntegerChoices):
         """API Key role options."""
 
