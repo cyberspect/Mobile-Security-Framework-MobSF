@@ -65,6 +65,9 @@ django-brake = "^1.6.0"
 python3-saml = "^1.16.0"
 bcrypt = "4.0.1"
 
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.3.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
