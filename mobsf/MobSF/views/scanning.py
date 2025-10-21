@@ -182,3 +182,29 @@ class Scanning(object):
         add_to_recent_scan(self.data)
         logger.info('Windows APPX uploaded')
         return self.data
+
+    def populate_data_dict(self):
+        """Cyberspect specific function: Populates the data dictionary."""
+        self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,
+                                        self.source_file)
+        self.short_hash = get_siphash(self.md5)
+        return {
+            'analyzer': 'static_analyzer',
+            'hash': self.md5,
+            'short_hash': self.short_hash,
+            'scan_type': self.scan_type,
+            'file_name': self.file_name,
+            'status': 'success',
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'division': self.division,
+            'environment': self.environment,
+            'country': self.country,
+            'data_privacy_classification': self.data_privacy_classification,
+            'data_privacy_attributes': self.data_privacy_attributes,
+            'email': self.email,
+            'user_groups': self.user_groups,
+            'release': self.release,
+            'cyberspect_scan_id': self.cyberspect_scan_id,
+            'rescan': self.rescan,
+        }

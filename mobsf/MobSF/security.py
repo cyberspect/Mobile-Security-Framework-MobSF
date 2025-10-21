@@ -141,7 +141,7 @@ def store_exec_hashes_at_first_run():
 
 
 def subprocess_hook(oldfunc, *args, **kwargs):
-    global EXECUTABLE_HASH_MAP
+    global EXECUTABLE_HASH_MAP  # noqa: F824
     if isinstance(args[0], str):
         # arg is a string
         agmtz = args[0].split()

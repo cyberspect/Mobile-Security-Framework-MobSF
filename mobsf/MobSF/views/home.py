@@ -251,13 +251,14 @@ def dynamic_analysis(request):
     context = {
         'title': 'Dynamic Analysis',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
     }
     template = 'general/dynamic.html'
     return render(request, template, context)
 
 
 @login_required
-def recent_scans(request, page_size=10, page_number=1):
+def recent_scans(request, page_size=20, page_number=1):
     """Show Recent Scans Route."""
     entries = []
     paginator = Paginator(
@@ -365,6 +366,7 @@ def find_checksum(query):
             return result.MD5
 
     return None
+
 
 # AJAX
 

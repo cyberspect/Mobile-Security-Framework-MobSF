@@ -71,6 +71,9 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
 )
+from mobsf.MobSF.cyberspect_utils import (
+    is_admin,
+)
 
 logger = logging.getLogger(__name__)
 register.filter('relative_path', relative_path)
