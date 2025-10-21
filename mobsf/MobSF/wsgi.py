@@ -8,9 +8,7 @@ https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/
 """
 
 import os
-import sys
 import warnings
-from pathlib import Path
 
 from whitenoise import WhiteNoise
 

@@ -7,7 +7,6 @@ MobSF and Django settings
 
 import logging
 import os
-import sys
 
 from mobsf.MobSF.init import (
     first_run,
