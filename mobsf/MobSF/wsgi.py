@@ -20,11 +20,6 @@ from mobsf.MobSF import settings
 
 warnings.filterwarnings('ignore', category=UserWarning, module='cffi')
 
-# Add the project root to the Python path
-project_root = Path(__file__).resolve().parent.parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobsf.MobSF.settings')
 
 static = os.path.join(settings.BASE_DIR, 'static')
