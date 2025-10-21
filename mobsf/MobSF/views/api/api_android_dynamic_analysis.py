@@ -3,7 +3,6 @@
 from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.cyberspect_utils import make_api_response
-
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.DynamicAnalyzer.views.android import (
     dynamic_analyzer,

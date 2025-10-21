@@ -8,7 +8,6 @@ from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.MobSF.views.helpers import FileType
-
 from mobsf.MobSF.cyberspect_utils import (
     get_siphash,
     get_usergroups,

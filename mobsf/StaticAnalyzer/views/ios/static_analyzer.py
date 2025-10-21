@@ -69,7 +69,6 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
 )
-
 from mobsf.MobSF.cyberspect_utils import (
     is_admin,
 )

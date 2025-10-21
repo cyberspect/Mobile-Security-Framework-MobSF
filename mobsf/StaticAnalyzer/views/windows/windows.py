@@ -29,9 +29,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
-
 from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
-
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,

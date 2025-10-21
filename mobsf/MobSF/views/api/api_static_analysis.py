@@ -42,7 +42,6 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
 from mobsf.StaticAnalyzer.views.common.pdf import pdf
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
 from mobsf.StaticAnalyzer.views.windows import windows
-
 from mobsf.MobSF.cyberspect_utils import (
     make_api_response,
     sso_email,

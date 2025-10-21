@@ -16,7 +16,6 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
     process_suppression_manifest,
 )
-
 from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
 
 """Module holding the functions for the db."""

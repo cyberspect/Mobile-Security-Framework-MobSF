@@ -37,7 +37,6 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     python_dict,
 )
-
 from mobsf.MobSF.cyberspect_utils import (
     get_siphash,
     is_admin,
