@@ -7,12 +7,19 @@ MobSF and Django settings
 
 import logging
 import os
+import sys
 
 from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
     get_mobsf_version,
 )
+
+# Ensure project root is in Python path for cross-package imports
+PROJECT_ROOT = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +34,7 @@ USE_HOME = True
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Cyberspect addition
-# need to determine the base directory for Cyberspect relsted files
+# need to determine the base directory for Cyberspect relted files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
 MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
