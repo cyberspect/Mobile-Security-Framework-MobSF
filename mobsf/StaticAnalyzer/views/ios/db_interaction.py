@@ -15,7 +15,7 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
 )
 
-from cyberspect.MobSF.utils import update_scan_timestamp
+from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
 
 logger = logging.getLogger(__name__)
 

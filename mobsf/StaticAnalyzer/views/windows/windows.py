@@ -30,7 +30,7 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 
-from cyberspect.MobSF.utils import update_scan_timestamp
+from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
 
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (

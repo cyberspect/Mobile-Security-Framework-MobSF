@@ -25,7 +25,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
-from cyberspect.MobSF.utils import (
+from mobsf.MobSF.cyberspect_utils import (
     is_admin,
 )
 

@@ -38,17 +38,13 @@ from mobsf.MobSF.utils import (
     python_dict,
 )
 
-from cyberspect.MobSF.utils import (
+from mobsf.MobSF.cyberspect_utils import (
     get_siphash,
     is_admin,
     sso_email,
     tz,
     utcnow,
 )
-from cyberspect.StaticAnalyzer.models import (
-    CyberspectScans,
-)
-
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
@@ -56,6 +52,9 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
+)
+from mobsf.StaticAnalyzer.cyberspect_models import (
+    CyberspectScans,
 )
 from mobsf.StaticAnalyzer.views.common import appsec
 from mobsf.DynamicAnalyzer.views.common.shared import (
