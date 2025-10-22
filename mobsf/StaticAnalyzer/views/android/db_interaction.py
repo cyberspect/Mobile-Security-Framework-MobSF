@@ -10,13 +10,13 @@ from mobsf.MobSF.utils import (
     python_dict,
     python_list,
 )
-from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
     process_suppression_manifest,
 )
+from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
 
 """Module holding the functions for the db."""
 
@@ -38,6 +38,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             package)
         context = {
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'title': 'Static Analysis',
             'file_name': db_entry[0].FILE_NAME,
             'app_name': db_entry[0].APP_NAME,
@@ -116,6 +117,7 @@ def get_context_from_analysis(app_dic,
         context = {
             'title': 'Static Analysis',
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'file_name': app_dic['app_name'],
             'app_name': app_dic['real_name'],
             'app_type': app_dic['zipped'],

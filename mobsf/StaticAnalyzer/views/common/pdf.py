@@ -106,6 +106,7 @@ def pdf(request, checksum, api=False, jsonres=False):
         context['host_os'] = host_os
         context['timestamp'] = RecentScansDB.objects.get(
             MD5=checksum).TIMESTAMP
+        context['tenant_static'] = settings.TENANT_STATIC_URL
         try:
             if api and jsonres:
                 return {'report_dat': context}

@@ -17,6 +17,9 @@ from mobsf.install.windows.setup import windows_config_local
 logger = logging.getLogger(__name__)
 
 VERSION = '4.1.3'
+# Cyberspect version - a non-emmpty string below will display the
+# Cyberspect version number in the footer and VERSION as the MobSF version
+CYBERSPECT_VERSION = '2025.10'
 BANNER = r"""
   __  __       _    ____  _____       _  _    _ 
  |  \/  | ___ | |__/ ___||  ___|_   _| || |  / |
@@ -118,7 +121,9 @@ def get_mobsf_home(use_home, base_dir):
     try:
         mobsf_home = ''
         if use_home:
-            mobsf_home = os.path.join(os.path.expanduser('~'), '.MobSF')
+            mobsf_files_path = os.getenv('FILES_PATH',
+                                         os.path.expanduser('~'))
+            mobsf_home = os.path.join(mobsf_files_path, 'MobSF')
             # MobSF Home Directory
             if not os.path.exists(mobsf_home):
                 os.makedirs(mobsf_home)
@@ -157,7 +162,7 @@ def get_mobsf_home(use_home, base_dir):
 
 
 def get_mobsf_version():
-    return BANNER, VERSION, f'v{VERSION}'
+    return BANNER, VERSION, f'v{VERSION}', CYBERSPECT_VERSION
 
 
 def load_source(modname, filename):

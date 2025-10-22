@@ -21,6 +21,7 @@ def get_context_from_db_entry(db_entry):
         context = {
             'title': 'Static Analysis',
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'file_name': db_entry[0].FILE_NAME,
             'app_name': db_entry[0].APP_NAME,
             'publisher_name': db_entry[0].PUBLISHER_NAME,
@@ -57,6 +58,7 @@ def get_context_from_analysis(app_dic,
         context = {
             'title': 'Static Analysis',
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'file_name': app_dic['app_name'],
             'app_name': bin_an_dic['bin_name'],
             'publisher_name': xml_dic['pub_name'],

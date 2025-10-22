@@ -1,3 +1,5 @@
+import urllib3
+
 from django.urls import re_path
 
 from mobsf.DynamicAnalyzer.views.common import (
@@ -23,6 +25,7 @@ from mobsf.MobSF.security import (
     store_exec_hashes_at_first_run,
 )
 from mobsf.MobSF.views import (
+    admin,
     authentication,
     authorization,
     home,
@@ -86,13 +89,19 @@ urlpatterns = [
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
     re_path(r'^api/v1/search$', api_sz.api_search),
+    re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
+    re_path(r'^api/v1/rescan$', api_sz.api_rescan),
+    re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
+    re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
+    re_path(r'^api/v1/download$', api_sz.api_download),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
     re_path(r'^api/v1/view_source$', api_sz.api_view_source,
             name='api_view_source'),
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
+    re_path(r'^api/v1/release_scans$', api_sz.api_release_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
     # Static Suppression
@@ -100,6 +109,12 @@ urlpatterns = [
     re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
     re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
+    re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
+    re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
+    re_path(r'^api/v1/cyberspect_completedscans$',
+            api_sz.api_cyberspect_completed_scans),
+    re_path(r'^api/v1/update_cyberspect_scan$',
+            api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
@@ -188,19 +203,28 @@ if settings.API_ONLY == '0':
         re_path(r'^generate_downloads/$',
                 home.generate_download,
                 name='generate_downloads'),
+        re_path(r'^support$', home.support, name='support'),
         re_path(r'^about$', home.about, name='about'),
         re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
-        re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
+        re_path(r'^recent_scans$', home.recent_scans, name='recent'),
         re_path(fr'^recent_scans/{paginate}/$',
                 home.recent_scans,
                 name='scans_paginated'),
+        re_path(r'^update_scan/$', home.update_scan, name='update_scan'),
         re_path(r'^delete_scan/$', home.delete_scan, name='delete_scan'),
         re_path(r'^search$', home.search),
         re_path(r'^status/$', home.scan_status, name='status'),
+        re_path(r'^app_info$', home.app_info),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^zip_format/$', home.zip_format),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
+        re_path(r'^logout$', home.logout_aws),
+        re_path(r'^health$', home.health),
+        re_path(r'^admin$', admin.admin_view, name='admin'),
+        re_path(r'^admin/create_api_key$', admin.create_api_key_post),
+        re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
+        re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
 
         # Static Analysis
         # Android
@@ -398,6 +422,7 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
+urllib3.disable_warnings()
 utils.print_version()
 init_exec_hooks()
 store_exec_hashes_at_first_run()

@@ -129,6 +129,10 @@ def print_version():
         dst_str = f' ({dist}) '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
+    # Cyberspect addition
+    logger.info('File storage: %s', settings.MobSF_HOME)
+    logger.info('Administrators: %s', settings.ADMIN_USERS)
+    # End Cyberspect addition
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
@@ -206,6 +210,7 @@ def print_n_send_error_response(request,
             'exp': exp,
             'doc': msg,
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
         }
         template = 'general/error.html'
         return render(request, template, context, status=500)

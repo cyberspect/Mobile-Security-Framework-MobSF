@@ -74,6 +74,7 @@ def run(request):
             'hash': md5,
             'source_type': typ,
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'api_key': api_key(),
             'is_admin': is_admin(request),
         }

@@ -20,13 +20,17 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-BANNER, VERSION, MOBSF_VER = get_mobsf_version()
+BANNER, VERSION, MOBSF_VER, CYBERSPECT_VER = get_mobsf_version()
 USE_HOME = True
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Cyberspect addition
+# need to determine the base directory for Cyberspect relted files
+CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
+# Cyberspect addition end
 MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Download Directory
 DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
@@ -184,6 +188,7 @@ INSTALLED_APPS = (
     'mobsf.DynamicAnalyzer',
     'mobsf.MobSF',
     'mobsf.MalwareAnalyzer',
+    'background_task',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
@@ -194,14 +199,17 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_ratelimit.middleware.RatelimitMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
+)
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.RemoteUserBackend',
 )
 MIDDLEWARE = (
-    'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -216,6 +224,11 @@ TEMPLATES = [
         'APP_DIRS': True,
         'DIRS':
             [
+                # Cyberspect addition
+                # when Django looks for a template (e.g., index.html), it will
+                # find and use the version in cyberspect/templates/ before it
+                # looks in the original templates/ directory
+                os.path.join(CYBERSPECT_BASE_DIR, 'cyberspect/templates'),
                 os.path.join(BASE_DIR, 'templates'),
             ],
         'OPTIONS':
@@ -357,12 +370,10 @@ SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
 # ===================
 # USER CONFIGURATION
 # ===================
-if CONFIG_HOME:
-    logger.info('Loading User config from: %s', USER_CONFIG)
-else:
+if not CONFIG_HOME:
     """
     IMPORTANT
-    If 'USE_HOME' is set to True,
+    If 'CONFIG_HOME' is set to True,
     then below user configuration settings are not considered.
     The user configuration will be loaded from
     .MobSF/config.py in user's home directory.
@@ -502,3 +513,21 @@ else:
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
     # ===============================================
     # ^CONFIG-END^: Do not edit this line
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ==========CYBERSPECT SETTINGS ===============
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
+AWS_INTAKE_LAMBDA = os.getenv('AWS_INTAKE_LAMBDA', '')
+DEPENDENCY_TRACK_URL = os.getenv('DEPENDENCY_TRACK_URL')
+ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
+GENERAL_GROUP = os.getenv('GENERAL_GROUP', ' ')
+ADMIN_GROUP = os.getenv('ADMIN_GROUP', ' ')
+TENANT_STATIC_URL = STATIC_URL + os.getenv('TENANT_ID', '')
+if (not TENANT_STATIC_URL.endswith('/')):
+    TENANT_STATIC_URL = TENANT_STATIC_URL + '/'
+JADX_THREADS = os.getenv('JADX_THREADS', '4')
+DEFAULT_PAGINATION_CLASS = 'utils.FasterPageNumberPagination'
+
+# Customization settings
+CZ100 = os.getenv('CZ100', '')

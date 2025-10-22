@@ -5,10 +5,16 @@ import io
 import os
 
 from django.conf import settings
-from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.cyberspect_utils import get_siphash
+from mobsf.MobSF.views.helpers import FileType
+from mobsf.MobSF.cyberspect_utils import (
+    get_siphash,
+    get_usergroups,
+    is_admin,
+    sso_email,
+    utcnow,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +24,10 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
+            # Cyberspect mods
+            classification = data.get('data_privacy_classification', '')
+            attributes = data.get('data_privacy_attributes', '')
+            # End Cyberspect mods
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
@@ -26,13 +36,48 @@ def add_to_recent_scan(data):
                 PACKAGE_NAME='',
                 VERSION_NAME='',
                 MD5=data['hash'],
-                TIMESTAMP=timezone.now())
+                TIMESTAMP=utcnow(),  # Begin Cyberspect mods
+                USER_APP_NAME=data.get('user_app_name', ''),
+                USER_APP_VERSION=data.get('user_app_version', ''),
+                DIVISION=data.get('division', ''),
+                ENVIRONMENT=data.get('environment', ''),
+                COUNTRY=data.get('country', ''),
+                EMAIL=data.get('email', ''),
+                USER_GROUPS=data.get('user_groups', ''),
+                RELEASE=data.get('release', False),
+                DATA_PRIVACY_CLASSIFICATION=classification,
+                DATA_PRIVACY_ATTRIBUTES=attributes)  # End Cyberspect mods
             new_db_obj.save()
-    except Exception:
+        # Cyberspect mods
+        else:
+            scan = db_obj.first()
+            if (not data['email'] in scan.EMAIL):
+                scan.EMAIL = scan.EMAIL + ',' + data['email']
+            if (not data['user_groups'] in scan.USER_GROUPS):
+                scan.USER_GROUPS = (scan.USER_GROUPS + ','
+                                    + data['user_groups'])
+            scan.FILE_NAME = data['file_name']
+            scan.TIMESTAMP = utcnow()
+            scan.USER_APP_NAME = data.get('user_app_name', '')
+            scan.USER_APP_VERSION = data.get('user_app_version', '')
+            scan.DIVISION = data.get('division', '')
+            scan.ENVIRONMENT = data.get('environment', '')
+            scan.COUNTRY = data.get('country', '')
+            scan.RELEASE = data.get('release', '')
+            scan.DATA_PRIVACY_CLASSIFICATION = \
+                data.get('data_privacy_classification', '')
+            scan.DATA_PRIVACY_ATTRIBUTES = \
+                data.get('data_privacy_attributes', '')
+            scan.save()
+    # End Cyberspect mods
+    except Exception as ex:
         logger.exception('Adding Scan URL to Database')
+        # Cyberspect mod
+        raise ex
+        # End Cyberspect mod
 
 
-def handle_uploaded_file(content, extension):
+def handle_uploaded_file(content, extension, source_content=None): 
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -56,14 +101,65 @@ def handle_uploaded_file(content, extension):
         else:
             for chunk in content.chunks():
                 destination.write(chunk)
+    # Cyberspect mods
+    if (source_content):
+        bfr = isinstance(source_content, io.BufferedReader)
+        with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:
+            if bfr:
+                source_content.seek(0, 0)
+                while chunk := source_content.read(8192):
+                    f.write(chunk)
+            else:
+                for chunk in source_content.chunks():
+                    f.write(chunk)
+    # End Cyberspect mods
     return md5sum
 
 
 class Scanning(object):
 
     def __init__(self, request):
-        self.file = request.FILES['file']
-        self.file_name = request.FILES['file'].name
+        # Cyberspect mods
+        if ('file' in request.FILES):
+            self.file = request.FILES['file']
+            self.file_name = self.file.name
+            self.file_type = FileType(self.file)
+            self.file_size = self.file.size
+        else:
+            self.file = None
+            self.file_name = None
+            self.file_type = None
+            self.file_size = None
+        if ('source_file' in request.FILES):
+            self.source_file = request.FILES['source_file']
+            self.source_file_name = self.source_file.name
+            self.source_file_size = self.source_file.size
+        else:
+            self.source_file = None
+            self.source_file_name = None
+            self.source_file_size = None
+        self.user_app_name = request.POST.get('user_app_name', '')
+        self.user_app_version = request.POST.get('user_app_version', '')
+        self.division = request.POST.get('division', '')
+        self.environment = request.POST.get('environment', '')
+        self.country = request.POST.get('country', '')
+        self.data_privacy_classification = \
+            request.POST.get('data_privacy_classification', '')
+        self.data_privacy_attributes = \
+            request.POST.get('data_privacy_attributes', '')
+        self.email = sso_email(request)
+        self.user_groups = get_usergroups(request)
+        self.release = False
+        if (is_admin(request)):
+            self.release = (request.POST.get('release', '') == 'true')
+            if request.POST.get('email'):
+                self.email = request.POST.get('email')
+        self.rescan = request.POST.get('rescan', '0')
+        self.cyberspect_scan_id = 0
+        self.md5 = ''
+        self.short_hash = ''
+        self.scan_type = ''
+        # Cyberspect mods end
         self.data = {
             'analyzer': 'static_analyzer',
             'status': 'success',

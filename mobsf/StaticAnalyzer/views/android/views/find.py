@@ -34,9 +34,10 @@ def run(request):
         code = request.POST['code']
         search_type = request.POST['search_type']
         if search_type not in ['content', 'filename']:
-            return print_n_send_error_response(request,
-                                               'Unknown search type',
-                                               True)
+            return print_n_send_error_response(
+                request,
+                'Unknown search type',
+                True)
         matches = set()
         base = Path(settings.UPLD_DIR) / md5
         if code == 'smali':
@@ -70,6 +71,7 @@ def run(request):
             'found': str(flz),
             'search_type': search_type,
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
         }
         return JsonResponse(json.dumps(context), safe=False)
     except Exception:

@@ -142,6 +142,8 @@ def api_scan(request):
             response = make_api_response(resp, 200)
     return response
 
+    return scan(request.POST)
+
 
 @request_method(['POST'])
 @csrf_exempt

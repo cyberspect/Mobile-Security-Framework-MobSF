@@ -96,6 +96,7 @@ def view_report(request, checksum, api=False):
                    'runtime_dependencies': list(deps),
                    'package': package,
                    'version': settings.MOBSF_VER,
+                   'cversion': settings.CYBERSPECT_VER,
                    'title': 'Dynamic Analysis'}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:

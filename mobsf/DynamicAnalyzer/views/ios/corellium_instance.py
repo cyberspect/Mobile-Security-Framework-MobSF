@@ -867,6 +867,7 @@ def system_logs(request, api=False):
                       template,
                       {'instance_id': instance_id,
                        'version': settings.MOBSF_VER,
+                       'cversion': settings.CYBERSPECT_VER,
                        'title': 'Live System logs'})
     except Exception as exp:
         err = 'Getting system logs'

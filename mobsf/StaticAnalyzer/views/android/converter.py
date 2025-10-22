@@ -104,6 +104,8 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             '-q',
             '-r',
             '--show-bad-code',
+            '-j',
+            settings.JADX_THREADS,
             app_path,
         ]
         fnull = open(os.devnull, 'w')

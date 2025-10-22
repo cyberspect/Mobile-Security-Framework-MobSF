@@ -220,6 +220,7 @@ def dynamic_analyzer(request, checksum, api=False):
                    'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
+                   'cversion': settings.CYBERSPECT_VER,
                    'activities': activities,
                    'exported_activities': exported_activities,
                    'deeplinks': deeplinks,

@@ -135,6 +135,7 @@ def dynamic_analyzer(request, api=False):
             'instance_id': instance_id,
             'bundle_id': bundleid,
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'form': form,
             'title': 'iOS Dynamic Analyzer'}
         template = 'dynamic_analysis/ios/dynamic_analyzer.html'

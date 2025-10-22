@@ -24,6 +24,9 @@ from mobsf.StaticAnalyzer.views.ios.db_interaction import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.cyberspect_utils import (
+    is_admin,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -377,6 +380,7 @@ def appsec_dashboard(request, checksum, api=False):
         if api:
             return context
         else:
+            context['is_admin'] = is_admin(request)
             return render(
                 request,
                 'static_analysis/appsec_dashboard.html',
