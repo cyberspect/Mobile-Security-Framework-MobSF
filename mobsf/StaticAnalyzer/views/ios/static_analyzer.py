@@ -247,7 +247,7 @@ def static_analyzer_ios(request, checksum, api=False):
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
-            context['is_admin'] = is_admin(request) # Cyberspect
+            context['is_admin'] = is_admin(request)  # Cyberspect
             template = 'static_analysis/ios_binary_analysis.html'
             if api:
                 return context

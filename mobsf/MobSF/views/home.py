@@ -340,18 +340,6 @@ def dynamic_analysis(request):
 
 
 @login_required
-def dynamic_analysis(request):
-    """Dynamic Analysis Landing."""
-    context = {
-        'title': 'Dynamic Analysis',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
-    }
-    template = 'general/dynamic.html'
-    return render(request, template, context)
-
-
-@login_required
 def recent_scans(request, page_size=20, page_number=1):
     """Show Recent Scans Route."""
     entries = []

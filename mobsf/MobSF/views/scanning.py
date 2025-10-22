@@ -77,7 +77,7 @@ def add_to_recent_scan(data):
         # End Cyberspect mod
 
 
-def handle_uploaded_file(content, extension, source_content=None): 
+def handle_uploaded_file(content, extension, source_content=None):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
