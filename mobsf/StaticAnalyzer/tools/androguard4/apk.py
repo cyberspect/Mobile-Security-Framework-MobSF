@@ -1773,7 +1773,6 @@ class APK:
         if self._APK_SIG_KEY_V3_SIGNATURE in self._v2_blocks:
             self._is_signed_v3 = True
 
-
     def parse_v3_signing_block(self):
         """
         Parse the V2 signing block and extract all features

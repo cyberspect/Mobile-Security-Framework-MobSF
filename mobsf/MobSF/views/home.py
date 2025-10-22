@@ -428,7 +428,6 @@ def recent_scans(request, page_size=20, page_number=1):
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
-        'page_obj': page_obj,
         'paginator_range': paginator_range,
     }
     template = 'general/recent.html'
@@ -765,7 +764,7 @@ def generate_download(request, api=False):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
-        elif file_type == "binary":
+        elif file_type == 'binary':
             # Binaries
             file_name = f'{md5}.{file_type}'
             src = app_dir / file_name

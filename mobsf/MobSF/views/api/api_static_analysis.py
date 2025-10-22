@@ -25,9 +25,9 @@ from mobsf.MobSF.views.home import (
     generate_download,
     get_cyberspect_scan,
     scan_metadata,
+    search,
     update_cyberspect_scan,
     update_scan,
-    search,
 )
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android.views import view_source
