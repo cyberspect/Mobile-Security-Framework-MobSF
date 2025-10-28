@@ -55,8 +55,8 @@ try:
         USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
         sett = load_source('user_settings', USER_CONFIG)
         locals().update(  # lgtm [py/modification-of-locals]
-            {k: v for k, v in list(sett.__dict__.items()) if not k.startswith('__')}
-        )
+            {k: v for k, v in list(sett.__dict__.items())
+                if not k.startswith('__')})
         CONFIG_HOME = True
     else:
         CONFIG_HOME = False
@@ -443,7 +443,7 @@ if not CONFIG_HOME:
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
     # Private key
     WINDOWS_VM_SECRET = os.getenv(
-        'MOBSF_WINDOWS_VM_SECRET', 'mobsf/MobSF/windows_vm_priv_key.asc'
+        'MOBSF_WINDOWS_VM_SECRET', 'mobsf/MobSF/windows_vm_priv_key.asc',
     )
     # IP and Port of the MobSF Windows VM
     # example: WINDOWS_VM_IP = '127.0.0.1'   ;noqa E800
