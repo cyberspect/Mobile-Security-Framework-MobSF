@@ -71,7 +71,7 @@ SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 # These settings should be accessible regardless of CONFIG_HOME value
 VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
 ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
-JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '')
+JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '/jdk-22.0.2/bin/')
 BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
 JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
 BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
