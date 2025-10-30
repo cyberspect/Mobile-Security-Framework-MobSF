@@ -67,10 +67,10 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.views.authorization import (
-    Permissions,
-    has_permission,
-)
+# from mobsf.MobSF.views.authorization import (
+#     Permissions,
+#     has_permission,
+# )
 from mobsf.MobSF.cyberspect_utils import (
     is_admin,
 )
@@ -92,6 +92,7 @@ def static_analyzer_ios_request(request, checksum):
         return print_n_send_error_response(request, response['error'])
     else:
         return response
+
 
 @login_required
 def static_analyzer_ios(request, checksum, api=False):
