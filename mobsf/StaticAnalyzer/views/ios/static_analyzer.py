@@ -83,17 +83,24 @@ register.filter('relative_path', relative_path)
 ##############################################################
 
 
+def static_analyzer_ios_request(request, checksum):
+    response = static_analyzer_ios(request.GET, checksum)
+    response['is_admin'] = is_admin(request)
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
+        return print_n_send_error_response(request, response['error'])
+    else:
+        return response
+
 @login_required
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
-        rescan = False
-        if api:
-            re_scan = request.POST.get('re_scan', 0)
-        else:
-            re_scan = request.GET.get('rescan', 0)
-        if re_scan == '1':
-            rescan = True
+        logger.info('iOS Static Analysis Started')
+        rescan = (request.get('rescan', 0) == '1')
+        if rescan:
+            logger.info('Performing rescan')
         app_dict = {}
         if not is_md5(checksum):
             return print_n_send_error_response(
@@ -137,12 +144,17 @@ def static_analyzer_ios(request, checksum, api=False):
             ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
+            context['virus_total'] = None
+            if settings.VT_ENABLED:
+                vt = VirusTotal.VirusTotal(checksum)
+                context['virus_total'] = vt.get_result(
+                    app_dict['app_path'])
             else:
-                if not has_permission(request, Permissions.SCAN, api):
-                    return print_n_send_error_response(
-                        request,
-                        'Permission Denied',
-                        False)
+                # if not has_permission(request, Permissions.SCAN, api):
+                #     return print_n_send_error_response(
+                #         request,
+                #         'Permission Denied',
+                #         False)
                 append_scan_status(checksum, 'init')
                 msg = 'iOS Binary (IPA) Analysis Started'
                 logger.info(msg)
@@ -239,16 +251,12 @@ def static_analyzer_ios(request, checksum, api=False):
                     bin_dict,
                     all_files,
                     rescan)
-            context['virus_total'] = None
-            if settings.VT_ENABLED:
-                vt = VirusTotal.VirusTotal(checksum)
-                context['virus_total'] = vt.get_result(
-                    app_dict['app_path'])
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
             context['is_admin'] = is_admin(request)  # Cyberspect
             template = 'static_analysis/ios_binary_analysis.html'
+            context['template'] = template
             if api:
                 return context
             else:
@@ -263,11 +271,11 @@ def static_analyzer_ios(request, checksum, api=False):
             if ios_zip_db.exists() and not rescan:
                 context = get_context_from_db_entry(ios_zip_db)
             else:
-                if not has_permission(request, Permissions.SCAN, api):
-                    return print_n_send_error_response(
-                        request,
-                        'Permission Denied',
-                        False)
+                # if not has_permission(request, Permissions.SCAN, api):
+                #     return print_n_send_error_response(
+                #         request,
+                #         'Permission Denied',
+                #         False)
                 logger.info('iOS Source Code Analysis Started')
                 app_dict['app_file'] = app_dict[
                     'md5_hash'] + '.zip'  # NEW FILENAME
@@ -340,6 +348,7 @@ def static_analyzer_ios(request, checksum, api=False):
                 context['code_analysis'])
             context['is_admin'] = is_admin(request)  # Cyberspect
             template = 'static_analysis/ios_source_analysis.html'
+            context['template'] = template
             if api:
                 return context
             else:
