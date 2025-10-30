@@ -67,10 +67,6 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-# from mobsf.MobSF.views.authorization import (
-#     Permissions,
-#     has_permission,
-# )
 from mobsf.MobSF.cyberspect_utils import (
     is_admin,
 )
@@ -151,11 +147,6 @@ def static_analyzer_ios(request, checksum, api=False):
                 context['virus_total'] = vt.get_result(
                     app_dict['app_path'])
             else:
-                # if not has_permission(request, Permissions.SCAN, api):
-                #     return print_n_send_error_response(
-                #         request,
-                #         'Permission Denied',
-                #         False)
                 append_scan_status(checksum, 'init')
                 msg = 'iOS Binary (IPA) Analysis Started'
                 logger.info(msg)
@@ -272,11 +263,6 @@ def static_analyzer_ios(request, checksum, api=False):
             if ios_zip_db.exists() and not rescan:
                 context = get_context_from_db_entry(ios_zip_db)
             else:
-                # if not has_permission(request, Permissions.SCAN, api):
-                #     return print_n_send_error_response(
-                #         request,
-                #         'Permission Denied',
-                #         False)
                 logger.info('iOS Source Code Analysis Started')
                 app_dict['app_file'] = app_dict[
                     'md5_hash'] + '.zip'  # NEW FILENAME
