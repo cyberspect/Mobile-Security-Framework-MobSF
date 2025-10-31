@@ -29,12 +29,6 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
-from mobsf.MobSF.cyberspect_utils import (
-    update_scan_timestamp,
-    is_admin,
-)
-
-import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
     StaticAnalyzerWindows,
@@ -52,6 +46,12 @@ from mobsf.StaticAnalyzer.views.windows.db_interaction import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.cyberspect_utils import (
+    is_admin,
+    update_scan_timestamp,
+)
+
+import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 
 logger = logging.getLogger(__name__)
 # Only used when xmlrpc is used
