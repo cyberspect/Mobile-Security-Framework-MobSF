@@ -243,6 +243,11 @@ def static_analyzer_ios(request_data, checksum, api=False):
                     bin_dict,
                     all_files,
                     rescan)
+                context['virus_total'] = None
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal(checksum)
+                    context['virus_total'] = vt.get_result(
+                        app_dict['app_path'])
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
