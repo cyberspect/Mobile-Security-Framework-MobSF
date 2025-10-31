@@ -52,10 +52,6 @@ from mobsf.StaticAnalyzer.views.windows.db_interaction import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.views.authorization import (
-    Permissions,
-    has_permission,
-)
 
 logger = logging.getLogger(__name__)
 # Only used when xmlrpc is used
