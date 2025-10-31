@@ -91,23 +91,23 @@ def static_analyzer_ios_request(request, checksum):
 
 
 @login_required
-def static_analyzer_ios(request, checksum, api=False):
+def static_analyzer_ios(request_data, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
         logger.info('iOS Static Analysis Started')
-        rescan = (request.get('rescan', 0) == '1')
+        rescan = (request_data.get('rescan', 0) == '1')
         if rescan:
             logger.info('Performing rescan')
         app_dict = {}
         if not is_md5(checksum):
             return print_n_send_error_response(
-                request,
+                request_data,
                 'Invalid Hash',
                 api)
         robj = RecentScansDB.objects.filter(MD5=checksum)
         if not robj.exists():
             return print_n_send_error_response(
-                request,
+                request_data,
                 'The file is not uploaded/available',
                 api)
         file_type = robj[0].SCAN_TYPE
@@ -121,7 +121,7 @@ def static_analyzer_ios(request, checksum, api=False):
         if (not filename.lower().endswith(allowed_exts)
                 or file_type not in allowed_types):
             return print_n_send_error_response(
-                request,
+                request_data,
                 'Invalid file extension or file type',
                 api)
         app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
@@ -175,7 +175,7 @@ def static_analyzer_ios(request, checksum, api=False):
                            'MobSF cannot find Payload directory')
                     append_scan_status(checksum, 'IPA is malformed', msg)
                     return print_n_send_error_response(
-                        request,
+                        request_data,
                         msg,
                         api)
                 app_dict['bin_dir'] = app_dict['bin_dir'].as_posix() + '/'
@@ -246,17 +246,17 @@ def static_analyzer_ios(request, checksum, api=False):
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
-            context['is_admin'] = is_admin(request)  # Cyberspect
+            context['is_admin'] = is_admin(request_data)  # Cyberspect
             template = 'static_analysis/ios_binary_analysis.html'
             context['template'] = template
             if api:
                 return context
             else:
-                return render(request, template, context)
+                return render(request_data, template, context)
         elif file_type == 'dylib':
-            return dylib_analysis(request, app_dict, rescan, api)
+            return dylib_analysis(request_data, app_dict, rescan, api)
         elif file_type == 'a':
-            return a_analysis(request, app_dict, rescan, api)
+            return a_analysis(request_data, app_dict, rescan, api)
         elif file_type in ('ios', 'zip'):
             ios_zip_db = StaticAnalyzerIOS.objects.filter(
                 MD5=checksum)
@@ -333,13 +333,13 @@ def static_analyzer_ios(request, checksum, api=False):
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
-            context['is_admin'] = is_admin(request)  # Cyberspect
+            context['is_admin'] = is_admin(request_data)  # Cyberspect
             template = 'static_analysis/ios_source_analysis.html'
             context['template'] = template
             if api:
                 return context
             else:
-                return render(request, template, context)
+                return render(request_data, template, context)
         else:
             err = ('File Type not supported, '
                    'Only IPA, A, DYLIB and ZIP are supported')
@@ -351,4 +351,4 @@ def static_analyzer_ios(request, checksum, api=False):
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
         exp_doc = exp.__doc__
-        return print_n_send_error_response(request, repr(exp), api, exp_doc)
+        return print_n_send_error_response(request_data, repr(exp), api, exp_doc)
