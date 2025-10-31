@@ -29,7 +29,11 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
-from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
+from mobsf.MobSF.cyberspect_utils import (
+    update_scan_timestamp,
+    is_admin,
+)
+
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -65,20 +69,27 @@ config = None
 # Windows Support Functions
 
 
+def staticanalyzer_windows_request(request, checksum):
+    response = staticanalyzer_windows(request.GET, checksum)
+    response['is_admin'] = is_admin(request)
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
+        return print_n_send_error_response(request, response['error'])
+    else:
+        return response
+
+
 @login_required
 def staticanalyzer_windows(request, checksum, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
         logger.info('Windows Static Analysis Started')
-        rescan = False
-        app_dic = {}  # Dict to store the binary attributes
-        if api:
-            re_scan = request.POST.get('re_scan', 0)
-        else:
-            re_scan = request.GET.get('rescan', 0)
-        if re_scan == '1':
-            rescan = True
+        rescan = (request.GET.get('rescan', 0) == '1')
+        if rescan:
+            logger.info('Performing rescan')
+        app_dic = {}
         if not is_md5(checksum):
             return print_n_send_error_response(
                 request,
@@ -114,11 +125,6 @@ def staticanalyzer_windows(request, checksum, api=False):
                 ' Fetching data from the DB...')
             context = get_context_from_db_entry(db_entry)
         else:
-            if not has_permission(request, Permissions.SCAN, api):
-                return print_n_send_error_response(
-                    request,
-                    'Permission Denied',
-                    False)
             append_scan_status(checksum, 'init')
             msg = 'Windows Binary Analysis Started'
             logger.info(msg)
@@ -161,12 +167,12 @@ def staticanalyzer_windows(request, checksum, api=False):
                                                 xml_dic,
                                                 bin_an_dic)
             context['virus_total'] = None
-        template = 'static_analysis/windows_binary_analysis.html'
-        context['virus_total'] = None
-        if settings.VT_ENABLED:
-            vt = VirusTotal.VirusTotal(checksum)
-            context['virus_total'] = vt.get_result(
-                os.path.join(app_dic['app_dir'], checksum) + '.appx')
+            if settings.VT_ENABLED:
+                vt = VirusTotal.VirusTotal(checksum)
+                context['virus_total'] = vt.get_result(
+                    os.path.join(app_dic['app_dir'], checksum) + '.appx')
+            template = 'static_analysis/windows_binary_analysis.html'
+            context['template'] = template
         if api:
             return context
         else:
