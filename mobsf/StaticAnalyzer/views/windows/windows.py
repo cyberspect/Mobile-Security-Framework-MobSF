@@ -17,7 +17,6 @@ import rsa
 
 from lxml import etree
 
-
 from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
@@ -50,7 +49,6 @@ from mobsf.MobSF.cyberspect_utils import (
     is_admin,
     update_scan_timestamp,
 )
-
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 
 logger = logging.getLogger(__name__)
