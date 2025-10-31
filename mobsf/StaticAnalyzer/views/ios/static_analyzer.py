@@ -67,10 +67,6 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.views.authorization import (
-    Permissions,
-    has_permission,
-)
 from mobsf.MobSF.cyberspect_utils import (
     is_admin,
 )
@@ -83,27 +79,35 @@ register.filter('relative_path', relative_path)
 ##############################################################
 
 
+def static_analyzer_ios_request(request, checksum):
+    response = static_analyzer_ios(request.GET, checksum)
+    response['is_admin'] = is_admin(request)
+    if 'template' in response:
+        return render(request, response['template'], response)
+    elif 'error' in response:
+        return print_n_send_error_response(request, response['error'])
+    else:
+        return response
+
+
 @login_required
-def static_analyzer_ios(request, checksum, api=False):
+def static_analyzer_ios(request_data, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
-        rescan = False
-        if api:
-            re_scan = request.POST.get('re_scan', 0)
-        else:
-            re_scan = request.GET.get('rescan', 0)
-        if re_scan == '1':
-            rescan = True
+        logger.info('iOS Static Analysis Started')
+        rescan = (request_data.GET.get('rescan', 0) == '1')
+        if rescan:
+            logger.info('Performing rescan')
         app_dict = {}
         if not is_md5(checksum):
             return print_n_send_error_response(
-                request,
+                request_data,
                 'Invalid Hash',
                 api)
         robj = RecentScansDB.objects.filter(MD5=checksum)
         if not robj.exists():
             return print_n_send_error_response(
-                request,
+                request_data,
                 'The file is not uploaded/available',
                 api)
         file_type = robj[0].SCAN_TYPE
@@ -117,7 +121,7 @@ def static_analyzer_ios(request, checksum, api=False):
         if (not filename.lower().endswith(allowed_exts)
                 or file_type not in allowed_types):
             return print_n_send_error_response(
-                request,
+                request_data,
                 'Invalid file extension or file type',
                 api)
         app_dict['directory'] = Path(settings.BASE_DIR)  # BASE DIR
@@ -137,12 +141,12 @@ def static_analyzer_ios(request, checksum, api=False):
             ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
+                context['virus_total'] = None
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal(checksum)
+                    context['virus_total'] = vt.get_result(
+                        app_dict['app_path'])
             else:
-                if not has_permission(request, Permissions.SCAN, api):
-                    return print_n_send_error_response(
-                        request,
-                        'Permission Denied',
-                        False)
                 append_scan_status(checksum, 'init')
                 msg = 'iOS Binary (IPA) Analysis Started'
                 logger.info(msg)
@@ -171,7 +175,7 @@ def static_analyzer_ios(request, checksum, api=False):
                            'MobSF cannot find Payload directory')
                     append_scan_status(checksum, 'IPA is malformed', msg)
                     return print_n_send_error_response(
-                        request,
+                        request_data,
                         msg,
                         api)
                 app_dict['bin_dir'] = app_dict['bin_dir'].as_posix() + '/'
@@ -239,35 +243,31 @@ def static_analyzer_ios(request, checksum, api=False):
                     bin_dict,
                     all_files,
                     rescan)
-            context['virus_total'] = None
-            if settings.VT_ENABLED:
-                vt = VirusTotal.VirusTotal(checksum)
-                context['virus_total'] = vt.get_result(
-                    app_dict['app_path'])
+                context['virus_total'] = None
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal(checksum)
+                    context['virus_total'] = vt.get_result(
+                        app_dict['app_path'])
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
-            context['is_admin'] = is_admin(request)  # Cyberspect
+            context['is_admin'] = is_admin(request_data)  # Cyberspect
             template = 'static_analysis/ios_binary_analysis.html'
+            context['template'] = template
             if api:
                 return context
             else:
-                return render(request, template, context)
+                return render(request_data, template, context)
         elif file_type == 'dylib':
-            return dylib_analysis(request, app_dict, rescan, api)
+            return dylib_analysis(request_data, app_dict, rescan, api)
         elif file_type == 'a':
-            return a_analysis(request, app_dict, rescan, api)
+            return a_analysis(request_data, app_dict, rescan, api)
         elif file_type in ('ios', 'zip'):
             ios_zip_db = StaticAnalyzerIOS.objects.filter(
                 MD5=checksum)
             if ios_zip_db.exists() and not rescan:
                 context = get_context_from_db_entry(ios_zip_db)
             else:
-                if not has_permission(request, Permissions.SCAN, api):
-                    return print_n_send_error_response(
-                        request,
-                        'Permission Denied',
-                        False)
                 logger.info('iOS Source Code Analysis Started')
                 app_dict['app_file'] = app_dict[
                     'md5_hash'] + '.zip'  # NEW FILENAME
@@ -338,12 +338,13 @@ def static_analyzer_ios(request, checksum, api=False):
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
-            context['is_admin'] = is_admin(request)  # Cyberspect
+            context['is_admin'] = is_admin(request_data)  # Cyberspect
             template = 'static_analysis/ios_source_analysis.html'
+            context['template'] = template
             if api:
                 return context
             else:
-                return render(request, template, context)
+                return render(request_data, template, context)
         else:
             err = ('File Type not supported, '
                    'Only IPA, A, DYLIB and ZIP are supported')
@@ -355,4 +356,4 @@ def static_analyzer_ios(request, checksum, api=False):
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
         exp_doc = exp.__doc__
-        return print_n_send_error_response(request, repr(exp), api, exp_doc)
+        return print_n_send_error_response(request_data, repr(exp), api, exp_doc)
