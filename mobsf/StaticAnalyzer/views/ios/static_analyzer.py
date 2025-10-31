@@ -95,7 +95,7 @@ def static_analyzer_ios(request_data, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
         logger.info('iOS Static Analysis Started')
-        rescan = (request_data.get('rescan', 0) == '1')
+        rescan = (request_data.GET.get('rescan', 0) == '1')
         if rescan:
             logger.info('Performing rescan')
         app_dict = {}
@@ -141,11 +141,11 @@ def static_analyzer_ios(request_data, checksum, api=False):
             ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
-            context['virus_total'] = None
-            if settings.VT_ENABLED:
-                vt = VirusTotal.VirusTotal(checksum)
-                context['virus_total'] = vt.get_result(
-                    app_dict['app_path'])
+                context['virus_total'] = None
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal(checksum)
+                    context['virus_total'] = vt.get_result(
+                        app_dict['app_path'])
             else:
                 append_scan_status(checksum, 'init')
                 msg = 'iOS Binary (IPA) Analysis Started'
