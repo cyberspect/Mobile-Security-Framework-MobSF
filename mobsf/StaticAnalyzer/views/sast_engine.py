@@ -4,14 +4,18 @@ import logging
 
 from libsast import Scanner
 
+from django.conf import settings
+
 from mobsf.MobSF.utils import (
+    append_scan_status,
+    run_with_timeout,
     settings_enabled,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def scan(rule, extensions, paths, ignore_paths=None):
+def scan(checksum, rule, extensions, paths, ignore_paths=None):
     """The libsast scan."""
     try:
         options = {
@@ -20,20 +24,24 @@ def scan(rule, extensions, paths, ignore_paths=None):
             'ignore_paths': ignore_paths,
             'show_progress': False}
         scanner = Scanner(options, paths)
-        res = scanner.scan()
-        if res:
+        res = run_with_timeout(scanner.scan, settings.SAST_TIMEOUT)
+        if res and res.get('pattern_matcher'):
             return format_findings(res['pattern_matcher'], paths[0])
-    except Exception:
-        logger.exception('libsast scan')
+    except Exception as exp:
+        msg = 'libsast scan failed'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return {}
 
 
-def niap_scan(rule, extensions, paths, apath, ignore_paths=None):
+def niap_scan(checksum, rule, extensions, paths, apath, ignore_paths=None):
     """NIAP scan."""
     if not settings_enabled('NIAP_ENABLED'):
         return {}
     try:
-        logger.info('Running NIAP Analyzer')
+        msg = 'Running NIAP Analyzer'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         if not apath:
             apath = ''
         options = {
@@ -43,11 +51,13 @@ def niap_scan(rule, extensions, paths, apath, ignore_paths=None):
             'ignore_paths': ignore_paths,
             'show_progress': False}
         scanner = Scanner(options, paths)
-        res = scanner.scan()
-        if res:
+        res = run_with_timeout(scanner.scan, settings.SAST_TIMEOUT)
+        if res and res.get('choice_matcher'):
             return res['choice_matcher']
-    except Exception:
-        logger.exception('NIAP scan')
+    except Exception as exp:
+        msg = 'NIAP Analyzer Failed'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return {}
 
 

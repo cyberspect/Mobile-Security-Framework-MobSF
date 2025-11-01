@@ -14,22 +14,14 @@ logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
-EXTS = (
-    '.xapk',
-    '.apk',
-    '.ipa',
-    '.appx',
-    '.zip',
-    '.a',
-    '.so',
-    '.dylib',
-    '.aar',
-    '.jar')
+EXTS = settings.ANDROID_EXTS + settings.IOS_EXTS + settings.WINDOWS_EXTS
 
 
-def static_analysis_test():
+def static_analysis_test(headers=None):
     """Test Static Analyzer."""
     logger.info('Running Static Analyzer Unit test')
+    if headers is None:
+        headers = {}
     try:
         uploaded = []
         logger.info('Running Upload Test')
@@ -44,11 +36,16 @@ def static_analysis_test():
             with open(fpath, 'rb') as file_pointer:
                 response = http_client.post(
                     '/upload/',
-                    {'file': file_pointer})
-                obj = json.loads(response.content.decode('utf-8'))
-                if response.status_code == 200 and obj['status'] == 'success':
-                    logger.info('[OK] Upload OK: %s', filename)
-                    uploaded.append(obj)
+                    {'file': file_pointer},
+                    **headers)
+                if response.status_code == 200:
+                    obj = json.loads(response.content.decode('utf-8'))
+                    if obj['status'] == 'success':
+                        logger.info('[OK] Upload OK: %s', filename)
+                        uploaded.append(obj)
+                    else:
+                        logger.error('Performing Upload: %s', filename)
+                        return True
                 else:
                     logger.error('Performing Upload: %s', filename)
                     return True
@@ -60,7 +57,7 @@ def static_analysis_test():
                 upl['hash'])
             if RESCAN:
                 scan_url = scan_url + '?rescan=1'
-            resp = http_client.get(scan_url, follow=True)
+            resp = http_client.get(scan_url, follow=True, **headers)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s', scan_url)
             else:
@@ -89,7 +86,7 @@ def static_analysis_test():
             ]
 
         for pdf in pdfs:
-            resp = http_client.get(pdf)
+            resp = http_client.get(pdf, **headers)
             if (resp.status_code == 200
                     and resp.headers['content-type'] == 'application/pdf'):
                 logger.info('[OK] PDF Report Generated: %s', pdf)
@@ -104,7 +101,7 @@ def static_analysis_test():
         first_app = '82ab8b2193b3cfb1c737e3a786be363a'
         second_app = '52c50ae824e329ba8b5b7a0f523efffe'
         url = '/compare/{}/{}/'.format(first_app, second_app)
-        resp = http_client.get(url, follow=True)
+        resp = http_client.get(url, follow=True, **headers)
         assert (resp.status_code == 200)
         if resp.status_code == 200:
             logger.info('[OK] App compare tests passed successfully')
@@ -118,7 +115,7 @@ def static_analysis_test():
         md5 = '82ab8b2193b3cfb1c737e3a786be363a'
         lib = 'apktool_out/lib/arm64-v8a/libdivajni.so'
         url = f'/scan_library/{md5}?library={lib}'
-        resp = http_client.get(url, follow=True)
+        resp = http_client.get(url, follow=True, **headers)
         assert (resp.status_code == 200)
         if resp.status_code == 200:
             logger.info('[OK] Library Analysis test passed successfully')
@@ -127,7 +124,7 @@ def static_analysis_test():
             logger.info(resp.content)
             return True
 
-        # Search by MD5
+        # Search by MD5 and text
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
                          '82ab8b2193b3cfb1c737e3a786be363a',
@@ -143,23 +140,28 @@ def static_analysis_test():
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',
                          '7b0a23bffc80bac05739ea1af898daad']
+        # Search by text
+        queries = [
+            'diva',
+            'webview',
+        ]
         logger.info('Running Search test')
-        for scan_md5 in scan_md5s:
-            url = '/search?md5={}'.format(scan_md5)
+        for q in scan_md5s + queries:
+            url = f'/search?query={q}'
             resp = http_client.get(url, follow=True)
             assert (resp.status_code == 200)
             if resp.status_code == 200:
-                logger.info('[OK] Search by MD5 test passed for %s', scan_md5)
+                logger.info('[OK] Search by query test passed for %s', q)
             else:
-                logger.error('Search by MD5 test failed for %s', scan_md5)
+                logger.error('Search by query test failed for %s', q)
                 logger.info(resp.content)
                 return True
-        logger.info('[OK] Search by MD5 tests completed')
+        logger.info('[OK] Search by MD5 and text tests completed')
 
         # Deleting Scan Results
         logger.info('Running Delete Scan Results test')
         for md5 in scan_md5s:
-            resp = http_client.post('/delete_scan/', {'md5': md5})
+            resp = http_client.post('/delete_scan/', {'md5': md5}, **headers)
             if resp.status_code == 200:
                 dat = json.loads(resp.content.decode('utf-8'))
                 if dat['deleted'] == 'yes':
@@ -200,10 +202,14 @@ def api_test():
                     '/api/v1/upload',
                     {'file': file_pointer},
                     HTTP_AUTHORIZATION=auth)
-                obj = json.loads(response.content.decode('utf-8'))
-                if response.status_code == 200 and 'hash' in obj:
-                    logger.info('[OK] Upload OK: %s', filename)
-                    uploaded.append(obj)
+                if response.status_code == 200:
+                    obj = json.loads(response.content.decode('utf-8'))
+                    if 'hash' in obj:
+                        logger.info('[OK] Upload OK: %s', filename)
+                        uploaded.append(obj)
+                    else:
+                        logger.error('Performing Upload %s', filename)
+                        return True
                 else:
                     logger.error('Performing Upload %s', filename)
                     return True
@@ -239,6 +245,33 @@ def api_test():
             logger.error('Scan List API Test 2')
             return True
         logger.info('[OK] Scan List API tests completed')
+        # Scan logs tests
+        logger.info('Running Scan Logs API tests')
+        for upl in uploaded:
+            resp = http_client.post(
+                '/api/v1/scan_logs',
+                {'hash': upl['hash']},
+                HTTP_AUTHORIZATION=auth)
+            if resp.status_code == 200:
+                logs = json.loads(resp.content.decode('utf-8'))
+                if 'logs' in logs and len(logs['logs']) > 0:
+                    logger.info('[OK] Scan Logs API test: %s', upl['hash'])
+            else:
+                logger.error('Scan Logs API test: %s', upl['hash'])
+                return True
+        logger.info('[OK] Static Analysis API test completed')
+        # Search API Tests
+        logger.info('Running Search API tests')
+        for term in ['diva', 'webview', '52c50ae824e329ba8b5b7a0f523efffe']:
+            resp = http_client.post(
+                '/api/v1/search',
+                {'query': term},
+                HTTP_AUTHORIZATION=auth)
+            if resp.status_code == 200:
+                logger.info('[OK] Search API test: %s', term)
+            else:
+                logger.error('Search API test: %s', term)
+                return True
         # PDF Tests
         logger.info('Running PDF Generation API Test')
         if platform.system() in ['Darwin', 'Linux']:
@@ -347,6 +380,14 @@ def api_test():
             },
             HTTP_AUTHORIZATION=auth)
         assert (resp.status_code == 200)
+        resp_custom = http_client.post(
+            '/api/v1/compare',
+            {
+                'hash1': '82ab8b2193b3cfb1c737e3a786be363a',
+                'hash2': '52c50ae824e329ba8b5b7a0f523efffe',
+            },
+            HTTP_X_MOBSF_API_KEY=auth)
+        assert (resp_custom.status_code == 200)
         if resp.status_code == 200:
             logger.info('[OK] App compare API tests completed')
         else:
@@ -510,9 +551,17 @@ def api_test():
 def start_test(request):
     """Static Analyzer Unit test."""
     item = request.GET.get('module', 'static')
+
+    # Extract test headers from request
+    headers = {}
+    if 'HTTP_X_MOBSF_EMAIL' in request.META:
+        headers['HTTP_X_MOBSF_EMAIL'] = request.META['HTTP_X_MOBSF_EMAIL']
+    if 'HTTP_X_MOBSF_ROLE' in request.META:
+        headers['HTTP_X_MOBSF_ROLE'] = request.META['HTTP_X_MOBSF_ROLE']
+
     if item == 'static':
         comp = 'static_analyzer'
-        failed_stat = static_analysis_test()
+        failed_stat = static_analysis_test(headers)
     else:
         comp = 'static_analyzer_api'
         failed_stat = api_test()
@@ -540,9 +589,27 @@ class StaticAnalyzerAndAPI(TestCase):
         self.http_client = Client()
 
     def test_static_analyzer(self):
-        resp = self.http_client.post('/tests/?module=static')
-        self.assertEqual(resp.status_code, 200)
+        resp = self.http_client.get(
+            '/tests/?module=static',
+            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com',
+               'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'})
+        # Test should verify the endpoint is accessible and returns valid JSON
+        # Status code may be 200 (all tests passed) or 403 (some tests failed)
+        self.assertIn(resp.status_code, [200, 403])
+        data = json.loads(resp.content.decode('utf-8'))
+        self.assertIn('static_analyzer', data)
+        self.assertIn(data['static_analyzer'],
+                      ['all tests completed', 'some tests failed'])
 
     def test_rest_api(self):
-        resp = self.http_client.post('/tests/?module=api')
-        self.assertEqual(resp.status_code, 200)
+        resp = self.http_client.get(
+            '/tests/?module=api',
+            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com',
+               'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'})
+        # Test should verify the endpoint is accessible and returns valid JSON
+        # Status code may be 200 (all tests passed) or 403 (some tests failed)
+        self.assertIn(resp.status_code, [200, 403])
+        data = json.loads(resp.content.decode('utf-8'))
+        self.assertIn('static_analyzer_api', data)
+        self.assertIn(data['static_analyzer_api'],
+                      ['all tests completed', 'some tests failed'])

@@ -13,6 +13,7 @@ import stat
 from django.conf import settings
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     filename_from_path,
     find_java_binary,
     is_file_exists,
@@ -29,12 +30,14 @@ def get_dex_files(app_dir):
     return glob.glob(glob_pattern)
 
 
-def dex_2_smali(app_dir, tools_dir):
+def dex_2_smali(checksum, app_dir, tools_dir):
     """Run dex2smali."""
     try:
         if not settings_enabled('DEX2SMALI_ENABLED'):
             return
-        logger.info('DEX -> SMALI')
+        msg = 'Converting DEX to Smali'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         dexes = get_dex_files(app_dir)
         for dex_path in dexes:
             try:
@@ -61,17 +64,22 @@ def dex_2_smali(app_dir, tools_dir):
             except Exception:
                 # Fixes a bug #2014
                 pass
-    except Exception:
-        logger.exception('Converting DEX to SMALI')
+    except Exception as exp:
+        msg = 'Failed to convert DEX to Smali'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
 
 
-def apk_2_java(app_path, app_dir, tools_dir):
+def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     """Run jadx."""
     try:
-        logger.info('APK -> JAVA')
+        jadx_version = '1.5.0'
+        jadx_path = f'jadx/jadx-{jadx_version}/bin/'
+        msg = 'Decompiling APK to Java with jadx'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         args = []
         output = os.path.join(app_dir, 'java_source/')
-        logger.info('Decompiling to Java with jadx')
 
         if os.path.exists(output):
             # ignore WinError3 in Windows
@@ -81,9 +89,11 @@ def apk_2_java(app_path, app_dir, tools_dir):
                 and is_file_exists(settings.JADX_BINARY)):
             jadx = settings.JADX_BINARY
         elif platform.system() == 'Windows':
-            jadx = os.path.join(tools_dir, 'jadx/bin/jadx.bat')
+            jadx = os.path.join(
+                dwd_tools_dir, f'{jadx_path}jadx.bat')
         else:
-            jadx = os.path.join(tools_dir, 'jadx/bin/jadx')
+            jadx = os.path.join(
+                dwd_tools_dir, f'{jadx_path}jadx')
         # Set execute permission, if JADX is not executable
         if not os.access(jadx, os.X_OK):
             os.chmod(jadx, stat.S_IEXEC)
@@ -103,7 +113,11 @@ def apk_2_java(app_path, app_dir, tools_dir):
                        stdout=fnull,
                        stderr=subprocess.STDOUT,
                        timeout=settings.JADX_TIMEOUT)
-    except subprocess.TimeoutExpired:
-        logger.warning('Decompiling with jadx timed out')
-    except Exception:
-        logger.exception('Decompiling to JAVA')
+    except subprocess.TimeoutExpired as exp:
+        msg = 'Decompiling with jadx timed out'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
+    except Exception as exp:
+        msg = 'Decompiling with jadx failed'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

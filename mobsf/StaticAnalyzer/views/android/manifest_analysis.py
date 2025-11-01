@@ -7,13 +7,16 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     is_number,
     upstream_proxy,
     valid_host,
 )
 from mobsf.StaticAnalyzer.views.android import (
-    android_manifest_desc,
     network_security,
+)
+from mobsf.StaticAnalyzer.views.android.kb import (
+    android_manifest_desc,
 )
 
 
@@ -76,6 +79,7 @@ def assetlinks_check(act_name, well_knowns):
 
     return findings
 
+
 def _check_url(host, w_url):
     try:
         iden = 'sha256_cert_fingerprints'
@@ -84,10 +88,10 @@ def _check_url(host, w_url):
         status_code = 0
 
         r = requests.get(w_url,
-            allow_redirects=False,
-            proxies=proxies,
-            verify=verify,
-            timeout=5)
+                         allow_redirects=False,
+                         proxies=proxies,
+                         verify=verify,
+                         timeout=5)
 
         status_code = r.status_code
         if status_code == 302:
@@ -103,7 +107,7 @@ def _check_url(host, w_url):
 
     except Exception:
         logger.error(f'Well Known Assetlinks Check for URL: {w_url}')
-        return {'url': w_url, 
+        return {'url': w_url,
                 'host': host,
                 'status_code': None,
                 'status': False}
@@ -150,9 +154,9 @@ def get_browsable_activities(node, ns):
                         path_patterns.append(path_pattern)
                     # Collect possible well-known paths
                     if (scheme
-                          and scheme in ('http', 'https')
-                          and host
-                          and host != '*'):
+                        and scheme in ('http', 'https')
+                        and host
+                            and host != '*'):
                         host = host.replace('*.', '').replace('#', '')
                         if not valid_host(host):
                             continue
@@ -177,11 +181,13 @@ def get_browsable_activities(node, ns):
         logger.exception('Getting Browsable Activities')
 
 
-def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
+def manifest_analysis(checksum, mfxml, ns, man_data_dic, src_type, app_dir):
     """Analyse manifest file."""
     # pylint: disable=C0301
     try:
-        logger.info('Manifest Analysis Started')
+        msg = 'Manifest Analysis Started'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         exp_count = dict.fromkeys(['act', 'ser', 'bro', 'cnt'], 0)
         applications = mfxml.getElementsByTagName('application')
         data_tag = mfxml.getElementsByTagName('data')
@@ -801,11 +807,14 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
             'browsable_activities': browsable_activities,
             'permissions': permissions,
             'network_security': network_security.analysis(
+                checksum,
                 app_dir,
                 do_netsec,
                 debuggable,
                 src_type),
         }
         return man_an_dic
-    except Exception:
-        logger.exception('Performing Manifest Analysis')
+    except Exception as exp:
+        msg = 'Error Performing Manifest Analysis'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

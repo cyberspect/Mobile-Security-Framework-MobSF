@@ -17,25 +17,31 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 from django.shortcuts import (
     redirect,
     render,
 )
 from django.template.defaulttags import register
 from django.forms.models import model_to_dict
-from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
+    MD5_REGEX,
     api_key,
     get_md5,
-    get_siphash,
-    is_admin,
     is_dir_exists,
     is_file_exists,
+    is_md5,
     is_safe_path,
     key,
     print_n_send_error_response,
+    python_dict,
+)
+from mobsf.MobSF.cyberspect_utils import (
+    get_siphash,
+    is_admin,
     sso_email,
     tz,
     utcnow,
@@ -43,13 +49,27 @@ from mobsf.MobSF.utils import (
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
-    CyberspectScans,
     RecentScansDB,
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
 )
-from mobsf.StaticAnalyzer.views.common import appsec
+from mobsf.StaticAnalyzer.cyberspect_models import (
+    CyberspectScans,
+)
+from mobsf.StaticAnalyzer.views.common import appsec  # Cyberspect import
+from mobsf.DynamicAnalyzer.views.common.shared import (
+    invalid_params,
+    send_response,
+)
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    MAINTAINER_GROUP,
+    Permissions,
+    permission_required,
+)
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
@@ -57,16 +77,22 @@ logger = logging.getLogger(__name__)
 register.filter('key', key)
 
 
+@login_required
 def index(request):
     """Index Route."""
     mimes = (settings.APK_MIME
              + settings.IPA_MIME
              + settings.ZIP_MIME
              + settings.APPX_MIME)
+    exts = (settings.ANDROID_EXTS
+            + settings.IOS_EXTS
+            + settings.WINDOWS_EXTS)
     context = {
         'title': 'Cyberspect: Upload App',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'mimes': mimes,
+        'exts': '|'.join(exts),
         'is_admin': is_admin(request),
         'email': sso_email(request),
         'tenant_static': settings.TENANT_STATIC_URL,
@@ -84,6 +110,8 @@ class Upload(object):
         self.scan = Scanning(self.request)
 
     @staticmethod
+    @login_required
+    @permission_required(Permissions.SCAN)
     def as_view(request):
         upload = Upload(request)
         return upload.upload_html()
@@ -182,6 +210,8 @@ class Upload(object):
             return self.scan.scan_xapk()
         elif self.scan.file_type.is_apks():
             return self.scan.scan_apks()
+        elif self.scan.file_type.is_aab():
+            return self.scan.scan_aab()
         elif self.scan.file_type.is_jar():
             return self.scan.scan_jar()
         elif self.scan.file_type.is_aar():
@@ -212,15 +242,25 @@ class Upload(object):
         update_cyberspect_scan(data)
 
 
+@login_required
 def api_docs(request):
     """Api Docs Route."""
     if (not is_admin(request)):
         return print_n_send_error_response(request, 'Unauthorized')
 
+    key = '*******'
+    try:
+        if (settings.DISABLE_AUTHENTICATION == '1'
+                or request.user.is_staff
+                or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
+            key = api_key()
+    except Exception:
+        logger.exception('[ERROR] Failed to get API key')
     context = {
         'title': 'API Docs',
-        'api_key': api_key(),
+        'api_key': key,
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': True,
     }
     template = 'general/apidocs.html'
@@ -232,6 +272,7 @@ def support(request):
     context = {
         'title': 'Support',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
         'tenant_static': settings.TENANT_STATIC_URL,
     }
@@ -244,6 +285,7 @@ def about(request):
     context = {
         'title': 'About',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
     }
     template = 'general/about.html'
@@ -255,6 +297,7 @@ def donate(request):
     context = {
         'title': 'Donate',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
     }
     template = 'general/donate.html'
     return render(request, template, context)
@@ -265,6 +308,7 @@ def error(request):
     context = {
         'title': 'Error',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
     }
     template = 'general/error.html'
@@ -276,32 +320,26 @@ def zip_format(request):
     context = {
         'title': 'Zipped Source Instruction',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
     }
     template = 'general/zip.html'
     return render(request, template, context)
 
 
+@login_required
 def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
     context = {
         'title': 'Dynamic Analysis',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
     }
     template = 'general/dynamic.html'
     return render(request, template, context)
 
 
-def not_found(request):
-    """Not Found Route."""
-    context = {
-        'title': 'Not Found',
-        'version': settings.MOBSF_VER,
-    }
-    template = 'general/not_found.html'
-    return render(request, template, context)
-
-
+@login_required
 def recent_scans(request, page_size=20, page_number=1):
     """Show Recent Scans Route."""
     entries = []
@@ -324,15 +362,17 @@ def recent_scans(request, page_size=20, page_number=1):
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
     db_obj = db_obj.order_by('-TIMESTAMP').values()
 
-    paginator = Paginator(
-        db_obj, page_size,
-    )
+    paginator = Paginator(db_obj, page_size)
     page_obj = paginator.get_page(page_number)
     page_obj.page_size = page_size
+    md5_list = [i['MD5'] for i in page_obj]
 
-    recentscans = page_obj
-    android = StaticAnalyzerAndroid.objects.all()
-    ios = StaticAnalyzerIOS.objects.all()
+    android = StaticAnalyzerAndroid.objects.filter(
+        MD5__in=md5_list).only(
+            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5')
+    ios = StaticAnalyzerIOS.objects.filter(
+        MD5__in=md5_list).only('FILE_NAME', 'MD5')
+
     updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
     package_mapping = {}
@@ -341,12 +381,14 @@ def recent_scans(request, page_size=20, page_number=1):
         icon_mapping[item.MD5] = item.ICON_PATH
     for item in ios:
         icon_mapping[item.MD5] = item.ICON_PATH
-    for entry in recentscans:
+
+    for entry in page_obj:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
         entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
+
         if entry['FILE_NAME'].endswith('.ipa'):
             entry['BUNDLE_HASH'] = get_md5(
                 entry['PACKAGE_NAME'].encode('utf-8'))
@@ -370,15 +412,23 @@ def recent_scans(request, page_size=20, page_number=1):
             entry['COMPLETE'] = entry['TIMESTAMP']
             entry['ERROR'] = 'Unable to find cyberspect_scans record'
         entries.append(entry)
+
+    paginator_range = page_obj.paginator.get_elided_page_range(
+        page_number,
+        on_each_side=3,
+        on_ends=1,
+    )
     context = {
         'title': 'Scanned Apps',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'page_obj': page_obj,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': isadmin,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
-        'page_obj': page_obj,
+        'paginator_range': paginator_range,
     }
     template = 'general/recent.html'
     return render(request, template, context)
@@ -533,6 +583,8 @@ def logout_aws(request):
     return resp
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def download_apk(request):
     """Download and APK by package name."""
     package = request.POST['package']
@@ -552,21 +604,91 @@ def download_apk(request):
     return resp
 
 
-def search(request):
-    """Search Scan by MD5 Route."""
-    md5 = request.GET['md5']
-    if re.match('[0-9a-f]{32}', md5):
-        db_obj = RecentScansDB.objects.filter(MD5=md5)
-        if db_obj.exists():
-            e = db_obj[0]
-            url = f'/{e.ANALYZER }/{e.MD5}/'
-            return HttpResponseRedirect(url)
-        else:
-            return HttpResponseRedirect('/not_found/')
-    return print_n_send_error_response(
-        request,
-        'The Scan ID provided is invalid. Please provide a'
-        + ' valid 32 character alphanumeric value.')
+@login_required
+def search(request, api=False):
+    """Search scan by checksum or text."""
+    if request.method == 'POST':
+        query = request.POST['query']
+    else:
+        query = request.GET['query']
+
+    if not query:
+        msg = 'No search query provided.'
+        return print_n_send_error_response(request, msg, api)
+
+    checksum = query if re.match(MD5_REGEX, query) else find_checksum(query)
+
+    if checksum and re.match(MD5_REGEX, checksum):
+        db_obj = RecentScansDB.objects.filter(MD5=checksum).first()
+        if db_obj:
+            url = f'/{db_obj.ANALYZER}/{db_obj.MD5}/'
+            if api:
+                return {'checksum': db_obj.MD5}
+            else:
+                return HttpResponseRedirect(url)
+
+    msg = 'You can search by MD5, app name, package name, or file name.'
+    return print_n_send_error_response(request, msg, api, 'Scan not found')
+
+
+def find_checksum(query):
+    """Get the first matching checksum from the database."""
+    search_fields = ['FILE_NAME', 'PACKAGE_NAME', 'APP_NAME']
+
+    for field in search_fields:
+        result = RecentScansDB.objects.filter(
+            **{f'{field}__icontains': query}).first()
+        if result:
+            return result.MD5
+
+    return None
+
+# AJAX
+
+
+@login_required
+@require_http_methods(['POST'])
+def scan_status(request, api=False):
+    """Get Current Status of a scan in progress."""
+    try:
+        scan_hash = request.POST['hash']
+        if not is_md5(scan_hash):
+            return invalid_params(api)
+        robj = RecentScansDB.objects.filter(MD5=scan_hash)
+        if not robj.exists():
+            data = {'status': 'failed', 'error': 'scan hash not found'}
+            return send_response(data, api)
+        data = {'status': 'ok', 'logs': python_dict(robj[0].SCAN_LOGS)}
+    except Exception as exp:
+        logger.exception('Fetching Scan Status')
+        data = {'status': 'failed', 'message': str(exp)}
+    return send_response(data, api)
+
+
+@login_required
+def download(request):
+    """Download from mobsf.MobSF Route."""
+    if request.method == 'GET':
+        root = settings.DWD_DIR
+        allowed_exts = settings.ALLOWED_EXTENSIONS
+        filename = request.path.replace('/download/', '', 1)
+        dwd_file = os.path.join(root, filename)
+        # Security Checks
+        if '../' in filename or not is_safe_path(root, dwd_file):
+            msg = 'Path Traversal Attack Detected'
+            return print_n_send_error_response(request, msg)
+        ext = os.path.splitext(filename)[1]
+        if ext in allowed_exts:
+            if os.path.isfile(dwd_file):
+                wrapper = FileWrapper(
+                    open(dwd_file, 'rb'))  # lgtm [py/path-injection]
+                response = HttpResponse(
+                    wrapper, content_type=allowed_exts[ext])
+                response['Content-Length'] = os.path.getsize(dwd_file)
+                return response
+        if filename.endswith(('screen/screen.png', '-icon.png')):
+            return HttpResponse('')
+    return HttpResponse(status=404)
 
 
 @require_http_methods(['GET'])
@@ -609,31 +731,7 @@ def app_info(request):
                             content_type='application/json', status=200)
 
 
-def download(request):
-    """Download from mobsf.MobSF Route."""
-    if request.method == 'GET':
-        root = settings.DWD_DIR
-        allowed_exts = settings.ALLOWED_EXTENSIONS
-        filename = request.path.replace('/download/', '', 1)
-        dwd_file = os.path.join(root, filename)
-        # Security Checks
-        if '../' in filename or not is_safe_path(root, dwd_file):
-            msg = 'Path Traversal Attack Detected'
-            return print_n_send_error_response(request, msg)
-        ext = os.path.splitext(filename)[1]
-        if ext in allowed_exts:
-            if os.path.isfile(dwd_file):
-                wrapper = FileWrapper(
-                    open(dwd_file, 'rb'))  # lgtm [py/path-injection]
-                response = HttpResponse(
-                    wrapper, content_type=allowed_exts[ext])
-                response['Content-Length'] = os.path.getsize(dwd_file)
-                return response
-        if filename.endswith(('screen/screen.png', '-icon.png')):
-            return HttpResponse('')
-    return HttpResponse(status=404)
-
-
+@login_required
 def generate_download(request, api=False):
     """Generate downloads for uploaded binaries/source."""
     try:
@@ -666,6 +764,12 @@ def generate_download(request, api=False):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
+        elif file_type == 'binary':
+            # Binaries
+            file_name = f'{md5}.{file_type}'
+            src = app_dir / file_name
+            dst = dwd_dir / file_name
+            shutil.copy2(src.as_posix(), dst.as_posix())
         else:
             src_file_name = f'{md5}.{file_type}'
             src = app_dir / src_file_name
@@ -681,6 +785,8 @@ def generate_download(request, api=False):
         return print_n_send_error_response(request, str(exp), api)
 
 
+@login_required
+@permission_required(Permissions.DELETE)
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:
@@ -690,7 +796,7 @@ def delete_scan(request, api=False):
             else:
                 md5_hash = request.POST['md5']
             data = {'deleted': 'scan hash not found'}
-            if re.match('[0-9a-f]{32}', md5_hash):
+            if re.match(MD5_REGEX, md5_hash):
                 # Delete DB Entries
                 scan = RecentScansDB.objects.filter(MD5=md5_hash)
                 if scan.exists():
@@ -722,10 +828,7 @@ def delete_scan(request, api=False):
     except Exception as exp:
         msg = str(exp)
         exp_doc = exp.__doc__
-        if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
-        else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+        return print_n_send_error_response(request, msg, api, exp_doc)
 
 
 def cyberspect_rescan(apphash, scheduled, sso_user):
@@ -934,3 +1037,9 @@ class RecentScans(object):
             logger.error(exmsg)
             data = {'error': str(exp)}
         return data
+
+
+def update_scan_timestamp(scan_hash):
+    # Update the last scan time.
+    tms = timezone.now()
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)
