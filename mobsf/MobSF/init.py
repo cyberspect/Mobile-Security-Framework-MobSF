@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 VERSION = '4.1.3'
 # Cyberspect version - a non-emmpty string below will display the
 # Cyberspect version number in the footer and VERSION as the MobSF version
-CYBERSPECT_VERSION = '2025.10'
+CYBERSPECT_VERSION = '2025.11'
 BANNER = r"""
   __  __       _    ____  _____       _  _    _ 
  |  \/  | ___ | |__/ ___||  ___|_   _| || |  / |
