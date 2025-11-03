@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 def add_to_recent_scan(data):
     """Add Entry to Database under Recent Scan."""
     try:
+        logger.info('Data received in add_to_recent_scan: %s', data)
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
             # Cyberspect mods
@@ -51,7 +52,7 @@ def add_to_recent_scan(data):
         # Cyberspect mods
         else:
             scan = db_obj.first()
-            if (not data['email'] in scan.EMAIL):
+            if data.get('email') and (data['email'] not in scan.EMAIL):
                 scan.EMAIL = scan.EMAIL + ',' + data['email']
             if (not data['user_groups'] in scan.USER_GROUPS):
                 scan.USER_GROUPS = (scan.USER_GROUPS + ','
@@ -148,12 +149,15 @@ class Scanning(object):
         self.data_privacy_attributes = \
             request.POST.get('data_privacy_attributes', '')
         self.email = sso_email(request)
+        logger.info('Email from sso_email: %s', self.email)
         self.user_groups = get_usergroups(request)
+        logger.info('User groups: %s', self.user_groups)
         self.release = False
         if (is_admin(request)):
             self.release = (request.POST.get('release', '') == 'true')
             if request.POST.get('email'):
                 self.email = request.POST.get('email')
+                logger.info('Admin override email: %s', self.email)
         self.rescan = request.POST.get('rescan', '0')
         self.cyberspect_scan_id = 0
         self.md5 = ''
@@ -166,6 +170,16 @@ class Scanning(object):
             'hash': '',
             'scan_type': '',
             'file_name': self.file_name,
+            'user_app_name': self.user_app_name,
+            'user_app_version': self.user_app_version,
+            'division': self.division,
+            'environment': self.environment,
+            'country': self.country,
+            'data_privacy_classification': self.data_privacy_classification,
+            'data_privacy_attributes': self.data_privacy_attributes,
+            'email': self.email,
+            'user_groups': self.user_groups,
+            'release': self.release,
         }
 
     def scan_apk(self):
