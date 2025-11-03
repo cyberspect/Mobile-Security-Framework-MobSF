@@ -139,7 +139,7 @@ ANDROID_EXTS = (
     'aar',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
-WINDOWS_EXTS = ('appx',)
+WINDOWS_EXTS = () # ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.

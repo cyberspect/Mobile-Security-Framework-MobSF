@@ -42,7 +42,7 @@ class FileType(object):
                 or self.is_xapk()
                 or self.is_zip()
                 or self.is_ipa()
-                or self.is_appx()
+                # or self.is_appx()
                 or self.is_apks()
                 or self.is_aab()
                 or self.is_jar()
