@@ -85,11 +85,8 @@
     <footer class="main-footer">
     <strong>© {% now "Y" %} Cyberspect</strong>
     {% if cversion %}
-    <div class="float-right d-none d-sm-inline-block">
-      (MobSF Version {{ version }})
-    </div>
     <div class="float-right d-none d-sm-inline-block mr-3">
-      <b>Cyberspect Version</b> v{{ cversion }}
+      <b>Version</b> {{ cversion }}
     </div>
     {% else %}
     <div class="float-right d-none d-sm-inline-block">
