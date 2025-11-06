@@ -16,7 +16,6 @@ from mobsf.MalwareAnalyzer.views.android import (
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
 
 from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.defaulttags import register
 
@@ -111,10 +110,9 @@ register.filter('android_component', android_component)
 register.filter('relative_path', relative_path)
 
 
-# Cyberspect function
-def static_analyzer_request(request, checksum):
-    logger.info(checksum)
-    response = static_analyzer(request.GET, checksum, False)
+@login_required
+def static_analyzer(request, checksum):
+    response = static_analyzer_internal(request.GET, checksum, False)
     response['is_admin'] = is_admin(request)
     if 'template' in response:
         return render(request, response['template'], response)
@@ -124,17 +122,11 @@ def static_analyzer_request(request, checksum):
         return response
 
 
-@login_required
-def static_analyzer(request, checksum, api=False):
+def static_analyzer_internal(request, checksum, api=False):
     """Do static analysis on an request and save to db."""
     try:
-        rescan = False
-        if api:
-            re_scan = request.POST.get('re_scan', 0)
-        else:
-            re_scan = request.GET.get('rescan', 0)
-        if re_scan == '1':
-            rescan = True
+        rescan = (request.get('rescan', 0) == '1')
+
         # Input validation
         app_dic = {}
         if not is_md5(checksum):
@@ -195,13 +187,6 @@ def static_analyzer(request, checksum, api=False):
             db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
             if db_entry.exists() and not rescan:
                 context = get_context_from_db_entry(db_entry)
-                # Cyberspect mod
-                if settings.VT_ENABLED:
-                    vt = VirusTotal.VirusTotal()
-                    context['virus_total'] = vt.get_result(
-                        app_dic['app_path'],
-                        app_dic['md5'])
-                # Cyberspect mod end
             else:
                 if not has_permission(request, Permissions.SCAN, api):
                     return print_n_send_error_response(
@@ -366,13 +351,11 @@ def static_analyzer(request, checksum, api=False):
             if settings.VT_ENABLED:
                 vt = VirusTotal.VirusTotal(checksum)
                 context['virus_total'] = vt.get_result(
-                    app_dic['app_path'])
+                    app_dic['app_path'], app_dic['md5'])
             context['is_admin'] = is_admin(request)
-            template = 'static_analysis/android_binary_analysis.html'
-            if api:
-                return context
-            else:
-                return render(request, template, context)
+            context['template'] = \
+                'static_analysis/android_binary_analysis.html'
+            return context
         elif typ == 'jar':
             return jar_analysis(request, app_dic, rescan, api)
         elif typ == 'aar':
@@ -380,7 +363,6 @@ def static_analyzer(request, checksum, api=False):
         elif typ == 'so':
             return so_analysis(request, app_dic, rescan, api)
         elif typ == 'zip':
-            ret = f'/static_analyzer_ios/{checksum}/'
             app_dic['app_file'] = f'{checksum}.zip'
             app_dic['app_path'] = (
                 app_dic['app_dir'] / app_dic['app_file']).as_posix()
@@ -392,10 +374,7 @@ def static_analyzer(request, checksum, api=False):
             if db_entry.exists() and not rescan:
                 context = get_context_from_db_entry(db_entry)
             elif ios_db_entry.exists() and not rescan:
-                if api:
-                    return {'type': 'ios'}
-                else:
-                    return HttpResponseRedirect(ret)
+                return {'type': 'ios'}
             else:
                 append_scan_status(checksum, 'init')
                 msg = 'Extracting ZIP'
@@ -416,11 +395,7 @@ def static_analyzer(request, checksum, api=False):
                     msg = 'Redirecting to iOS Source Code Analyzer'
                     logger.info(msg)
                     append_scan_status(checksum, msg)
-                    if api:
-                        return {'type': 'ios'}
-                    else:
-                        ret += f'?rescan={str(int(rescan))}'
-                        return HttpResponseRedirect(ret)
+                    return {'type': 'ios'}
                 if not has_permission(request, Permissions.SCAN, api):
                     return print_n_send_error_response(
                         request,
@@ -554,18 +529,16 @@ def static_analyzer(request, checksum, api=False):
                             'title': 'Invalid ZIP archive',
                             'version': settings.MOBSF_VER,
                             'cversion': settings.CYBERSPECT_VER,
+                            'template': 'general/zip.html',
                         }
-                        template = 'general/zip.html'
-                        return render(request, template, ctx)
+                        return ctx
             context['appsec'] = get_android_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
             context['is_admin'] = is_admin(request)
-            template = 'static_analysis/android_source_analysis.html'
-            if api:
-                return context
-            else:
-                return render(request, template, context)
+            context['template'] = \
+                'static_analysis/android_source_analysis.html'
+            return context
         else:
             err = ('Only APK, JAR, AAR, SO and Zipped '
                    'Android/iOS Source code supported now!')

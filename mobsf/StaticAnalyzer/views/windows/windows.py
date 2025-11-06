@@ -62,9 +62,9 @@ config = None
 ##############################################################
 # Windows Support Functions
 
-
-def staticanalyzer_windows_request(request, checksum):
-    response = staticanalyzer_windows(request.GET, checksum)
+@login_required
+def staticanalyzer_windows(request, checksum):
+    response = staticanalyzer_windows_internal(request.GET, checksum)
     response['is_admin'] = is_admin(request)
     if 'template' in response:
         return render(request, response['template'], response)
@@ -74,8 +74,7 @@ def staticanalyzer_windows_request(request, checksum):
         return response
 
 
-@login_required
-def staticanalyzer_windows(request, checksum, api=False):
+def staticanalyzer_windows_internal(request, checksum, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
@@ -165,12 +164,9 @@ def staticanalyzer_windows(request, checksum, api=False):
                 vt = VirusTotal.VirusTotal(checksum)
                 context['virus_total'] = vt.get_result(
                     os.path.join(app_dic['app_dir'], checksum) + '.appx')
-            template = 'static_analysis/windows_binary_analysis.html'
-            context['template'] = template
-        if api:
-            return context
-        else:
-            return render(request, template, context)
+            context['template'] = \
+                'static_analysis/windows_binary_analysis.html'            
+        return context
     except Exception as exception:
         msg = 'Error Performing Static Analysis'
         logger.exception(msg)

@@ -31,9 +31,9 @@ from mobsf.MobSF.views.home import (
 )
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android.views import view_source
-from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
+from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer_internal
 from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
-from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
+from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios_internal
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
     delete_suppression,
@@ -119,23 +119,23 @@ def api_scan(request):
     scan_type = robj[0].SCAN_TYPE
     # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
     if scan_type in settings.ANDROID_EXTS:
-        resp = static_analyzer(request, checksum, True)
+        resp = static_analyzer_internal(request, checksum, True)
         if 'type' in resp:
-            resp = static_analyzer_ios(request, checksum, True)
+            resp = static_analyzer_ios_internal(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # IPA
     elif scan_type in settings.IOS_EXTS:
-        resp = static_analyzer_ios(request, checksum, True)
+        resp = static_analyzer_ios_internal(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # APPX
     elif scan_type in settings.WINDOWS_EXTS:
-        resp = windows.staticanalyzer_windows(request, checksum, True)
+        resp = windows.staticanalyzer_windows_internal(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
@@ -531,11 +531,11 @@ def scan(request_data):
         scan_type = metadata['SCAN_TYPE']
         # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
         if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
-            resp = static_analyzer(request_data,
+            resp = static_analyzer_internal(request_data,
                                    request_data['hash'],
                                    True)
             if 'type' in resp:
-                resp = static_analyzer_ios(request_data,
+                resp = static_analyzer_ios_internal(request_data,
                                            request_data['hash'],
                                            True)
             if 'error' in resp:
@@ -544,7 +544,7 @@ def scan(request_data):
                 response = make_api_response(resp, 200)
         # IPA
         elif scan_type in {'ipa', 'dylib', 'a'}:
-            resp = static_analyzer_ios(request_data,
+            resp = static_analyzer_ios_internal(request_data,
                                        request_data['hash'],
                                        True)
             if 'error' in resp:
