@@ -155,6 +155,7 @@ GITHUB_URL = ('https://github.com/MobSF/Mobile-Security-Framework-MobSF/'
               'releases/latest')
 FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
 GOOGLE = 'https://www.google.com'
+PLAYSTORE = 'https://play.google.com'
 BAIDU = 'https://www.baidu.com/'
 APKPURE = 'https://m.apkpure.com/android/{}/download?from=details'
 APKTADA = 'https://apktada.com/download-apk/'
@@ -273,8 +274,12 @@ MEDIA_URL = '/uploads/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-# 256MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
+# 256MB limit for file uploads
+DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
+# 400MB per file limit for uncompressed files
+ZIP_MAX_UNCOMPRESSED_FILE_SIZE = 400 * 1024 * 1024
+# 3GB total limit for all uncompressed files
+ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE = 3000 * 1024 * 1024
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = '/'
 AUTH_PASSWORD_VALIDATORS = [
@@ -410,6 +415,8 @@ IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
 IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
 IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
 IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+IDP_MAINTAINER_GROUP = os.getenv('MOBSF_IDP_MAINTAINER_GROUP', 'Maintainer')
+IDP_VIEWER_GROUP = os.getenv('MOBSF_IDP_VIEWER_GROUP', 'Viewer')
 # SP Configuration
 SP_HOST = os.getenv('MOBSF_SP_HOST')
 SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')

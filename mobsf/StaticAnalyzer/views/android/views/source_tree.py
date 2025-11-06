@@ -10,7 +10,6 @@ from django.shortcuts import (
     render,
 )
 
-from mobsf.MobSF.init import api_key
 from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
