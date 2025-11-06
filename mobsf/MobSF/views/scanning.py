@@ -15,6 +15,7 @@ from mobsf.MobSF.cyberspect_utils import (
     sso_email,
     utcnow,
 )
+from mobsf.MobSF.security import sanitize_filename
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ def add_to_recent_scan(data):
         # End Cyberspect mod
 
 
-def handle_uploaded_file(content, extension, source_content=None):
+def handle_uploaded_file(content, extension):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -123,7 +124,10 @@ class Scanning(object):
         # Cyberspect mods
         if ('file' in request.FILES):
             self.file = request.FILES['file']
-            self.file_name = self.file.name
+            # added with v4.3.0
+            self.file_name = sanitize_filename(
+                request.FILES['file'].name)
+            # Cyberspect mods continue
             self.file_type = FileType(self.file)
             self.file_size = self.file.size
         else:

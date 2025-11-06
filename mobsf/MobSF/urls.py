@@ -37,6 +37,7 @@ from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
+    async_task,
     pdf,
     shared_func,
     suppression,
@@ -89,11 +90,14 @@ urlpatterns = [
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
     re_path(r'^api/v1/search$', api_sz.api_search),
+    # begin Cyberspect changes
     re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
     re_path(r'^api/v1/rescan$', api_sz.api_rescan),
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
     re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
+    # end Cyberspect changes
+    re_path(r'^api/v1/tasks$', api_sz.api_tasks),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download$', api_sz.api_download),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
@@ -109,12 +113,14 @@ urlpatterns = [
     re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
     re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
+    # begin Cyberspect changes
     re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
     re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
     re_path(r'^api/v1/cyberspect_completedscans$',
             api_sz.api_cyberspect_completed_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             api_sz.api_update_cyberspect_scan),
+    # end Cyberspect changes
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
@@ -199,6 +205,9 @@ if settings.API_ONLY == '0':
         re_path(r'^$', home.index, name='home'),
         re_path(r'^upload/$', home.Upload.as_view, name='upload'),
         re_path(r'^download/', home.download, name='download'),
+        re_path(fr'^download_binary/{checksum_regex}/$',
+                home.download_binary,
+                name='download_binary'),
         re_path(r'^download_scan/', home.download_apk, name='download_scan'),
         re_path(r'^generate_downloads/$',
                 home.generate_download,
@@ -208,6 +217,7 @@ if settings.API_ONLY == '0':
         re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans$', home.recent_scans, name='recent'),
+        re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
         re_path(fr'^recent_scans/{paginate}/$',
                 home.recent_scans,
                 name='scans_paginated'),
@@ -218,14 +228,19 @@ if settings.API_ONLY == '0':
         re_path(r'^app_info$', home.app_info),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^zip_format/$', home.zip_format),
+        re_path(r'^robots.txt$', home.robots_txt),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
         re_path(r'^logout$', home.logout_aws),
         re_path(r'^health$', home.health),
+        # begin CyberSpect code
         re_path(r'^admin$', admin.admin_view, name='admin'),
         re_path(r'^admin/create_api_key$', admin.create_api_key_post),
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
         re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
-
+        # end CyberSpect code
+        re_path(r'^tasks$',
+                async_task.list_tasks,
+                name='list_tasks'),
         # Static Analysis
         # Android
         re_path(fr'^static_analyzer/{checksum_regex}/$',

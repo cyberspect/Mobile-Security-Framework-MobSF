@@ -9,11 +9,13 @@ import re
 import shutil
 import traceback as tb
 from pathlib import Path
+from datetime import timedelta
 from wsgiref.util import FileWrapper
 
 import boto3
 
 from django.conf import settings
+from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
@@ -29,7 +31,6 @@ from django.forms.models import model_to_dict
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     MD5_REGEX,
-    api_key,
     get_md5,
     is_dir_exists,
     is_file_exists,
@@ -46,9 +47,14 @@ from mobsf.MobSF.cyberspect_utils import (
     tz,
     utcnow,
 )
+
+from mobsf.MobSF.init import api_key
+from mobsf.MobSF.security import sanitize_filename
+from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
+    EnqueuedTask,
     RecentScansDB,
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
@@ -73,6 +79,8 @@ from mobsf.MobSF.views.authorization import (
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
+HTTP_STATUS_404 = 404
+HTTP_SERVER_ERROR = 500
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
@@ -202,7 +210,7 @@ class Upload(object):
     def upload(self):
         self.scan.rescan = '0'
         content_type = self.scan.file.content_type
-        file_name = self.scan.file.name
+        file_name = sanitize_filename(self.scan.file.name)
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.scan.file_type.is_apk():
             return self.scan.scan_apk()
@@ -253,7 +261,7 @@ def api_docs(request):
         if (settings.DISABLE_AUTHENTICATION == '1'
                 or request.user.is_staff
                 or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
-            key = api_key()
+            key = api_key(settings.MOBSF_HOME)
     except Exception:
         logger.exception('[ERROR] Failed to get API key')
     context = {
@@ -325,6 +333,11 @@ def zip_format(request):
     }
     template = 'general/zip.html'
     return render(request, template, context)
+
+
+def robots_txt(request):
+    content = 'User-agent: *\nDisallow: /*/\nAllow: /*\n'
+    return HttpResponse(content, content_type='text/plain')
 
 
 @login_required
@@ -429,11 +442,13 @@ def recent_scans(request, page_size=20, page_number=1):
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
         'paginator_range': paginator_range,
+        'async_scans': settings.ASYNC_ANALYSIS,
     }
     template = 'general/recent.html'
     return render(request, template, context)
 
 
+# begin Cyberspect section
 def scan_metadata(md5):
     """Get scan metadata."""
     if re.match('[0-9a-f]{32}', md5):
@@ -581,6 +596,7 @@ def logout_aws(request):
     for cookie in request.COOKIES:
         resp.set_cookie(cookie, None, -1, -1)
     return resp
+# end Cyberspect section
 
 
 @login_required
@@ -665,30 +681,118 @@ def scan_status(request, api=False):
     return send_response(data, api)
 
 
+def file_download(dwd_file, filename, content_type):
+    """HTTP file download response."""
+    with open(dwd_file, 'rb') as file:
+        wrapper = FileWrapper(file)
+        response = HttpResponse(wrapper, content_type=content_type)
+        response['Content-Length'] = dwd_file.stat().st_size
+        if filename:
+            val = f'attachment; filename="{filename}"'
+            response['Content-Disposition'] = val
+        return response
+
+
 @login_required
-def download(request):
-    """Download from mobsf.MobSF Route."""
-    if request.method == 'GET':
-        root = settings.DWD_DIR
+@require_http_methods(['GET'])
+def download_binary(request, checksum, api=False):
+    """Download binary from uploads directory."""
+    try:
         allowed_exts = settings.ALLOWED_EXTENSIONS
-        filename = request.path.replace('/download/', '', 1)
-        dwd_file = os.path.join(root, filename)
-        # Security Checks
-        if '../' in filename or not is_safe_path(root, dwd_file):
-            msg = 'Path Traversal Attack Detected'
+        if not is_md5(checksum):
+            return HttpResponse(
+                'Invalid MD5 Hash',
+                status=HTTP_STATUS_404)
+        robj = RecentScansDB.objects.filter(MD5=checksum).first()
+        if not robj:
+            return HttpResponse(
+                'Scan hash not found',
+                status=HTTP_STATUS_404)
+        file_ext = f'.{robj.SCAN_TYPE}'
+        if file_ext not in allowed_exts.keys():
+            return HttpResponse(
+                'Invalid Scan Type',
+                status=HTTP_STATUS_404)
+        filename = f'{checksum}{file_ext}'
+        dwd_file = Path(settings.UPLD_DIR) / checksum / filename
+        if not dwd_file.exists():
+            return HttpResponse(
+                'File not found',
+                status=HTTP_STATUS_404)
+        return file_download(
+            dwd_file,
+            sanitize_filename(robj.FILE_NAME),
+            allowed_exts[file_ext])
+    except Exception:
+        logger.exception('Download Binary Failed')
+        return HttpResponse(
+            'Failed to download file due to an error',
+            status=HTTP_SERVER_ERROR)
+
+
+@login_required
+@require_http_methods(['GET'])
+def download(request):
+    """Download from mobsf downloads directory."""
+    root = settings.DWD_DIR
+    filename = request.path.replace('/download/', '', 1)
+    dwd_file = Path(root) / filename
+
+    # Security Checks
+    if '../' in filename or not is_safe_path(root, dwd_file):
+        msg = 'Path Traversal Attack Detected'
+        return print_n_send_error_response(request, msg)
+
+    # File and Extension Check
+    ext = dwd_file.suffix
+    allowed_exts = settings.ALLOWED_EXTENSIONS
+    if ext in allowed_exts and dwd_file.is_file():
+        return file_download(
+            dwd_file,
+            None,
+            allowed_exts[ext])
+
+    # Special Case for Certain Image Files
+    if filename.endswith(('screen/screen.png', '-icon.png')):
+        return HttpResponse('')
+
+    return HttpResponse(status=HTTP_STATUS_404)
+
+
+@login_required
+def generate_download(request):
+    """Generate downloads for smali/java zip."""
+    try:
+        logger.info('Generating Downloads')
+        md5 = request.GET['hash']
+        file_type = request.GET['file_type']
+        if (not is_md5(md5)
+                or file_type not in ('smali', 'java')):
+            msg = 'Invalid download type or hash'
+            logger.exception(msg)
             return print_n_send_error_response(request, msg)
-        ext = os.path.splitext(filename)[1]
-        if ext in allowed_exts:
-            if os.path.isfile(dwd_file):
-                wrapper = FileWrapper(
-                    open(dwd_file, 'rb'))  # lgtm [py/path-injection]
-                response = HttpResponse(
-                    wrapper, content_type=allowed_exts[ext])
-                response['Content-Length'] = os.path.getsize(dwd_file)
-                return response
-        if filename.endswith(('screen/screen.png', '-icon.png')):
-            return HttpResponse('')
-    return HttpResponse(status=404)
+        app_dir = Path(settings.UPLD_DIR) / md5
+        dwd_dir = Path(settings.DWD_DIR)
+        file_name = ''
+        if file_type == 'java':
+            # For Java zipped source code
+            directory = app_dir / 'java_source'
+            dwd_file = dwd_dir / f'{md5}-java'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-java.zip'
+        elif file_type == 'smali':
+            # For Smali zipped source code
+            directory = app_dir / 'smali_source'
+            dwd_file = dwd_dir / f'{md5}-smali'
+            shutil.make_archive(
+                dwd_file.as_posix(), 'zip', directory.as_posix())
+            file_name = f'{md5}-smali.zip'
+        return redirect(f'/download/{file_name}')
+    except Exception:
+        msg = 'Generating Downloads'
+        logger.exception(msg)
+        return print_n_send_error_response(request, msg)
 
 
 @require_http_methods(['GET'])
@@ -787,50 +891,62 @@ def generate_download(request, api=False):
 
 @login_required
 @permission_required(Permissions.DELETE)
+@require_http_methods(['POST'])
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:
-        if request.method == 'POST':
-            if api:
-                md5_hash = request.POST['hash']
-            else:
-                md5_hash = request.POST['md5']
-            data = {'deleted': 'scan hash not found'}
-            if re.match(MD5_REGEX, md5_hash):
-                # Delete DB Entries
-                scan = RecentScansDB.objects.filter(MD5=md5_hash)
-                if scan.exists():
-                    RecentScansDB.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
-                    # Delete Upload Dir Contents
-                    app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
-                    if is_dir_exists(app_upload_dir):
-                        shutil.rmtree(app_upload_dir)
-                    # Delete Download Dir Contents
-                    dw_dir = settings.DWD_DIR
-                    for item in os.listdir(dw_dir):
-                        item_path = os.path.join(dw_dir, item)
-                        valid_item = item.startswith(md5_hash + '-')
-                        # Delete all related files
-                        if is_file_exists(item_path) and valid_item:
-                            os.remove(item_path)
-                        # Delete related directories
-                        if is_dir_exists(item_path) and valid_item:
-                            shutil.rmtree(item_path)
-                    data = {'deleted': 'yes'}
-            if api:
-                return data
-            else:
-                ctype = 'application/json; charset=utf-8'
-                return HttpResponse(json.dumps(data), content_type=ctype)
+        if api:
+            md5_hash = request.POST['hash']
+        else:
+            md5_hash = request.POST['md5']
+
+        if not re.match(MD5_REGEX, md5_hash):
+            return send_response({'deleted': 'Invalid scan hash'}, api)
+
+        # Delete DB Entries
+        scan = RecentScansDB.objects.filter(MD5=md5_hash)
+        if not scan.exists():
+            return send_response({'deleted': 'Scan not found in Database'}, api)
+        if settings.ASYNC_ANALYSIS:
+            # Handle Async Tasks
+            et = EnqueuedTask.objects.filter(checksum=md5_hash).first()
+            if et:
+                max_time_passed = now() - et.created_at > timedelta(
+                    minutes=settings.ASYNC_ANALYSIS_TIMEOUT)
+                if not (et.completed_at or max_time_passed):
+                    # Queue is in progress, cannot delete the task
+                    return send_response(
+                        {'deleted': 'A scan can only be deleted after it is completed'},
+                        api)
+        # Delete all related DB entries
+        EnqueuedTask.objects.filter(checksum=md5_hash).all().delete()
+        RecentScansDB.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
+        # Delete Upload Dir Contents
+        app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
+        if is_dir_exists(app_upload_dir):
+            shutil.rmtree(app_upload_dir)
+        # Delete Download Dir Contents
+        dw_dir = settings.DWD_DIR
+        for item in os.listdir(dw_dir):
+            item_path = os.path.join(dw_dir, item)
+            valid_item = item.startswith(md5_hash + '-')
+            # Delete all related files
+            if is_file_exists(item_path) and valid_item:
+                os.remove(item_path)
+            # Delete related directories
+            if is_dir_exists(item_path) and valid_item:
+                shutil.rmtree(item_path, ignore_errors=True)
+        return send_response({'deleted': 'yes'}, api)
     except Exception as exp:
         msg = str(exp)
         exp_doc = exp.__doc__
         return print_n_send_error_response(request, msg, api, exp_doc)
 
 
+# begin Cyberspect section
 def cyberspect_rescan(apphash, scheduled, sso_user):
     """Get cyberspect scan by hash."""
     rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
@@ -898,6 +1014,7 @@ def health(request):
     data = {'status': 'OK'}
     return HttpResponse(json.dumps(data),
                         content_type='application/json; charset=utf-8')
+# end Cyberspect section
 
 
 class RecentScans(object):
@@ -930,6 +1047,7 @@ class RecentScans(object):
             data = {'error': str(exp)}
         return data
 
+    # begin Cyberspect section
     def cyberspect_recent_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
@@ -1037,6 +1155,7 @@ class RecentScans(object):
             logger.error(exmsg)
             data = {'error': str(exp)}
         return data
+    # end Cyberspect section
 
 
 def update_scan_timestamp(scan_hash):

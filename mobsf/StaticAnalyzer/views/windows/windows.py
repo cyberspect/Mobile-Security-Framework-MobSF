@@ -28,6 +28,8 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
+from mobsf.MobSF.views.home import update_scan_timestamp
+import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
     StaticAnalyzerWindows,
@@ -50,6 +52,10 @@ from mobsf.MobSF.cyberspect_utils import (
     update_scan_timestamp,
 )
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    has_permission,
+)
 
 logger = logging.getLogger(__name__)
 # Only used when xmlrpc is used
@@ -167,6 +173,100 @@ def staticanalyzer_windows(request, checksum, api=False):
                     os.path.join(app_dic['app_dir'], checksum) + '.appx')
             template = 'static_analysis/windows_binary_analysis.html'
             context['template'] = template
+        if api:
+            re_scan = request.POST.get('re_scan', 0)
+        else:
+            re_scan = request.GET.get('rescan', 0)
+        if re_scan == '1':
+            rescan = True
+        if not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Invalid Hash',
+                api)
+        robj = RecentScansDB.objects.filter(MD5=checksum)
+        if not robj.exists():
+            return print_n_send_error_response(
+                request,
+                'The file is not uploaded/available',
+                api)
+        typ = robj[0].SCAN_TYPE
+        filename = robj[0].FILE_NAME
+        if typ not in settings.WINDOWS_EXTS:
+            return print_n_send_error_response(
+                request,
+                'File type not supported',
+                api)
+
+        app_dic['app_name'] = filename  # APP ORIGINAL NAME
+        app_dic['md5'] = checksum
+        app_dic['app_dir'] = os.path.join(
+            settings.UPLD_DIR, checksum + '/')
+        app_dic['tools_dir'] = os.path.join(
+            settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
+        # DB
+        db_entry = StaticAnalyzerWindows.objects.filter(
+            MD5=checksum,
+        )
+        if db_entry.exists() and not rescan:
+            logger.info(
+                'Analysis is already Done.'
+                ' Fetching data from the DB...')
+            context = get_context_from_db_entry(db_entry)
+        else:
+            if not has_permission(request, Permissions.SCAN, api):
+                return print_n_send_error_response(
+                    request,
+                    'Permission Denied',
+                    False)
+            append_scan_status(checksum, 'init')
+            msg = 'Windows Binary Analysis Started'
+            logger.info(msg)
+            append_scan_status(checksum, msg)
+            app_dic['app_path'] = os.path.join(
+                app_dic['app_dir'], checksum + '.appx')
+            # ANALYSIS BEGINS
+            app_dic['size'] = str(
+                file_size(app_dic['app_path'])) + 'MB'
+            # Generate hashes
+            app_dic['sha1'], app_dic['sha256'] = hash_gen(
+                checksum,
+                app_dic['app_path'])
+            # EXTRACT APPX
+            logger.info('Extracting APPX')
+            app_dic['files'] = unzip(
+                checksum,
+                app_dic['app_path'],
+                app_dic['app_dir'])
+            xml_dic = _parse_xml(
+                checksum,
+                app_dic['app_dir'])
+            bin_an_dic = _binary_analysis(app_dic)
+            # Saving to db
+            logger.info('Connecting to DB')
+            if rescan:
+                logger.info('Updating Database...')
+                save_or_update('update',
+                               app_dic,
+                               xml_dic,
+                               bin_an_dic)
+                update_scan_timestamp(checksum)
+            else:
+                logger.info('Saving to Database')
+                save_or_update('save',
+                               app_dic,
+                               xml_dic,
+                               bin_an_dic)
+            context = get_context_from_analysis(app_dic,
+                                                xml_dic,
+                                                bin_an_dic)
+            context['virus_total'] = None
+        template = 'static_analysis/windows_binary_analysis.html'
+        context['virus_total'] = None
+        if settings.VT_ENABLED:
+            vt = VirusTotal.VirusTotal(checksum)
+            context['virus_total'] = vt.get_result(
+                os.path.join(app_dic['app_dir'], checksum) + '.appx')
         if api:
             return context
         else:
