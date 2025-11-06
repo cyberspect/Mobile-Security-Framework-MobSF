@@ -529,7 +529,7 @@ def static_analyzer_internal(request, checksum, api=False):
                             'title': 'Invalid ZIP archive',
                             'version': settings.MOBSF_VER,
                             'cversion': settings.CYBERSPECT_VER,
-                            'template': 'general/zip.html'
+                            'template': 'general/zip.html',
                         }
                         return ctx
             context['appsec'] = get_android_dashboard(context, True)
