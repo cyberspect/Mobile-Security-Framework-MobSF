@@ -363,7 +363,6 @@ def static_analyzer_internal(request, checksum, api=False):
         elif typ == 'so':
             return so_analysis(request, app_dic, rescan, api)
         elif typ == 'zip':
-            ret = f'/static_analyzer_ios/{checksum}/'
             app_dic['app_file'] = f'{checksum}.zip'
             app_dic['app_path'] = (
                 app_dic['app_dir'] / app_dic['app_file']).as_posix()
