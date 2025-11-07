@@ -47,15 +47,14 @@ def first_run(secret_file, base_dir, mobsf_home):
         # Run Once
         make_migrations(base_dir)
         migrate(base_dir)
-
-    # Install JADX
-    thread = threading.Thread(
-        target=install_jadx,
-        name='install_jadx',
-        args=(mobsf_home,))
-    thread.start()
-    # Windows Setup
-    windows_config_local(mobsf_home)
+        # Install JADX
+        thread = threading.Thread(
+            target=install_jadx,
+            name='install_jadx',
+            args=(mobsf_home,))
+        thread.start()
+        # Windows Setup
+        windows_config_local(mobsf_home)
     return secret_key
 
 
