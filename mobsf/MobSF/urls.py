@@ -24,6 +24,7 @@ from mobsf.MobSF.security import (
     init_exec_hooks,
     store_exec_hashes_at_first_run,
 )
+from mobsf.MobSF.tools_download import install_jadx
 from mobsf.MobSF.views import (
     admin,
     authentication,
@@ -424,5 +425,6 @@ if settings.API_ONLY == '0':
 
 urllib3.disable_warnings()
 utils.print_version()
+install_jadx(settings.MobSF_HOME)
 init_exec_hooks()
 store_exec_hashes_at_first_run()
