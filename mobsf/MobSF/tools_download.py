@@ -54,7 +54,7 @@ def install_jadx(mobsf_home, version='1.5.0'):
         # Set execute permission
         set_rwxr_xr_x_permission_recursively(extract_dir)
 
-        logger.info('JADX installed successfully')
+        logger.info('JADX installed successfully in %s', extract_dir)
     except Exception:
         logger.exception('Error during JADX installation')
 
