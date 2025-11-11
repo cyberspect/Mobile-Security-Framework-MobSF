@@ -97,7 +97,7 @@ def api_key():
         logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
 
-    secret_file = os.path.join(settings.MobSF_HOME, 'secret')
+    secret_file = os.path.join(settings.MOBSF_HOME, 'secret')
     if is_file_exists(secret_file):
         try:
             _api_key = open(secret_file).read().strip()
@@ -130,7 +130,7 @@ def print_version():
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
     # Cyberspect addition
-    logger.info('File storage: %s', settings.MobSF_HOME)
+    logger.info('File storage: %s', settings.MOBSF_HOME)
     logger.info('Administrators: %s', settings.ADMIN_USERS)
     # End Cyberspect addition
     find_java_binary()
