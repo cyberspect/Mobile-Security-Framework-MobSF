@@ -49,17 +49,17 @@ DOWNLOADED_TOOLS_DIR = os.path.join(BASE_DIR, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
 # debugging begins
-logger.debug('BASE_DIR: %s', BASE_DIR)
-logger.debug('CYBERSPECT_BASE_DIR: %s', CYBERSPECT_BASE_DIR)
-logger.debug('MobSF_HOME: %s', MobSF_HOME)
-logger.debug('DWD_DIR: %s', DWD_DIR)
-logger.debug('SCREEN_DIR: %s', SCREEN_DIR)
-logger.debug('UPLD_DIR: %s', UPLD_DIR)
-logger.debug('DB_DIR: %s', DB_DIR)
-logger.debug('SIGNATURE_DIR: %s', SIGNATURE_DIR)
-logger.debug('TOOLS_DIR: %s', TOOLS_DIR)
-logger.debug('DOWNLOADED_TOOLS_DIR: %s', DOWNLOADED_TOOLS_DIR)
-logger.debug('SECRET_FILE: %s', SECRET_FILE)
+logger.info(f'BASE_DIR: {BASE_DIR}')
+logger.info(f'CYBERSPECT_BASE_DIR: {CYBERSPECT_BASE_DIR}')
+logger.info(f'MobSF_HOME: {MobSF_HOME}')
+logger.info(f'DWD_DIR: {DWD_DIR}')
+logger.info(f'SCREEN_DIR: {SCREEN_DIR}')
+logger.info(f'UPLD_DIR: {UPLD_DIR}')
+logger.info(f'DB_DIR: {DB_DIR}')
+logger.info(f'SIGNATURE_DIR: {SIGNATURE_DIR}')
+logger.info(f'TOOLS_DIR: {TOOLS_DIR}')
+logger.info(f'DOWNLOADED_TOOLS_DIR: {DOWNLOADED_TOOLS_DIR}')
+logger.info(f'SECRET_FILE: {SECRET_FILE}')
 # debugging ends
 
 
