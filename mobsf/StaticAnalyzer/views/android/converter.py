@@ -90,7 +90,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
         mnt_dir = '/mnt/cyberspect/MobSF/tools/jadx/jadx-1.5.0'
         if os.path.exists(mnt_dir):
             mnt_tools_dir_contents = os.listdir(mnt_dir)
-            msg = ('Contents of \'/mnt/cyberspect/MobSF/tools/jadx/jadx-1.5.0\':'
+            msg = ('Contents of \'/mnt/cyberspect/MobSF/tools/jadx/jadx-1.5.0\': %s'
                    % mnt_tools_dir_contents)
             logger.info(msg)
         else:
