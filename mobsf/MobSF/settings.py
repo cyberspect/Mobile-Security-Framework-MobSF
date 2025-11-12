@@ -48,6 +48,20 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 DOWNLOADED_TOOLS_DIR = os.path.join(BASE_DIR, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
+# debugging begins
+logger.debug('BASE_DIR: %s', BASE_DIR)
+logger.debug('CYBERSPECT_BASE_DIR: %s', CYBERSPECT_BASE_DIR)
+logger.debug('MobSF_HOME: %s', MobSF_HOME)
+logger.debug('DWD_DIR: %s', DWD_DIR)
+logger.debug('SCREEN_DIR: %s', SCREEN_DIR)
+logger.debug('UPLD_DIR: %s', UPLD_DIR)
+logger.debug('DB_DIR: %s', DB_DIR)
+logger.debug('SIGNATURE_DIR: %s', SIGNATURE_DIR)
+logger.debug('TOOLS_DIR: %s', TOOLS_DIR)
+logger.debug('DOWNLOADED_TOOLS_DIR: %s', DOWNLOADED_TOOLS_DIR)
+logger.debug('SECRET_FILE: %s', SECRET_FILE)
+# debugging ends
+
 
 # ==========Load MobSF User Settings==========
 try:
@@ -139,7 +153,7 @@ ANDROID_EXTS = (
     'aar',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
-WINDOWS_EXTS = () # ('appx',)
+WINDOWS_EXTS = ()  # ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
