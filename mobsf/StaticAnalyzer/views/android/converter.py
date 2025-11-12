@@ -76,23 +76,30 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
         jadx_version = '1.5.0'
         jadx_path = f'jadx/jadx-{jadx_version}/bin/'
         # debugging
-        if os.path.exists(jadx_path):
-            jadx_bin_directory_contents = os.listdir(jadx_path)
-            msg = ('Contents of %s:', jadx_bin_directory_contents)
+        if os.path.exists(dwd_tools_dir):
+            dwd_tools_dir_contents = os.listdir(dwd_tools_dir)
+            msg = ('Contents of \'%s\':' % dwd_tools_dir_contents)
             logger.info(msg)
         else:
-            msg = ('Directory %s does not exist.', jadx_path)
+            msg = ('Directory %s does not exist.' % dwd_tools_dir)
+            logger.error(msg)
+        if os.path.exists(jadx_path):
+            jadx_bin_directory_contents = os.listdir(jadx_path)
+            msg = ('Contents of \'%s\':' % jadx_bin_directory_contents)
+            logger.info(msg)
+        else:
+            msg = ('Directory %s does not exist.' % jadx_path)
             logger.error(msg)
         parent_jadx_path = f'jadx/jadx-{jadx_version}/'
         if os.path.exists(parent_jadx_path):
             parent_directory_contents = os.listdir(parent_jadx_path)
-            msg = ('Contents of %s:', parent_directory_contents)
+            msg = ('Contents of %s: ' % parent_directory_contents)
             logger.info(msg)
         else:
-            msg = ('Directory %s does not exist.', parent_jadx_path)
+            msg = ('Directory %s does not exist.' % parent_jadx_path)
             logger.error(msg)
         # end debugging
-        msg = ('Decompiling APK to Java with jadx (%s)', jadx_path)
+        msg = ('Decompiling APK to Java with jadx (%s)' % jadx_path)
         logger.info(msg)
         append_scan_status(checksum, msg)
         args = []
