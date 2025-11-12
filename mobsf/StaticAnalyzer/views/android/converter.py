@@ -75,48 +75,6 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     try:
         jadx_version = '1.5.0'
         jadx_path = f'jadx/jadx-{jadx_version}/bin/'
-        # debugging
-        msg = f'Current Working Directory: {os.getcwd()}'
-        logger.info(msg)
-        msg = f'Tools Directory: {settings.TOOLS_DIR}'
-        logger.info(msg)
-        msg = f'DWD Tools Directory: {dwd_tools_dir}'
-        logger.info(msg)
-        msg = f'JADX bin Directory: {jadx_path}'
-        logger.info(msg)
-        parent_jadx_path = f'jadx/jadx-{jadx_version}/'
-        msg = f'JADX Directory: {parent_jadx_path}'
-        logger.info(msg)
-        mnt_dir = '/mnt/cyberspect/MobSF/tools/jadx/jadx-1.5.0'
-        if os.path.exists(mnt_dir):
-            mnt_tools_dir_contents = os.listdir(mnt_dir)
-            msg = f'Contents of {mnt_dir}: {mnt_tools_dir_contents}'
-            logger.info(msg)
-        else:
-            msg = f'mnt_dir Directory {mnt_dir} does not exist.'
-            logger.error(msg)
-        if os.path.exists(dwd_tools_dir):
-            dwd_tools_dir_contents = os.listdir(dwd_tools_dir)
-            msg = f'Contents of {dwd_tools_dir}: {dwd_tools_dir_contents}'
-            logger.info(msg)
-        else:
-            msg = f'DWD Tools Directory {dwd_tools_dir} does not exist.'
-            logger.error(msg)
-        if os.path.exists(jadx_path):
-            jadx_bin_directory_contents = os.listdir(jadx_path)
-            msg = f'Contents of {jadx_path}: {jadx_bin_directory_contents}'
-            logger.info(msg)
-        else:
-            msg = f'JADX bin Directory {jadx_path} does not exist.'
-            logger.error(msg)
-        if os.path.exists(parent_jadx_path):
-            parent_directory_contents = os.listdir(parent_jadx_path)
-            msg = f'Contents of {parent_jadx_path}: {parent_directory_contents}'
-            logger.info(msg)
-        else:
-            msg = f'JADX Directory {parent_jadx_path} does not exist.'
-            logger.error(msg)
-        # end debugging
         msg = f'Decompiling APK to Java with jadx {jadx_path}'
         logger.info(msg)
         append_scan_status(checksum, msg)

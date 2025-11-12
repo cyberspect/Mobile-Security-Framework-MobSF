@@ -25,48 +25,85 @@ USE_HOME = True
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
+
+def inspect_folder(subject, folder):
+    msg = f'Inspecting {folder}'
+    logger.info(msg)
+    if os.path.exists(folder):
+        dir_contents = os.listdir(folder)
+        msg = f'Contents of {folder}: {dir_contents}'
+        logger.info(msg)
+    else:
+        msg = f'{subject} {folder} does not exist.'
+        logger.error(msg)
+
+
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Cyberspect addition
 # need to determine the base directory for Cyberspect relted files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
-MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
+MOBSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Download Directory
-DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
+DWD_DIR = os.path.join(MOBSF_HOME, 'downloads/')
 # Screenshot Directory
-SCREEN_DIR = os.path.join(MobSF_HOME, 'downloads/screen/')
+SCREEN_DIR = os.path.join(MOBSF_HOME, 'downloads/screen/')
 # Upload Directory
-UPLD_DIR = os.path.join(MobSF_HOME, 'uploads/')
+UPLD_DIR = os.path.join(MOBSF_HOME, 'uploads/')
 # Database Directory
-DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
+DB_DIR = os.path.join(MOBSF_HOME, 'db.sqlite3')
 # Signatures used by modules
-SIGNATURE_DIR = os.path.join(MobSF_HOME, 'signatures/')
+SIGNATURE_DIR = os.path.join(MOBSF_HOME, 'signatures/')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Downloaded Tools Directory
 DOWNLOADED_TOOLS_DIR = os.path.join(BASE_DIR, 'tools/')
 # Secret File
-SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
+SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
 # debugging begins
-logger.info(f'BASE_DIR: {BASE_DIR}')
-logger.info(f'CYBERSPECT_BASE_DIR: {CYBERSPECT_BASE_DIR}')
-logger.info(f'MobSF_HOME: {MobSF_HOME}')
-logger.info(f'DWD_DIR: {DWD_DIR}')
-logger.info(f'SCREEN_DIR: {SCREEN_DIR}')
-logger.info(f'UPLD_DIR: {UPLD_DIR}')
-logger.info(f'DB_DIR: {DB_DIR}')
-logger.info(f'SIGNATURE_DIR: {SIGNATURE_DIR}')
-logger.info(f'TOOLS_DIR: {TOOLS_DIR}')
-logger.info(f'DOWNLOADED_TOOLS_DIR: {DOWNLOADED_TOOLS_DIR}')
-logger.info(f'SECRET_FILE: {SECRET_FILE}')
+msg = f'BASE_DIR: {BASE_DIR}'
+logger.info(msg)
+inspect_folder('BASE_DIR', BASE_DIR)
+msg = f'CYBERSPECT_BASE_DIR: {CYBERSPECT_BASE_DIR}'
+logger.info(msg)
+inspect_folder('CYBERSPECT_BASE_DIR', CYBERSPECT_BASE_DIR)
+msg = f'MOBSF_HOME: {MOBSF_HOME}'
+logger.info(msg)
+inspect_folder('MOBSF_HOME', MOBSF_HOME)
+msg = f'DWD_DIR: {DWD_DIR}'
+logger.info(msg)
+inspect_folder('DWD_DIR', DWD_DIR)
+msg = f'SCREEN_DIR: {SCREEN_DIR}'
+logger.info(msg)
+inspect_folder('SCREEN_DIR', SCREEN_DIR)
+msg = f'UPLD_DIR: {UPLD_DIR}'
+logger.info(msg)
+inspect_folder('UPLD_DIR', UPLD_DIR)
+msg = f'DB_DIR: {DB_DIR}'
+logger.info(msg)
+inspect_folder('DB_DIR', DB_DIR)
+msg = f'SIGNATURE_DIR: {SIGNATURE_DIR}'
+logger.info(msg)
+inspect_folder('SIGNATURE_DIR', SIGNATURE_DIR)
+msg = f'TOOLS_DIR: {TOOLS_DIR}'
+logger.info(msg)
+inspect_folder('TOOLS_DIR', TOOLS_DIR)
+msg = f'DOWNLOADED_TOOLS_DIR: {DOWNLOADED_TOOLS_DIR}'
+logger.info(msg)
+inspect_folder('DOWNLOADED_TOOLS_DIR', DOWNLOADED_TOOLS_DIR)
+msg = f'SECRET_FILE: {SECRET_FILE}'
+logger.info(msg)
+inspect_folder('SECRET_FILE', SECRET_FILE)
+mnt_dir = '/mnt/cyberspect/MobSF/tools/jadx/jadx-1.5.0/bin'
+inspect_folder('mnt_dir', mnt_dir)
 # debugging ends
 
 
 # ==========Load MobSF User Settings==========
 try:
     if USE_HOME:
-        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
+        USER_CONFIG = os.path.join(MOBSF_HOME, 'config.py')
         sett = load_source('user_settings', USER_CONFIG)
         locals().update(  # lgtm [py/modification-of-locals]
             {k: v for k, v in list(sett.__dict__.items())
@@ -79,7 +116,7 @@ except Exception:
     CONFIG_HOME = False
 
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
-SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
+SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MOBSF_HOME)
 
 # ==============3rd Party Tools (Always Available)=====================
 # These settings should be accessible regardless of CONFIG_HOME value
@@ -332,7 +369,7 @@ LOGGING = {
         'logfile': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(MobSF_HOME, 'debug.log'),
+            'filename': os.path.join(MOBSF_HOME, 'debug.log'),
             'formatter': 'standard',
         },
         'console': {
