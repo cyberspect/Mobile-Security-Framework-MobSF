@@ -76,6 +76,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
         jadx_version = '1.5.0'
         jadx_path = f'jadx/jadx-{jadx_version}/bin/'
         # debugging
+        parent_jadx_path = f'jadx/jadx-{jadx_version}/'
         msg = ('Current Working Directory: %s' % os.getcwd())
         logger.info(msg)
         msg = ('Tools Directory: %s' % settings.TOOLS_DIR)
@@ -109,7 +110,6 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
         else:
             msg = ('JADX bin Directory %s does not exist.' % jadx_path)
             logger.error(msg)
-        parent_jadx_path = f'jadx/jadx-{jadx_version}/'
         if os.path.exists(parent_jadx_path):
             parent_directory_contents = os.listdir(parent_jadx_path)
             msg = ('Contents of %s: ' % parent_directory_contents)
