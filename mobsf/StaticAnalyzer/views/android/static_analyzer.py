@@ -295,7 +295,7 @@ def static_analyzer_internal(request, checksum, api=False):
                     checksum,
                     app_dic['app_path'],
                     app_dic['app_dir'],
-                    settings.DOWNLOADED_TOOLS_DIR)
+                    settings.MOBSF_HOME)  # was DOWNLOADED_TOOLS_DIR)
                 dex_2_smali(
                     checksum,
                     app_dic['app_dir'],
