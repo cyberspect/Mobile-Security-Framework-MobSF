@@ -428,7 +428,7 @@ utils.print_version()
 # debug begins
 # uncomment this line
 #install_jadx(settings.MOBSF_HOME)  # uncomment this line
-install_jadx(settings.MOBSF_HOME, called_on_thread=False)  # Cyberspect mod
+install_jadx(settings.MOBSF_HOME, called_on_thread=False, version='1.5.0', caller_name='urls')  # Cyberspect mod
 # debug ends
 init_exec_hooks()
 store_exec_hashes_at_first_run()
