@@ -15,7 +15,9 @@ from urllib.request import (
 logger = logging.getLogger(__name__)
 
 
-def install_jadx(mobsf_home, called_on_thread=True, version='1.5.0', caller_name=None):
+def install_jadx(
+    mobsf_home, called_on_thread=True, version='1.5.0', caller_name=None,
+):
     """Install JADX dynamically."""
     try:
         url = ('https://github.com/skylot/jadx/releases/download/'
@@ -25,7 +27,8 @@ def install_jadx(mobsf_home, called_on_thread=True, version='1.5.0', caller_name
         if called_on_thread:
             msg = f'DEBUG (install_jadx on thread) ==> JADX directory is {jadx_dir}'
         else:
-            msg = f'DEBUG (install_jadx called by {caller_name}) ==> JADX directory is {jadx_dir}'
+            msg = ('DEBUG (install_jadx called by '
+                   f'{caller_name}) ==> JADX directory is {jadx_dir}')
         logger.info(msg)
         # debug ends
         extract_dir = jadx_dir / f'jadx-{version}'
@@ -93,7 +96,7 @@ if __name__ == '__main__':
     # debug begins
     msg = f'DEBUG (main in tools_download) ==> sys.argv: {sys.argv[1]}'
     logger.info(msg)
-    install_jadx(sys.argv[1], called_on_thread=False, version='1.5.0', caller_name='main')
+    install_jadx(sys.argv[1], called_on_thread=False,
+                 version='1.5.0', caller_name='main')
     # debug ends
-    # uncomment next line
-    # install_jadx(sys.argv[1])
+    # call install_jadx and only pass (sys.argv[1])
