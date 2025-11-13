@@ -26,18 +26,6 @@ USE_HOME = True
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
 
-def inspect_folder(subject, folder):
-    msg = f'Inspecting {folder}'
-    logger.info(msg)
-    if os.path.exists(folder):
-        dir_contents = os.listdir(folder)
-        msg = f'Contents of {folder}: {dir_contents}'
-        logger.info(msg)
-    else:
-        msg = f'{subject} {folder} does not exist.'
-        logger.error(msg)
-
-
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Cyberspect addition
@@ -62,6 +50,24 @@ DOWNLOADED_TOOLS_DIR = os.path.join(BASE_DIR, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
 # debugging begins
+
+
+def inspect_folder(subject, folder):
+    if os.path.isdir(folder):
+        msg = f'Inspecting {folder}'
+        logger.info(msg)
+        if os.path.exists(folder):
+            dir_contents = os.listdir(folder)
+            msg = f'Contents of {folder}: {dir_contents}'
+            logger.info(msg)
+        else:
+            msg = f'{subject} {folder} does not exist.'
+            logger.error(msg)
+    else:
+        msg = f'{subject} {folder} is not a valid directory.'
+        logger.error(msg)
+
+
 msg = f'BASE_DIR: {BASE_DIR}'
 logger.info(msg)
 inspect_folder('BASE_DIR', BASE_DIR)
