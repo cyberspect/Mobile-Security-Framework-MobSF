@@ -423,8 +423,12 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
-urllib3.disable_warnings()
+urllib3.disable_warnings()  # Cyberspect mod
 utils.print_version()
-install_jadx(settings.MOBSF_HOME)
+# debug begins
+# uncomment this line
+#install_jadx(settings.MOBSF_HOME)  # uncomment this line
+install_jadx(settings.MOBSF_HOME, called_on_thread=False)  # Cyberspect mod
+# debug ends
 init_exec_hooks()
 store_exec_hashes_at_first_run()

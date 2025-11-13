@@ -49,61 +49,6 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 DOWNLOADED_TOOLS_DIR = os.path.join(BASE_DIR, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
-# debugging begins
-
-
-def inspect_folder(subject, folder):
-    if os.path.isdir(folder):
-        msg = f'Inspecting {folder}'
-        logger.info(msg)
-        if os.path.exists(folder):
-            dir_contents = os.listdir(folder)
-            msg = f'Contents of {folder}: {dir_contents}'
-            logger.info(msg)
-        else:
-            msg = f'{subject} {folder} does not exist.'
-            logger.error(msg)
-    else:
-        msg = f'{subject} {folder} is not a valid directory.'
-        logger.error(msg)
-
-
-msg = f'BASE_DIR: {BASE_DIR}'
-logger.info(msg)
-inspect_folder('BASE_DIR', BASE_DIR)
-msg = f'CYBERSPECT_BASE_DIR: {CYBERSPECT_BASE_DIR}'
-logger.info(msg)
-inspect_folder('CYBERSPECT_BASE_DIR', CYBERSPECT_BASE_DIR)
-msg = f'MOBSF_HOME: {MOBSF_HOME}'
-logger.info(msg)
-inspect_folder('MOBSF_HOME', MOBSF_HOME)
-msg = f'DWD_DIR: {DWD_DIR}'
-logger.info(msg)
-inspect_folder('DWD_DIR', DWD_DIR)
-msg = f'SCREEN_DIR: {SCREEN_DIR}'
-logger.info(msg)
-inspect_folder('SCREEN_DIR', SCREEN_DIR)
-msg = f'UPLD_DIR: {UPLD_DIR}'
-logger.info(msg)
-inspect_folder('UPLD_DIR', UPLD_DIR)
-msg = f'DB_DIR: {DB_DIR}'
-logger.info(msg)
-inspect_folder('DB_DIR', DB_DIR)
-msg = f'SIGNATURE_DIR: {SIGNATURE_DIR}'
-logger.info(msg)
-inspect_folder('SIGNATURE_DIR', SIGNATURE_DIR)
-msg = f'TOOLS_DIR: {TOOLS_DIR}'
-logger.info(msg)
-inspect_folder('TOOLS_DIR', TOOLS_DIR)
-msg = f'DOWNLOADED_TOOLS_DIR: {DOWNLOADED_TOOLS_DIR}'
-logger.info(msg)
-inspect_folder('DOWNLOADED_TOOLS_DIR', DOWNLOADED_TOOLS_DIR)
-msg = f'SECRET_FILE: {SECRET_FILE}'
-logger.info(msg)
-inspect_folder('SECRET_FILE', SECRET_FILE)
-mnt_dir = '/mnt/cyberspect/MobSF/tools/jadx/jadx-1.5.0/bin'
-inspect_folder('mnt_dir', mnt_dir)
-# debugging ends
 
 
 # ==========Load MobSF User Settings==========

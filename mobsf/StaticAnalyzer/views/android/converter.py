@@ -72,6 +72,10 @@ def dex_2_smali(checksum, app_dir, tools_dir):
 
 def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     """Run jadx."""
+    # debug begins
+    msg = f'DEBUG (converter) ==> dwd_tools_dir: {dwd_tools_dir}'
+    logger.info(msg)
+    # debug ends
     try:
         jadx_version = '1.5.0'
         jadx_path = f'jadx/jadx-{jadx_version}/bin/'

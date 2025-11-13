@@ -15,14 +15,24 @@ from urllib.request import (
 logger = logging.getLogger(__name__)
 
 
-def install_jadx(mobsf_home, version='1.5.0'):
+def install_jadx(mobsf_home, called_on_thread=True, version='1.5.0'):
     """Install JADX dynamically."""
     try:
         url = ('https://github.com/skylot/jadx/releases/download/'
                f'v{version}/jadx-{version}.zip')
         jadx_dir = Path(mobsf_home) / 'tools' / 'jadx'
+        # debug begins
+        if called_on_thread:
+            msg = f'DEBUG (install_jadx on thread) ==> JADX directory is {jadx_dir}'
+        else:
+            msg = f'DEBUG (install_jadx) ==> JADX directory is {jadx_dir}'
+        logger.info(msg)
+        # debug ends
         extract_dir = jadx_dir / f'jadx-{version}'
-
+        # debug begins
+        msg = f'DEBUG (install_jadx) ==> JADX extract directory is {extract_dir}'
+        logger.info(msg)
+        # debug ends
         if extract_dir.exists():
             logger.info('JADX is already installed at %s', extract_dir)
             return
@@ -80,4 +90,10 @@ def set_rwxr_xr_x_permission_recursively(directory_path):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    install_jadx(sys.argv[1])
+    # debug begins
+    msg = f'DEBUG (main in tools_download) ==> sys.argv: {sys.argv[1]}'
+    logger.info(msg)
+    install_jadx(sys.argv[1], called_on_thread=False)
+    # debug ends
+    # uncomment next line
+    # install_jadx(sys.argv[1])
