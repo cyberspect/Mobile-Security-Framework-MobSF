@@ -425,11 +425,6 @@ if settings.API_ONLY == '0':
 
 urllib3.disable_warnings()  # Cyberspect mod
 utils.print_version()
-# debug begins
-msg = f'DEBUG (before install) ==> MOBSF_HOME: {settings.MOBSF_HOME}'
-# remove all args except settings.MOBSF_HOME
-install_jadx(settings.MOBSF_HOME, called_on_thread=False,
-             version='1.5.0', caller_name='urls')  # Cyberspect mod
-# debug ends
+install_jadx(settings.MOBSF_HOME)  # Cyberspect mod
 init_exec_hooks()
 store_exec_hashes_at_first_run()

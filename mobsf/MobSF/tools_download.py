@@ -23,17 +23,9 @@ def install_jadx(
         url = ('https://github.com/skylot/jadx/releases/download/'
                f'v{version}/jadx-{version}.zip')
         jadx_dir = Path(mobsf_home) / 'tools' / 'jadx'
-        # debug begins
-        if called_on_thread:
-            msg = f'DEBUG (install_jadx on thread) ==> JADX directory is {jadx_dir}'
-        else:
-            msg = ('DEBUG (install_jadx called by '
-                   f'{caller_name}) ==> JADX directory is {jadx_dir}')
-        logger.info(msg)
-        # debug ends
         extract_dir = jadx_dir / f'jadx-{version}'
         # debug begins
-        msg = f'DEBUG (install_jadx) ==> JADX extract directory is {extract_dir}'
+        msg = f'DEBUG ==> JADX extract directory is {extract_dir}'
         logger.info(msg)
         # debug ends
         if extract_dir.exists():
@@ -93,10 +85,4 @@ def set_rwxr_xr_x_permission_recursively(directory_path):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    # debug begins
-    msg = f'DEBUG (main in tools_download) ==> sys.argv: {sys.argv[1]}'
-    logger.info(msg)
-    install_jadx(sys.argv[1], called_on_thread=False,
-                 version='1.5.0', caller_name='main')
-    # debug ends
-    # call install_jadx and only pass (sys.argv[1])
+    install_jadx(sys.argv[1])

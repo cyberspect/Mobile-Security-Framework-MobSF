@@ -32,11 +32,6 @@ BANNER = r"""
 
 def first_run(secret_file, base_dir, mobsf_home):
     # Based on https://gist.github.com/ndarville/3452907#file-secret-key-gen-py
-    # debug begins
-    msg = f'DEBUG (first_run) ==> BASE_DIR: {base_dir}'
-    logger.info(msg)
-    msg = f'DEBUG (first_run) => MOBSF_HOME: {mobsf_home}'
-    # debug ends
     if 'MOBSF_SECRET_KEY' in os.environ:
         secret_key = os.environ['MOBSF_SECRET_KEY']
     elif os.path.isfile(secret_file):
