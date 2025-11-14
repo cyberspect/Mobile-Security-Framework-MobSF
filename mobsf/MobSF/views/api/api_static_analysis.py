@@ -532,12 +532,12 @@ def scan(request_data):
         # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
         if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
             resp = static_analyzer_internal(request_data,
-                                   request_data['hash'],
-                                   True)
+                                            request_data['hash'],
+                                            True)
             if 'type' in resp:
                 resp = static_analyzer_ios_internal(request_data,
-                                           request_data['hash'],
-                                           True)
+                                                    request_data['hash'],
+                                                    True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:
@@ -545,8 +545,8 @@ def scan(request_data):
         # IPA
         elif scan_type in {'ipa', 'dylib', 'a'}:
             resp = static_analyzer_ios_internal(request_data,
-                                       request_data['hash'],
-                                       True)
+                                                request_data['hash'],
+                                                True)
             if 'error' in resp:
                 response = make_api_response(resp, 500)
             else:

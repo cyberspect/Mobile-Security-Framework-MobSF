@@ -25,34 +25,36 @@ USE_HOME = True
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
+
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Cyberspect addition
 # need to determine the base directory for Cyberspect relted files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
-MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
+MOBSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Download Directory
-DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
+DWD_DIR = os.path.join(MOBSF_HOME, 'downloads/')
 # Screenshot Directory
-SCREEN_DIR = os.path.join(MobSF_HOME, 'downloads/screen/')
+SCREEN_DIR = os.path.join(MOBSF_HOME, 'downloads/screen/')
 # Upload Directory
-UPLD_DIR = os.path.join(MobSF_HOME, 'uploads/')
+UPLD_DIR = os.path.join(MOBSF_HOME, 'uploads/')
 # Database Directory
-DB_DIR = os.path.join(MobSF_HOME, 'db.sqlite3')
+DB_DIR = os.path.join(MOBSF_HOME, 'db.sqlite3')
 # Signatures used by modules
-SIGNATURE_DIR = os.path.join(MobSF_HOME, 'signatures/')
+SIGNATURE_DIR = os.path.join(MOBSF_HOME, 'signatures/')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Downloaded Tools Directory
-DOWNLOADED_TOOLS_DIR = os.path.join(BASE_DIR, 'tools/')
+DOWNLOADED_TOOLS_DIR = os.path.join(MOBSF_HOME, 'tools/')
 # Secret File
-SECRET_FILE = os.path.join(MobSF_HOME, 'secret')
+SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
+
 
 # ==========Load MobSF User Settings==========
 try:
     if USE_HOME:
-        USER_CONFIG = os.path.join(MobSF_HOME, 'config.py')
+        USER_CONFIG = os.path.join(MOBSF_HOME, 'config.py')
         sett = load_source('user_settings', USER_CONFIG)
         locals().update(  # lgtm [py/modification-of-locals]
             {k: v for k, v in list(sett.__dict__.items())
@@ -65,7 +67,7 @@ except Exception:
     CONFIG_HOME = False
 
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
-SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
+SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MOBSF_HOME)
 
 # ==============3rd Party Tools (Always Available)=====================
 # These settings should be accessible regardless of CONFIG_HOME value
@@ -139,7 +141,7 @@ ANDROID_EXTS = (
     'aar',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
-WINDOWS_EXTS = () # ('appx',)
+WINDOWS_EXTS = ()  # ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
@@ -318,7 +320,7 @@ LOGGING = {
         'logfile': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(MobSF_HOME, 'debug.log'),
+            'filename': os.path.join(MOBSF_HOME, 'debug.log'),
             'formatter': 'standard',
         },
         'console': {
