@@ -62,6 +62,7 @@ config = None
 ##############################################################
 # Windows Support Functions
 
+
 @login_required
 def staticanalyzer_windows(request, checksum):
     response = staticanalyzer_windows_internal(request.GET, checksum)
@@ -165,7 +166,7 @@ def staticanalyzer_windows_internal(request, checksum, api=False):
                 context['virus_total'] = vt.get_result(
                     os.path.join(app_dic['app_dir'], checksum) + '.appx')
             context['template'] = \
-                'static_analysis/windows_binary_analysis.html'            
+                'static_analysis/windows_binary_analysis.html'
         return context
     except Exception as exception:
         msg = 'Error Performing Static Analysis'
