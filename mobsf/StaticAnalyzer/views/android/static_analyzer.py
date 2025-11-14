@@ -291,9 +291,6 @@ def static_analyzer_internal(request, checksum, api=False):
                     app_dic['app_dir'],
                     app_dic['tools_dir'])
                 tracker_res = tracker.get_trackers()
-                msg = ('DEBUG ==> Static Analysis is using'
-                       f' MOBSF_HOME: {settings.MOBSF_HOME}')
-                logger.info(msg)
                 apk_2_java(
                     checksum,
                     app_dic['app_path'],
