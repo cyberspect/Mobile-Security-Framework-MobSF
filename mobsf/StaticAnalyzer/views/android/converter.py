@@ -75,7 +75,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     try:
         jadx_version = '1.5.0'
         jadx_path = f'jadx/jadx-{jadx_version}/bin/'
-        msg = f'Decompiling APK to Java with jadx ({jadx_path})'
+        msg = f'Decompiling APK to Java with jadx ({dwd_tools_dir}{jadx_path})'
         logger.info(msg)
         append_scan_status(checksum, msg)
         args = []
@@ -95,7 +95,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             jadx = os.path.join(
                 dwd_tools_dir, f'{jadx_path}jadx')
         # debugging
-        msg = f'Resultant jadx executable path is {jadx}'
+        msg = f'DEBUG ==> Resultant jadx executable path is {jadx}'
         logger.info(msg)
         # Set execute permission, if JADX is not executable
         if not os.access(jadx, os.X_OK):

@@ -298,7 +298,7 @@ def static_analyzer_internal(request, checksum, api=False):
                     checksum,
                     app_dic['app_path'],
                     app_dic['app_dir'],
-                    settings.MOBSF_HOME)  # Cyberspect: was DOWNLOADED_TOOLS_DIR
+                    settings.DOWNLOADED_TOOLS_DIR)
                 dex_2_smali(
                     checksum,
                     app_dic['app_dir'],
