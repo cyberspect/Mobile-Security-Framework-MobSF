@@ -67,7 +67,7 @@ except Exception:
     CONFIG_HOME = False
 
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
-SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, DOWNLOADED_TOOLS_DIR)
+SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MOBSF_HOME)
 
 # ==============3rd Party Tools (Always Available)=====================
 # These settings should be accessible regardless of CONFIG_HOME value
