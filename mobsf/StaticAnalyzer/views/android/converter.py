@@ -72,30 +72,6 @@ def dex_2_smali(checksum, app_dir, tools_dir):
 
 def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     """Run jadx."""
-    # debug begins
-    msg = f'DEBUG ==> BASE_DIR = {settings.BASE_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> CYBERSPECT_BASE_DIR = {settings.CYBERSPECT_BASE_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> MOBSF_HOME = {settings.MOBSF_HOME}'
-    logger.info(msg)
-    msg = f'DEBUG ==> DWD_DIR = {settings.DWD_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> SCREEN_DIR = {settings.SCREEN_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> UPLD_DIR = {settings.UPLD_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> DB_DIR = {settings.DB_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> SIGNATURE_DIR = {settings.SIGNATURE_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> TOOLS_DIR = {settings.TOOLS_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG ==> DOWNLOADED_TOOLS_DIR = {settings.DOWNLOADED_TOOLS_DIR}'
-    logger.info(msg)
-    msg = f'DEBUG (converter) ==> dwd_tools_dir: {dwd_tools_dir}'
-    logger.info(msg)
-    # debug ends
     try:
         jadx_version = '1.5.0'
         jadx_path = f'jadx/jadx-{jadx_version}/bin/'
