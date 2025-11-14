@@ -87,13 +87,19 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
 
         if (len(settings.JADX_BINARY) > 0
                 and is_file_exists(settings.JADX_BINARY)):
+            msg = f'JADX_BINARY is {settings.JADX_BINARY}'
+            logger.info(msg)
             jadx = settings.JADX_BINARY
         elif platform.system() == 'Windows':
             jadx = os.path.join(
                 dwd_tools_dir, f'{jadx_path}jadx.bat')
+            msg = f'Windows jadx executable path is {jadx}'
+            logger.info(msg)
         else:
             jadx = os.path.join(
                 dwd_tools_dir, f'{jadx_path}jadx')
+            msg = f'Linux jadx executable path is {jadx}'
+            logger.info(msg)
         # Set execute permission, if JADX is not executable
         if not os.access(jadx, os.X_OK):
             os.chmod(jadx, stat.S_IEXEC)
