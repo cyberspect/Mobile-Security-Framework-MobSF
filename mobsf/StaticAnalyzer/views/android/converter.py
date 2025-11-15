@@ -75,7 +75,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     try:
         jadx_version = '1.5.0'
         jadx_path = f'jadx/jadx-{jadx_version}/bin/'
-        msg = 'Decompiling APK to Java with jadx'
+        msg = f'Decompiling APK to Java with jadx ({dwd_tools_dir}{jadx_path})'
         logger.info(msg)
         append_scan_status(checksum, msg)
         args = []
