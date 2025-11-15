@@ -107,6 +107,13 @@ def get_system_resources():
     total_ram = psutil.virtual_memory().total / (1024 ** 3)  # Convert bytes to GB
     return physical_cores, logical_processors, total_ram
 
+    secret_file = os.path.join(settings.MOBSF_HOME, 'secret')
+    if is_file_exists(secret_file):
+        try:
+            _api_key = open(secret_file).read().strip()
+            return gen_sha256_hash(_api_key)
+        except Exception:
+            logger.exception('Cannot Read API Key')
 
 def print_version():
     """Print MobSF Version."""
@@ -133,7 +140,7 @@ def print_version():
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
     # Cyberspect addition
-    logger.info('File storage: %s', settings.MobSF_HOME)
+    logger.info('File storage: %s', settings.MOBSF_HOME)
     logger.info('Administrators: %s', settings.ADMIN_USERS)
     # End Cyberspect addition
     cores, threads, ram = get_system_resources()

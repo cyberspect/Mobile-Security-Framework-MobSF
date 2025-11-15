@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 register.filter('relative_path', relative_path)
 
 
+
 @login_required
 def static_analyzer_ios(request, checksum):
     response = static_analyzer_ios_internal(request.GET, checksum)
@@ -294,7 +295,7 @@ def static_analyzer_ios_internal(request, checksum, api=False):
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
             context['is_admin'] = is_admin(request)  # Cyberspect
-            context['template'] = 'static_analysis/ios_source_analysis.html'            
+            context['template'] = 'static_analysis/ios_source_analysis.html'
             return context
         else:
             err = ('File Type not supported, '

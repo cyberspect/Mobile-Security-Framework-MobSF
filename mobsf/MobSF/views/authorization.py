@@ -73,7 +73,7 @@ def permission_required(perm):
 
 def has_permission(request, permission, api):
     """Check if user has permission."""
-    try:        
+    try:
         if settings.DISABLE_AUTHENTICATION == '1' or api:
             return True
         if request.user.is_staff:

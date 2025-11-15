@@ -25,13 +25,14 @@ USE_HOME = True
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
+
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Cyberspect addition
 # need to determine the base directory for Cyberspect relted files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
-MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
+MOBSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Download Directory
 DWD_DIR = os.path.join(MOBSF_HOME, 'downloads/')
 # Screenshot Directory
@@ -45,9 +46,10 @@ SIGNATURE_DIR = os.path.join(MOBSF_HOME, 'signatures/')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Downloaded Tools Directory
-DOWNLOADED_TOOLS_DIR = os.path.join(BASE_DIR, 'tools/')
+DOWNLOADED_TOOLS_DIR = os.path.join(MOBSF_HOME, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
+
 
 # ==========Load MobSF User Settings==========
 try:
@@ -136,6 +138,7 @@ ANDROID_EXTS = (
     'aab', 'so', 'jar', 'aar',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
+WINDOWS_EXTS = ()  # ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
