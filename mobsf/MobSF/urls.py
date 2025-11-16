@@ -425,6 +425,6 @@ if settings.API_ONLY == '0':
 
 urllib3.disable_warnings()  # Cyberspect mod
 utils.print_version()
-install_jadx(settings.MOBSF_HOME)  # Cyberspect mod
+install_jadx(settings.MOBSF_HOME) # Cyberspect mod
 init_exec_hooks()
 store_exec_hashes_at_first_run()
