@@ -4,11 +4,11 @@ import logging
 import os
 import platform
 
+from mobsf.MobSF.init import api_key
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import Client, TestCase
-
-from mobsf.MobSF.utils import api_key
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ def static_analysis_test(headers=None):
                 upl['hash'])
             if RESCAN:
                 scan_url = scan_url + '?rescan=1'
-            resp = http_client.get(scan_url, follow=True, **headers)
+            resp = http_client.get(scan_url, follow=True)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s', scan_url)
             else:
@@ -115,7 +115,7 @@ def static_analysis_test(headers=None):
         md5 = '82ab8b2193b3cfb1c737e3a786be363a'
         lib = 'apktool_out/lib/arm64-v8a/libdivajni.so'
         url = f'/scan_library/{md5}?library={lib}'
-        resp = http_client.get(url, follow=True, **headers)
+        resp = http_client.get(url, follow=True)
         assert (resp.status_code == 200)
         if resp.status_code == 200:
             logger.info('[OK] Library Analysis test passed successfully')
@@ -182,7 +182,7 @@ def static_analysis_test(headers=None):
 def api_test():
     """View for Handling REST API Test."""
     logger.info('\nRunning REST API Unit test')
-    auth = api_key()
+    auth = api_key(settings.MOBSF_HOME)
     try:
         uploaded = []
         logger.info('Running Test on Upload API')

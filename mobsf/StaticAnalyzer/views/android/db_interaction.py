@@ -16,7 +16,7 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
     process_suppression_manifest,
 )
-from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
+from mobsf.MobSF.cyberspect_utils import update_scan_timestamp  # Cyberspect mod
 
 """Module holding the functions for the db."""
 
@@ -84,17 +84,18 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'files': python_list(db_entry[0].FILES),
             'exported_count': python_dict(db_entry[0].EXPORTED_COUNT),
             'apkid': python_dict(db_entry[0].APKID),
-            'quark': python_list(db_entry[0].QUARK),
+            'behaviour': python_dict(db_entry[0].QUARK),
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
             'logs': get_scan_logs(db_entry[0].MD5),
+            'sbom': python_dict(db_entry[0].SBOM),
         }
         return context
     except Exception as exp:
         msg = 'Fetching data from the DB failed.'
         logger.exception(msg)
-        append_scan_status(db_entry[0].MD5, msg, repr(exp))
+        append_scan_status(db_entry[0].MD5, msg, repr(exp))  # Cyberspect addition
 
 
 def get_context_from_analysis(app_dic,
@@ -104,7 +105,6 @@ def get_context_from_analysis(app_dic,
                               cert_dic,
                               bin_anal,
                               apk_id,
-                              quark_report,
                               trackers) -> dict:
     """Get the context for APK/ZIP from analysis results."""
     try:
@@ -147,7 +147,7 @@ def get_context_from_analysis(app_dic,
             'manifest_analysis': manifest_analysis,
             'network_security': man_an_dic['network_security'],
             'binary_analysis': bin_anal,
-            'file_analysis': app_dic['certz'],
+            'file_analysis': app_dic['file_analysis'],
             'android_api': code_an_dic['api'],
             'code_analysis': code,
             'niap_analysis': code_an_dic['niap'],
@@ -160,11 +160,12 @@ def get_context_from_analysis(app_dic,
             'files': app_dic['files'],
             'exported_count': man_an_dic['exported_cnt'],
             'apkid': apk_id,
-            'quark': quark_report,
+            'behaviour': code_an_dic['behaviour'],
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
             'secrets': code_an_dic['secrets'],
             'logs': get_scan_logs(app_dic['md5']),
+            'sbom': code_an_dic['sbom'],
         }
         return context
     except Exception as exp:
@@ -181,7 +182,6 @@ def save_or_update(update_type,
                    cert_dic,
                    bin_anal,
                    apk_id,
-                   quark_report,
                    trackers) -> None:
     """Save/Update an APK/ZIP DB entry."""
     try:
@@ -213,7 +213,7 @@ def save_or_update(update_type,
             'MALWARE_PERMISSIONS': man_an_dic['malware_permissions'],
             'MANIFEST_ANALYSIS': man_an_dic['manifest_anal'],
             'BINARY_ANALYSIS': bin_anal,
-            'FILE_ANALYSIS': app_dic['certz'],
+            'FILE_ANALYSIS': app_dic['file_analysis'],
             'ANDROID_API': code_an_dic['api'],
             'CODE_ANALYSIS': code_an_dic['findings'],
             'NIAP_ANALYSIS': code_an_dic['niap'],
@@ -226,11 +226,12 @@ def save_or_update(update_type,
             'FILES': app_dic['files'],
             'EXPORTED_COUNT': man_an_dic['exported_cnt'],
             'APKID': apk_id,
-            'QUARK': quark_report,
+            'QUARK': code_an_dic['behaviour'],
             'TRACKERS': trackers,
             'PLAYSTORE_DETAILS': app_dic['playstore'],
             'NETWORK_SECURITY': man_an_dic['network_security'],
             'SECRETS': code_an_dic['secrets'],
+            'SBOM': code_an_dic['sbom'],
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerAndroid.objects.filter(
@@ -258,7 +259,7 @@ def save_or_update(update_type,
         append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
-def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
+def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, trk, rscn):
     # SAVE TO DB
     if rscn:
         msg = 'Updating Database...'
@@ -280,7 +281,6 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
         cert,
         elf,
         apkid,
-        quark,
         trk,
     )
     return get_context_from_analysis(
@@ -291,6 +291,5 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
         cert,
         elf,
         apkid,
-        quark,
         trk,
     )

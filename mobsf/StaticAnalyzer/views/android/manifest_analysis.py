@@ -60,6 +60,8 @@ ANDROID_API_LEVEL_MAP = {
     '32': '12L',
     '33': '13',
     '34': '14',
+    '35': '15',
+    '36': '16',
 }
 
 
@@ -81,25 +83,32 @@ def assetlinks_check(act_name, well_knowns):
 
 
 def _check_url(host, w_url):
+    """Check for the presence of Assetlinks URL."""
     try:
         iden = 'sha256_cert_fingerprints'
         proxies, verify = upstream_proxy('https')
         status = False
         status_code = 0
 
-        r = requests.get(w_url,
-                         allow_redirects=False,
-                         proxies=proxies,
-                         verify=verify,
-                         timeout=5)
+        urls = {w_url}
+        if w_url.startswith('http://'):
+            # Upgrade http to https
+            urls.add(f'https://{w_url[7:]}')
 
-        status_code = r.status_code
-        if status_code == 302:
-            logger.warning('302 Redirect detected, skipping check')
-            status = False
-        if (str(status_code).startswith('2') and iden in str(r.json())):
-            status = True
+        for url in urls:
+            r = requests.get(url,
+                             timeout=5,
+                             allow_redirects=False,
+                             proxies=proxies,
+                             verify=verify)
 
+            status_code = r.status_code
+            if (str(status_code).startswith('2') and iden in str(r.json())):
+                status = True
+                break
+        if status_code in (301, 302):
+            logger.warning('Status Code: [%d], Redirecting to '
+                           'a different URL, skipping check!', status_code)
         return {'url': w_url,
                 'host': host,
                 'status_code': status_code,
@@ -181,9 +190,14 @@ def get_browsable_activities(node, ns):
         logger.exception('Getting Browsable Activities')
 
 
-def manifest_analysis(checksum, mfxml, ns, man_data_dic, src_type, app_dir):
+def manifest_analysis(app_dic, man_data_dic):
     """Analyse manifest file."""
     # pylint: disable=C0301
+    checksum = app_dic['md5']
+    mfxml = app_dic['manifest_parsed_xml']
+    ns = app_dic['manifest_namespace']
+    src_type = app_dic['zipped']
+    app_dir = app_dic['app_dir']
     try:
         msg = 'Manifest Analysis Started'
         logger.info(msg)
@@ -754,12 +768,18 @@ def manifest_analysis(checksum, mfxml, ns, man_data_dic, src_type, app_dir):
                 dataport = data.getAttribute(f'{ns}:port')
                 ret_list.append(('sms_receiver_port_found', (dataport,), ()))
         # INTENTS
+        processed_priorities = {}
         for intent in intents:
             if intent.getAttribute(f'{ns}:priority').isdigit():
                 value = intent.getAttribute(f'{ns}:priority')
                 if int(value) > 100:
-                    ret_list.append(
-                        ('high_intent_priority_found', (value,), ()))
+                    if value not in processed_priorities:
+                        processed_priorities[value] = 1
+                    else:
+                        processed_priorities[value] += 1
+        for priority, count in processed_priorities.items():
+            ret_list.append(
+                ('high_intent_priority_found', (priority, count,), ()))
         # ACTIONS
         for action in actions:
             if action.getAttribute(f'{ns}:priority').isdigit():

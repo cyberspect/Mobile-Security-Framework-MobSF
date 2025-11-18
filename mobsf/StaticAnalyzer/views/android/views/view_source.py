@@ -73,8 +73,10 @@ def run(request, api=False):
             'type': syntax,
             'sqlite': {},
             'version': settings.MOBSF_VER,
+            #  Cyberspect additions begin
             'cversion': settings.CYBERSPECT_VER,
             'is_admin': is_admin(request),
+            #  Cyberspect additions end
         }
         template = 'general/view.html'
         if api:

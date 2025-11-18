@@ -38,6 +38,7 @@ from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
+    async_task,
     pdf,
     shared_func,
     suppression,
@@ -90,11 +91,14 @@ urlpatterns = [
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
     re_path(r'^api/v1/search$', api_sz.api_search),
+    # Cyberspect additions begin
     re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
     re_path(r'^api/v1/rescan$', api_sz.api_rescan),
     re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
     re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
+    # Cyberspect additions end
     re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
+    re_path(r'^api/v1/tasks$', api_sz.api_tasks),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download$', api_sz.api_download),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
@@ -200,6 +204,9 @@ if settings.API_ONLY == '0':
         re_path(r'^$', home.index, name='home'),
         re_path(r'^upload/$', home.Upload.as_view, name='upload'),
         re_path(r'^download/', home.download, name='download'),
+        re_path(fr'^download_binary/{checksum_regex}/$',
+                home.download_binary,
+                name='download_binary'),
         re_path(r'^download_scan/', home.download_apk, name='download_scan'),
         re_path(r'^generate_downloads/$',
                 home.generate_download,
@@ -226,7 +233,10 @@ if settings.API_ONLY == '0':
         re_path(r'^admin/create_api_key$', admin.create_api_key_post),
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
         re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
-
+        re_path(r'^robots.txt$', home.robots_txt),
+        re_path(r'^tasks$',
+                async_task.list_tasks,
+                name='list_tasks'),
         # Static Analysis
         # Android
         re_path(fr'^static_analyzer/{checksum_regex}/$',

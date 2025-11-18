@@ -196,194 +196,60 @@ progress::-webkit-progress-value {
 /* The snackbar - position it at the bottom and in the middle of the screen */
 #snackbar {
   visibility: hidden; /* Hidden by default. Visible on click */
-  min-width: 250px; /* Set a default minimum width */
+  width: 100%; /* Make the snackbar full width */
   background-color: #333; /* Black background color */
   color: #fff; /* White text color */
   text-align: center; /* Centered text */
-  border-radius: 2px; /* Rounded borders */
+  border-radius: 0; /* Remove rounded borders for full width */
   padding: 16px; /* Padding */
   z-index: 1; /* Add a z-index if needed */
-  left: 50%; /* Center the snackbar */
+  left: 0; /* Align to the left edge of the screen */
   bottom: 30px; /* 30px from the bottom */
+  position: fixed; /* Ensure it stays at the bottom of the viewport */
 }
 
-/* Show the snackbar when clicking on a button (class added with JavaScript) */
-#snackbar.show {
-  visibility: visible; /* Show the snackbar */
-  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
-  However, delay the fade out process for 2.5 seconds */
-  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+/* Alert bar class */
+.alert-bar {
+  position: fixed; /* Sticks to the bottom of the screen */
+  bottom: 0; /* Aligns to the bottom */
+  left: 0; /* Aligns to the left edge */
+  width: 100%; /* Spans the full width of the screen */
+  background-color: #00000021; /* Red background (customize as needed) */
+  color: #fff; /* White text color */
+  text-align: center; /* Centered text */
+  padding: 16px; /* Padding inside the bar */
+  font-size: 16px; /* Font size for the text */
+  z-index: 9999; /* Ensure it appears above other content */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow */
+  visibility: hidden; /* Hidden by default */
+  opacity: 0; /* Fully transparent */
+  transition: visibility 0s, opacity 0.5s ease-in-out; /* Smooth fade-in/out */
 }
 
-/* Animations to fade the snackbar in and out */
-
-
-@keyframes fadein {
-  from {bottom: 0; opacity: 0;}
-  to {bottom: 30px; opacity: 1;}
+/* Show the alert bar */
+.alert-bar.show {
+  visibility: visible; /* Make it visible */
+  opacity: 1; /* Fully opaque */
 }
 
-/* 
-@keyframes fadeout {
-  from {bottom: 30px; opacity: 1;}
-  to {bottom: 0; opacity: 0;}
-} */
+/* Optional: Keyframes for additional animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
 
-/* Snackbar ends */
+.alert-bar.slide-up {
+  animation: slideUp 0.5s ease-in-out;
+}
+/* Alert bar ends */
 
 /* Logo padding ^*/
 
 .pad {
   padding-right: 50px;
   padding-left: 50px;
-}
-
-/* Cyberspect starts here */
-.inner input[type=text], select {
-  width: 250px;
-  height: 35px;
-  margin-bottom: 15px;  
-}
-
-.inner input[type=checkbox] {
-  transform: scale(2);
-  margin-left: 5px;
-  margin-right: 10px;
-}
-
-/* Override default checkbox color */ 
-input[type=checkbox] {
-  accent-color: #4C4E52;
- }
-
-.error {
-  padding-left: 6px;
-  padding-right: 6px;
-  text-shadow: none;
-  background: #F7211D;
-}
-
-.editFields input {
-  width: 300px;
-}
-
-.editFields input[type=checkbox] {
-  margin-top: 10px;
-}
-
-.card-body {  
-  text-align: center;
-  margin: 0 auto; 
-  width: 700px;
-}
-
-.inner.cover {
-  color: #fff;
-  background-color: #127AF8;
-  padding-top: 20px;
-}
-
-.hidden {
-  display: none !important;
-}
-
-#upload_form {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-/* Adjust fields on home upload page */
-#upload-form > .form-control {
-  display:inline;
-  width: 100%;
-}
-
-/* Select2 overrides for home upload page */
-.select2-selection__rendered {
-  list-style: none;
-  padding: 0 .375rem .375rem;
-  margin-bottom: -.375rem;
-}
-
-.select2-selection__choice {
-  background-color: #4C4E52;
-  border: 1px solid #aaa;
-  border-color: #4C4E52;
-  border-radius: 4px;
-  cursor: default;
-  float: left;
-  margin-right: 5px;
-  color: #fff;
-  padding: 0 10px;
-  margin-top: .31rem;
-}
-
-.select2-selection__choice__remove {
-  color: rgba(255,255,255,.7);
-  float: right;
-  margin-left: 5px;
-  margin-right: -2px;
-  cursor: pointer;
-  font-weight: bold;
-  list-style: none;
-}
-
-.select2-selection--multiple {
-  background-color: #fff;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  min-height: calc(2.25rem + 2px);
-}
-
-.select2-search--inline {
-  float: left;
-}
-
-.select2-search__field {
-  box-sizing: border-box;
-  border: none;
-  font-size: 100%;
-  margin-top: 5px;
-  padding: 0;
-  background: transparent;
-  outline: 0;
-  box-shadow: none;
-}
-
-/* adds fixed height and scrolling feature
-to the multi select dropdown boxes */
-.select2-container--bootstrap4 .select2-results>.select2-results__options {
-  max-height: 144px;
-  overflow-y: auto;
-}
-
-.box-title {
-  padding-bottom: 15px;
-}
-
-.row,
-.section-title {
-  text-align: left;
-}
-
-#upload-form>.form-control {
-  display: inline;
-  width: 100%;
-}
-
-input[type=file] {
-  padding: 0.2rem 0.2rem;
-}
-
-.fa-info-circle {
-  padding-left: 8px;
-}
-
-.upload-form-hr {
-  padding-top: 5px;
-  padding-bottom: 5px;
-  margin: 0;
-
-/* Cyberspect ends here */
 }

@@ -28,6 +28,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
+import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
     StaticAnalyzerWindows,
@@ -45,11 +46,14 @@ from mobsf.StaticAnalyzer.views.windows.db_interaction import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    has_permission,
+)
 from mobsf.MobSF.cyberspect_utils import (
     is_admin,
-    update_scan_timestamp,
+    update_scan_timestamp,  # Cyberspect mod - use this not home's
 )
-import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 
 logger = logging.getLogger(__name__)
 # Only used when xmlrpc is used
@@ -75,15 +79,20 @@ def staticanalyzer_windows(request, checksum):
         return response
 
 
+@login_required
 def staticanalyzer_windows_internal(request, checksum, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
         logger.info('Windows Static Analysis Started')
-        rescan = (request.GET.get('rescan', 0) == '1')
-        if rescan:
-            logger.info('Performing rescan')
-        app_dic = {}
+        rescan = False
+        app_dic = {}  # Dict to store the binary attributes
+        if api:
+            re_scan = request.POST.get('re_scan', 0)
+        else:
+            re_scan = request.GET.get('rescan', 0)
+        if re_scan == '1':
+            rescan = True
         if not is_md5(checksum):
             return print_n_send_error_response(
                 request,
@@ -119,6 +128,11 @@ def staticanalyzer_windows_internal(request, checksum, api=False):
                 ' Fetching data from the DB...')
             context = get_context_from_db_entry(db_entry)
         else:
+            if not has_permission(request, Permissions.SCAN, api):
+                return print_n_send_error_response(
+                    request,
+                    'Permission Denied',
+                    False)
             append_scan_status(checksum, 'init')
             msg = 'Windows Binary Analysis Started'
             logger.info(msg)
@@ -161,13 +175,16 @@ def staticanalyzer_windows_internal(request, checksum, api=False):
                                                 xml_dic,
                                                 bin_an_dic)
             context['virus_total'] = None
-            if settings.VT_ENABLED:
-                vt = VirusTotal.VirusTotal(checksum)
-                context['virus_total'] = vt.get_result(
-                    os.path.join(app_dic['app_dir'], checksum) + '.appx')
-            context['template'] = \
-                'static_analysis/windows_binary_analysis.html'
-        return context
+        template = 'static_analysis/windows_binary_analysis.html'
+        context['virus_total'] = None
+        if settings.VT_ENABLED:
+            vt = VirusTotal.VirusTotal(checksum)
+            context['virus_total'] = vt.get_result(
+                os.path.join(app_dic['app_dir'], checksum) + '.appx')
+        if api:
+            return context
+        else:
+            return render(request, template, context)
     except Exception as exception:
         msg = 'Error Performing Static Analysis'
         logger.exception(msg)
