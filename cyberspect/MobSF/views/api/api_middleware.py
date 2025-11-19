@@ -82,11 +82,11 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         db_obj = ApiKeys.objects.filter(KEY_HASH=key_hash,
                                         REVOKED_DATE=None).first()
         if not db_obj:
-            logger.warning('API key is invalid or revoked: ' + key_hash)
+            logger.warning('API key is invalid or revoked: %s', key_hash)
             return make_api_response(
                 {'error': 'API key is invalid or revoked.'}, 403)
         if db_obj.EXPIRE_DATE <= utcnow():
-            logger.warning('API key has expired: ' + key_hash)
+            logger.warning('API key has expired: %s', key_hash)
             return make_api_response(
                 {'error': 'API key has expired.'}, 403)
 
@@ -102,8 +102,8 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             if view_func == api_sz.api_upload:
                 return
 
-        logger.warning('API key ' + key_hash + ' does not allow access to ' + 
-                       'requested functionality')
+        logger.warning('API key does not allow access to endpoint: %s',
+                       key_hash)
         return self.unauthorized(403)
 
     def get_api_key(self, meta):
