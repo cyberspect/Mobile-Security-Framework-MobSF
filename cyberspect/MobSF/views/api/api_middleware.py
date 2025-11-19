@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 import hashlib
+import logging
 
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
@@ -8,6 +9,8 @@ from mobsf.MobSF.cyberspect_utils import make_api_response, utcnow
 from mobsf.MobSF.utils import api_key
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
+
+logger = logging.getLogger(__name__)
 
 
 class RestApiAuthMiddleware(MiddlewareMixin):
@@ -79,9 +82,11 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         db_obj = ApiKeys.objects.filter(KEY_HASH=key_hash,
                                         REVOKED_DATE=None).first()
         if not db_obj:
+            logger.warning('API key is invalid or revoked: ' + key_hash)
             return make_api_response(
                 {'error': 'API key is invalid or revoked.'}, 403)
         if db_obj.EXPIRE_DATE <= utcnow():
+            logger.warning('API key has expired: ' + key_hash)
             return make_api_response(
                 {'error': 'API key has expired.'}, 403)
 
@@ -97,6 +102,8 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             if view_func == api_sz.api_upload:
                 return
 
+        logger.warning('API key ' + key_hash + ' does not allow access to ' + 
+                       'requested functionality')
         return self.unauthorized(403)
 
     def get_api_key(self, meta):
