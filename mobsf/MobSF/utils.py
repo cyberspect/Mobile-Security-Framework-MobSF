@@ -18,7 +18,6 @@ import subprocess
 import stat
 import socket
 import sqlite3
-import time
 import unicodedata
 import threading
 from urllib.parse import urlparse
