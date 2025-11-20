@@ -453,13 +453,11 @@ def check_basic_env():
         import http_tools  # noqa F401
     except ImportError:
         logger.exception('httptools not installed!')
-        time.sleep(1)
         os.kill(os.getpid(), signal.SIGTERM)
     try:
         import lxml  # noqa F401
     except ImportError:
         logger.exception('lxml is not installed!')
-        time.sleep(1)
         os.kill(os.getpid(), signal.SIGTERM)        
     if not is_file_exists(find_java_binary()):
         logger.error(
@@ -473,8 +471,8 @@ def check_basic_env():
                     '\nJAVA_DIRECTORY = "C:/Program Files/'
                     'Java/jdk1.7.0_17/bin/"'
                     '\nJAVA_DIRECTORY = "/usr/bin/"')
-        time.sleep(1)
         os.kill(os.getpid(), signal.SIGTERM)
+    logger.info('MobSF Basic Environment Check Passed')
 
 
 def update_local_db(db_name, url, local_file):
