@@ -1,3 +1,5 @@
+import logging
+
 import urllib3
 
 from django.urls import re_path
@@ -55,6 +57,7 @@ from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
+logger = logging.getLogger(__name__)
 bundle_id_regex = r'(?P<bundle_id>([a-zA-Z0-9]{1}[\w.-]{1,255}))$'
 checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
@@ -426,5 +429,7 @@ if settings.API_ONLY == '0':
 urllib3.disable_warnings()  # Cyberspect mod
 utils.print_version()
 install_jadx(settings.MOBSF_HOME) # Cyberspect mod
+logger.info('init_exec_hooks and store_exec_hashes_at_first_run')
 init_exec_hooks()
 store_exec_hashes_at_first_run()
+logger.info('Startup complete for urls.py')
