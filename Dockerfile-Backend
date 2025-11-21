@@ -84,6 +84,7 @@ RUN \
 # Copy source code
 WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 COPY . .
+RUN chmod +x /home/mobsf/Mobile-Security-Framework-MobSF/scripts/background_tasks.sh
 
 # Create mobsf user
 RUN groupadd --gid $USER_ID $MOBSF_USER && \
