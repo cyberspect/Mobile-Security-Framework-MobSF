@@ -66,8 +66,20 @@ def firebase_analysis(checksum, code_an_dic):
         if 'firebaseio.com' not in url:
             continue
         returl, is_open = open_firebase(checksum, url)
+        logger.info('Checking Firebase database at %s', returl)
         if is_open:
             item = FIREBASE_FINDINGS['firebase_db_open']
+            logger.debug('DEBUG: returl type=%s, value=%r', type(returl).__name__, returl)
+            logger.debug('DEBUG: item description template=%r', item['description'])
+            logger.debug('DEBUG: returl contains %% chars: %s', '%' in str(returl) if returl else False)
+            try:
+                formatted_desc = item['description'] % returl
+                logger.info('Item description: %s', formatted_desc)
+            except TypeError as e:
+                logger.error('String formatting failed: %s', e)
+                logger.error('Template: %r', item['description'])
+                logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
+                raise
             item['description'] = item['description'] % returl
             findings.append(item)
         else:
