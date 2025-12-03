@@ -67,42 +67,25 @@ def firebase_analysis(checksum, code_an_dic):
             continue
         returl, is_open = open_firebase(checksum, url)
         if returl is None:
-            logger.error('DEBUG: returl is None - open_firebase likely failed')
-            logger.error('DEBUG: Original URL was: %s', url)
             # Use original URL as fallback
             returl = url
-        logger.info('Checking Firebase database at %s', url)
         if is_open:
-            logger.info('Firebase database at %s is open', returl)
             try:
                 item = FIREBASE_FINDINGS['firebase_db_open']
-                logger.debug('DEBUG: returl type=%s, value=%r',
-                             type(returl).__name__, returl)
-                logger.debug('DEBUG: returl contains %% chars: %s',
-                             '%' in str(returl) if returl else False)
-                logger.debug('DEBUG: item description template=%r', item['description'])
                 item['description'] = item['description'] % returl
-                logger.debug('DEBUG: item description template=%r', item['description'])
                 findings.append(item)
             except TypeError:
-                logger.exception('String formatting failed')
+                logger.exception('String formatting failed on firebase_db_open')
                 logger.error('Template: %r', item['description'])
                 logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
                 raise
         else:
-            logger.info('Firebase database at %s is NOT open', url)
             try:
                 item = FIREBASE_FINDINGS['firebase_db_exists']
-                logger.debug('DEBUG: returl type=%s, value=%r',
-                             type(returl).__name__, returl)
-                logger.debug('DEBUG: returl contains %% chars: %s',
-                             '%' in str(returl) if returl else False)
-                logger.debug('DEBUG: item description template=%r', item['description'])
                 item['description'] = item['description'] % returl
-                logger.debug('DEBUG: item description template=%r', item['description'])
                 findings.append(item)
             except TypeError:
-                logger.exception('String formatting failed')
+                logger.exception('String formatting failed on firebase_db_exists')
                 logger.error('Template: %r', item['description'])
                 logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
                 raise
@@ -117,23 +100,26 @@ def firebase_analysis(checksum, code_an_dic):
 def open_firebase(checksum, url):
     # Detect Open Firebase Database
     try:
-        invalid = 'Invalid Firebase URL'
         if not valid_host(url):
-            logger.warning(invalid)
+            logger.warning('Invalid Host: %s', url)
             return url, False
         purl = urlparse(url)
-        if not purl.netloc.endswith('firebaseio.com'):
-            logger.warning(invalid)
+        if not purl.netloc.lower().endswith('.firebaseio.com'):
+            logger.warning('Invalid Firebase URL')
             return url, False
-        base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
+        base_url = f'{purl.scheme}://{purl.netloc}/.json'
         proxies, verify = upstream_proxy('https')
         headers = {
             'User-Agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)'
                            ' AppleWebKit/537.36 (KHTML, like Gecko) '
                            'Chrome/39.0.2171.95 Safari/537.36')}
-        resp = requests.get(base_url, headers=headers,
-                            proxies=proxies, verify=verify,
-                            allow_redirects=False)
+        resp = requests.get(
+            base_url,
+            timeout=5,
+            headers=headers,
+            proxies=proxies,
+            verify=verify,
+            allow_redirects=False)
         if resp.status_code == 200:
             return base_url, True
     except Exception as exp:
