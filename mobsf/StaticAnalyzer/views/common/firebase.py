@@ -66,6 +66,11 @@ def firebase_analysis(checksum, code_an_dic):
         if 'firebaseio.com' not in url:
             continue
         returl, is_open = open_firebase(checksum, url)
+        if returl is None:
+            logger.error('DEBUG: returl is None - open_firebase likely failed')
+            logger.error('DEBUG: Original URL was: %s', url)
+            # Use original URL as fallback
+            returl = url
         logger.info('Checking Firebase database at %s', url)
         if is_open:
             logger.info('Firebase database at %s is open', returl)
