@@ -66,8 +66,9 @@ def firebase_analysis(checksum, code_an_dic):
         if 'firebaseio.com' not in url:
             continue
         returl, is_open = open_firebase(checksum, url)
-        logger.info('Checking Firebase database at %s', returl)
+        logger.info('Checking Firebase database at %s', url)
         if is_open:
+            logger.info('Firebase database at %s is open', returl)
             item = FIREBASE_FINDINGS['firebase_db_open']
             logger.debug('DEBUG: returl type=%s, value=%r',
                          type(returl).__name__, returl)
@@ -75,20 +76,29 @@ def firebase_analysis(checksum, code_an_dic):
             logger.debug('DEBUG: returl contains %% chars: %s',
                          '%' in str(returl) if returl else False)
             try:
-                formatted_desc = item['description'] % returl
-                logger.info('Item description: %s', formatted_desc)
-            except TypeError as e:
-                exmsg = str(e)
-                logger.error('String formatting failed: %s', exmsg)
+                item['description'] = item['description'] % returl
+                findings.append(item)
+            except TypeError:
+                logger.exception('String formatting failed')
                 logger.error('Template: %r', item['description'])
                 logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
                 raise
-            item['description'] = item['description'] % returl
-            findings.append(item)
         else:
+            logger.info('Firebase database at %s is NOT open', url)
             item = FIREBASE_FINDINGS['firebase_db_exists']
-            item['description'] = item['description'] % returl
-            findings.append(item)
+            logger.debug('DEBUG: returl type=%s, value=%r',
+                         type(returl).__name__, returl)
+            logger.debug('DEBUG: item description template=%r', item['description'])
+            logger.debug('DEBUG: returl contains %% chars: %s',
+                         '%' in str(returl) if returl else False)
+            try:
+                item['description'] = item['description'] % returl
+                findings.append(item)
+            except TypeError:
+                logger.exception('String formatting failed')
+                logger.error('Template: %r', item['description'])
+                logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
+                raise
     # Check for Firebase Remote Config
     firebase_creds = code_an_dic.get('firebase_creds')
     finds = firebase_remote_config(checksum, firebase_creds)
