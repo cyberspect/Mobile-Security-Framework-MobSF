@@ -34,17 +34,6 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             request.META['role'] = 'FULL_ACCESS'
             return None
 
-        # Skip middleware for health check
-        if request.path == '/health':
-            request.META['email'] = ''
-            request.META['role'] = ''
-            return None
-
-        # Check restricted endpoint AFTER test bypass
-        if self.restricted_endpoint(request):
-            return make_api_response(
-                {'error': 'Access Denied'}, 403)
-
         request.META['email'] = ''
         request.META['role'] = ''
 
