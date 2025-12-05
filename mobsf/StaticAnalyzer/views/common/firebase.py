@@ -66,14 +66,29 @@ def firebase_analysis(checksum, code_an_dic):
         if 'firebaseio.com' not in url:
             continue
         returl, is_open = open_firebase(checksum, url)
+        if returl is None:
+            # Use original URL as fallback
+            returl = url
         if is_open:
-            item = FIREBASE_FINDINGS['firebase_db_open']
-            item['description'] = item['description'] % returl
-            findings.append(item)
+            try:
+                item = FIREBASE_FINDINGS['firebase_db_open'].copy()
+                item['description'] = item['description'] % returl
+                findings.append(item)
+            except TypeError:
+                logger.exception('String formatting failed on firebase_db_open')
+                logger.error('Template: %r', item['description'])
+                logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
+                raise
         else:
-            item = FIREBASE_FINDINGS['firebase_db_exists']
-            item['description'] = item['description'] % returl
-            findings.append(item)
+            try:
+                item = FIREBASE_FINDINGS['firebase_db_exists'].copy()
+                item['description'] = item['description'] % returl
+                findings.append(item)
+            except TypeError:
+                logger.exception('String formatting failed on firebase_db_exists').copy()
+                logger.error('Template: %r', item['description'])
+                logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
+                raise
     # Check for Firebase Remote Config
     firebase_creds = code_an_dic.get('firebase_creds')
     finds = firebase_remote_config(checksum, firebase_creds)
@@ -85,23 +100,26 @@ def firebase_analysis(checksum, code_an_dic):
 def open_firebase(checksum, url):
     # Detect Open Firebase Database
     try:
-        invalid = 'Invalid Firebase URL'
         if not valid_host(url):
-            logger.warning(invalid)
+            logger.warning('Invalid Host: %s', url)
             return url, False
         purl = urlparse(url)
-        if not purl.netloc.endswith('firebaseio.com'):
-            logger.warning(invalid)
+        if not purl.netloc.lower().endswith('.firebaseio.com'):
+            logger.warning('Invalid Firebase URL')
             return url, False
-        base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
+        base_url = f'{purl.scheme}://{purl.netloc}/.json'
         proxies, verify = upstream_proxy('https')
         headers = {
             'User-Agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)'
                            ' AppleWebKit/537.36 (KHTML, like Gecko) '
                            'Chrome/39.0.2171.95 Safari/537.36')}
-        resp = requests.get(base_url, headers=headers,
-                            proxies=proxies, verify=verify,
-                            allow_redirects=False)
+        resp = requests.get(
+            base_url,
+            timeout=5,
+            headers=headers,
+            proxies=proxies,
+            verify=verify,
+            allow_redirects=False)
         if resp.status_code == 200:
             return base_url, True
     except Exception as exp:
@@ -152,15 +170,15 @@ def firebase_remote_config(checksum, creds):
         if response.status_code == 200:
             resp = response.json()
             if resp.get('state') == 'NO_TEMPLATE':
-                item = FIREBASE_FINDINGS['firebase_remote_config_disabled']
+                item = FIREBASE_FINDINGS['firebase_remote_config_disabled'].copy()
                 item['description'] = item['description'] % (url, resp)
                 findings.append(item)
             else:
-                item = FIREBASE_FINDINGS['firebase_remote_config_enabled']
+                item = FIREBASE_FINDINGS['firebase_remote_config_enabled'].copy()
                 item['description'] = item['description'] % (url, resp)
                 findings.append(item)
         else:
-            item = FIREBASE_FINDINGS['firebase_remote_config_disabled']
+            item = FIREBASE_FINDINGS['firebase_remote_config_disabled'].copy()
             response_msg = f'The response code is {response.status_code}'
             item['description'] = item['description'] % (url, response_msg)
             findings.append(item)

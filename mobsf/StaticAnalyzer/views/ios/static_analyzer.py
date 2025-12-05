@@ -141,6 +141,28 @@ def static_analyzer_ios_internal(request, checksum, api=False):
             ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
+
+                # Ensure virus_total is always in context
+                if context is None:
+                    logger.error('Context is None! Returning error response')
+                    return print_n_send_error_response(
+                        request,
+                        'Database retrieval failed',
+                        api)
+
+                if 'virus_total' not in context:
+                    context['virus_total'] = None
+
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal(checksum)
+                    context['virus_total'] = vt.get_result(
+                        context['app_info']['app_path'])
+                context['average_cvss'] = get_avg_cvss(
+                    context['binary_analysis'])
+                context['appsec'] = get_ios_dashboard(context, True)
+                context['is_admin'] = is_admin(request)
+                context['template'] = 'static_analysis/ios_binary_analysis.html'
+                return context
             else:
                 append_scan_status(checksum, 'init')
                 msg = 'iOS Binary (IPA) Analysis Started'
@@ -238,7 +260,11 @@ def static_analyzer_ios_internal(request, checksum, api=False):
                     bin_dict,
                     all_files,
                     rescan)
-                context['virus_total'] = None
+
+                # Ensure virus_total is always in context
+                if 'virus_total' not in context:
+                    context['virus_total'] = None
+
                 if settings.VT_ENABLED:
                     vt = VirusTotal.VirusTotal(checksum)
                     context['virus_total'] = vt.get_result(
@@ -258,6 +284,20 @@ def static_analyzer_ios_internal(request, checksum, api=False):
                 MD5=checksum)
             if ios_zip_db.exists() and not rescan:
                 context = get_context_from_db_entry(ios_zip_db)
+
+                # Ensure virus_total is always in context
+                if 'virus_total' not in context:
+                    context['virus_total'] = None
+
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal(checksum)
+                    context['virus_total'] = vt.get_result(
+                        context['app_info']['app_path'])
+                context['appsec'] = get_ios_dashboard(context, True)
+                context['average_cvss'] = get_avg_cvss(context['binary_analysis'])
+                context['is_admin'] = is_admin(request)
+                context['template'] = 'static_analysis/ios_source_analysis.html'
+                return context
             else:
                 logger.info('iOS Source Code Analysis Started')
                 app_dict['app_file'] = app_dict[
@@ -326,12 +366,21 @@ def static_analyzer_ios_internal(request, checksum, api=False):
                     fake_bin_dict,
                     all_files,
                     rescan)
-            context['appsec'] = get_ios_dashboard(context, True)
-            context['average_cvss'] = get_avg_cvss(
-                context['code_analysis'])
-            context['is_admin'] = is_admin(request)  # Cyberspect
-            context['template'] = 'static_analysis/ios_source_analysis.html'
-            return context
+
+                # Ensure virus_total is always in context
+                if 'virus_total' not in context:
+                    context['virus_total'] = None
+
+                context['appsec'] = get_ios_dashboard(context, True)
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal(checksum)
+                    context['virus_total'] = vt.get_result(
+                        app_dict['app_path'])
+                context['average_cvss'] = get_avg_cvss(
+                    context['binary_analysis'])
+                context['is_admin'] = is_admin(request)
+                context['template'] = 'static_analysis/ios_source_analysis.html'
+                return context
         else:
             err = ('File Type not supported, '
                    'Only IPA, A, DYLIB and ZIP are supported')
