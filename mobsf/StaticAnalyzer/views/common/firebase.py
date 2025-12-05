@@ -71,7 +71,7 @@ def firebase_analysis(checksum, code_an_dic):
             returl = url
         if is_open:
             try:
-                item = FIREBASE_FINDINGS['firebase_db_open']
+                item = FIREBASE_FINDINGS['firebase_db_open'].copy()
                 item['description'] = item['description'] % returl
                 findings.append(item)
             except TypeError:
@@ -81,11 +81,11 @@ def firebase_analysis(checksum, code_an_dic):
                 raise
         else:
             try:
-                item = FIREBASE_FINDINGS['firebase_db_exists']
+                item = FIREBASE_FINDINGS['firebase_db_exists'].copy()
                 item['description'] = item['description'] % returl
                 findings.append(item)
             except TypeError:
-                logger.exception('String formatting failed on firebase_db_exists')
+                logger.exception('String formatting failed on firebase_db_exists').copy()
                 logger.error('Template: %r', item['description'])
                 logger.error('Argument: %r (type: %s)', returl, type(returl).__name__)
                 raise
@@ -170,15 +170,15 @@ def firebase_remote_config(checksum, creds):
         if response.status_code == 200:
             resp = response.json()
             if resp.get('state') == 'NO_TEMPLATE':
-                item = FIREBASE_FINDINGS['firebase_remote_config_disabled']
+                item = FIREBASE_FINDINGS['firebase_remote_config_disabled'].copy()
                 item['description'] = item['description'] % (url, resp)
                 findings.append(item)
             else:
-                item = FIREBASE_FINDINGS['firebase_remote_config_enabled']
+                item = FIREBASE_FINDINGS['firebase_remote_config_enabled'].copy()
                 item['description'] = item['description'] % (url, resp)
                 findings.append(item)
         else:
-            item = FIREBASE_FINDINGS['firebase_remote_config_disabled']
+            item = FIREBASE_FINDINGS['firebase_remote_config_disabled'].copy()
             response_msg = f'The response code is {response.status_code}'
             item['description'] = item['description'] % (url, response_msg)
             findings.append(item)
