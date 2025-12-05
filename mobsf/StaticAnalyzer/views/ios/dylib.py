@@ -61,6 +61,21 @@ def dylib_analysis(request, app_dict, rescan, api):
         MD5=checksum)
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
+
+        # Ensure virus_total is always in context
+        if 'virus_total' not in context:
+            context['virus_total'] = None
+
+        if settings.VT_ENABLED:
+            vt = VirusTotal.VirusTotal(checksum)
+            context['virus_total'] = vt.get_result(
+                context['app_info']['app_path'])
+        context['appsec'] = {}
+        context['average_cvss'] = None
+        template = 'static_analysis/ios_binary_analysis.html'
+        if api:
+            return context
+        return render(request, template, context)
     else:
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
@@ -150,7 +165,7 @@ def dylib_analysis(request, app_dict, rescan, api):
         code_dict['code_anal'] = {}
         code_dict['firebase'] = firebase_analysis(
             checksum,
-            code_dict)
+            code_dict['domains'])
         code_dict['trackers'] = trackers
         context = save_get_ctx(
             app_dict,
@@ -159,13 +174,20 @@ def dylib_analysis(request, app_dict, rescan, api):
             bin_dict,
             all_files,
             rescan)
-    context['virus_total'] = None
+
+    # Ensure virus_total is always in context
+    if 'virus_total' not in context:
+        context['virus_total'] = None
+
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
         context['virus_total'] = vt.get_result(
             app_dict['app_path'])
-    context['appsec'] = {}
-    context['average_cvss'] = None
+
+    if 'appsec' not in context:
+        context['appsec'] = {}
+    if 'average_cvss' not in context:
+        context['average_cvss'] = None
     template = 'static_analysis/ios_binary_analysis.html'
     if api:
         return context
