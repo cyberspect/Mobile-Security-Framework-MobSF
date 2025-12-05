@@ -144,7 +144,7 @@ def static_analyzer_ios_internal(request, checksum, api=False):
 
                 # Ensure virus_total is always in context
                 if context is None:
-                    logger.error("Context is None! Returning error response")
+                    logger.error('Context is None! Returning error response')
                     return print_n_send_error_response(
                         request,
                         'Database retrieval failed',
