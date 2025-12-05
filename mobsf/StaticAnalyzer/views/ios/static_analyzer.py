@@ -141,6 +141,7 @@ def static_analyzer_ios_internal(request, checksum, api=False):
             ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
+
                 # Ensure virus_total is always in context
                 if context is None:
                     logger.error("Context is None! Returning error response")
