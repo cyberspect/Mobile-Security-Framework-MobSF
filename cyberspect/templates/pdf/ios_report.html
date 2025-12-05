@@ -545,7 +545,7 @@
             <td><b>{{dy.stack_canary.has_canary}}</b>
                 <br/>
                 <span class="{% if dy.stack_canary.severity == 'high' %}danger{% elif dy.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.stack_canary.severity}}</span><br/>
-                <br/>{{dy.stack_canary.description}}</td>
+              <br/>{{dy.stack_canary.description}}</td>
             <td><b>{{dy.arc.has_arc}}</b>
               <br/>
               <span class="{% if dy.arc.severity == 'high' %}danger{% elif dy.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.arc.severity}}</span><br/>
@@ -824,8 +824,7 @@
                   </tbody>
                   </table>
       {% endif %}
-    {% endif %}
-      {% if domains  %}
+    {% if domains  %}
 
       <h2><i class="fa fa-exclamation"></i> OFAC SANCTIONED COUNTRIES</h2>
       <p>This app may communicate with the following OFAC sanctioned list of countries.</p>
