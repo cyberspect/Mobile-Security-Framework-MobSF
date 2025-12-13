@@ -24,8 +24,6 @@ from mobsf.MobSF.security import (
 
 from django_ratelimit.decorators import ratelimit
 
-from cyberspect.utils import is_admin
-
 
 def login_required(func):
     """Login required decorator."""

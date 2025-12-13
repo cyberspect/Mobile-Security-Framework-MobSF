@@ -1,8 +1,6 @@
 """Module holding the functions for the db."""
 import logging
 
-from django.conf import settings
-
 from mobsf.MobSF.utils import (
     append_scan_status,
     get_scan_logs,

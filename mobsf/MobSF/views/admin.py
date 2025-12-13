@@ -8,7 +8,6 @@ import datetime
 import json
 import re
 
-from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse

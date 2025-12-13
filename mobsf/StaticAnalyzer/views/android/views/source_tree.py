@@ -22,10 +22,6 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
-from cyberspect.utils import (
-    is_admin,
-)
-
 logger = logging.getLogger(__name__)
 
 

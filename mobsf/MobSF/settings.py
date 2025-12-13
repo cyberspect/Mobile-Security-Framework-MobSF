@@ -17,6 +17,7 @@ from mobsf.MobSF.init import (
 )
 
 logger = logging.getLogger(__name__)
+
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -420,6 +421,7 @@ if not CONFIG_HOME:
     # Common third party classes/paths that will be skipped
     # during static analysis
     import os
+
     SKIP_CLASS_PATH = {
         'com/google/',
         'androidx',
