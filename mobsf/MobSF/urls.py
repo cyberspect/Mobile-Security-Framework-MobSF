@@ -56,6 +56,8 @@ from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
+from cyberspect.MobSF.views.api import api_static_analysis as cs_api_sz
+
 bundle_id_regex = r'(?P<bundle_id>([a-zA-Z0-9]{1}[\w.-]{1,255}))$'
 checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
@@ -92,21 +94,21 @@ urlpatterns = [
     re_path(r'^api/v1/scan$', api_sz.api_scan),
     re_path(r'^api/v1/search$', api_sz.api_search),
     # Cyberspect additions begin
-    re_path(r'^api/v1/async_scan$', api_sz.api_async_scan),
-    re_path(r'^api/v1/rescan$', api_sz.api_rescan),
-    re_path(r'^api/v1/update_scan$', api_sz.api_update_scan),
-    re_path(r'^api/v1/scan_metadata$', api_sz.api_scan_metadata),
+    re_path(r'^api/v1/async_scan$', cs_api_sz.api_async_scan),
+    re_path(r'^api/v1/rescan$', cs_api_sz.api_rescan),
+    re_path(r'^api/v1/update_scan$', cs_api_sz.api_update_scan),
+    re_path(r'^api/v1/scan_metadata$', cs_api_sz.api_scan_metadata),
     # Cyberspect additions end
     re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
     re_path(r'^api/v1/tasks$', api_sz.api_tasks),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
-    re_path(r'^api/v1/download$', api_sz.api_download),
+    re_path(r'^api/v1/download$', cs_api_sz.api_download),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
     re_path(r'^api/v1/view_source$', api_sz.api_view_source,
             name='api_view_source'),
     re_path(r'^api/v1/scans$', api_sz.api_recent_scans),
-    re_path(r'^api/v1/release_scans$', api_sz.api_release_scans),
+    re_path(r'^api/v1/release_scans$', cs_api_sz.api_release_scans),
     re_path(r'^api/v1/compare$', api_sz.api_compare),
     re_path(r'^api/v1/scorecard$', api_sz.api_scorecard),
     # Static Suppression
@@ -114,12 +116,12 @@ urlpatterns = [
     re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
     re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
-    re_path(r'^api/v1/cyberspect_scan$', api_sz.api_cyberspect_get_scan),
-    re_path(r'^api/v1/cyberspect_scans$', api_sz.api_cyberspect_recent_scans),
+    re_path(r'^api/v1/cyberspect_scan$', cs_api_sz.api_cyberspect_get_scan),
+    re_path(r'^api/v1/cyberspect_scans$', cs_api_sz.api_cyberspect_recent_scans),
     re_path(r'^api/v1/cyberspect_completedscans$',
-            api_sz.api_cyberspect_completed_scans),
+            cs_api_sz.api_cyberspect_completed_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
-            api_sz.api_update_cyberspect_scan),
+            cs_api_sz.api_update_cyberspect_scan),
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),

@@ -8,20 +8,22 @@ from mobsf.MobSF.utils import api_key
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
 
+from cyberspect.MobSF.views.api import api_static_analysis as cs_api_sz
+from cyberspect.utils import make_api_response, utcnow
 
 
 class RestApiAuthMiddleware(MiddlewareMixin):
     """Middleware for REST API."""
 
-    readonly_funcs = [api_sz.api_upload, api_sz.api_scan_metadata,
-                      api_sz.api_scan, api_sz.api_async_scan,
-                      api_sz.api_rescan, api_sz.api_pdf_report,
+    readonly_funcs = [api_sz.api_upload, cs_api_sz.api_scan_metadata,
+                      api_sz.api_scan, cs_api_sz.api_async_scan,
+                      cs_api_sz.api_rescan, api_sz.api_pdf_report,
                       api_sz.api_json_report, api_sz.api_view_source,
-                      api_sz.api_recent_scans, api_sz.api_release_scans,
+                      api_sz.api_recent_scans, cs_api_sz.api_release_scans,
                       api_sz.api_compare, api_sz.api_scorecard,
-                      api_sz.api_cyberspect_get_scan,
-                      api_sz.api_cyberspect_recent_scans,
-                      api_sz.api_cyberspect_completed_scans]
+                      cs_api_sz.api_cyberspect_get_scan,
+                      cs_api_sz.api_cyberspect_recent_scans,
+                      cs_api_sz.api_cyberspect_completed_scans]
 
     def process_request(self, request):
         """Process API Request."""
