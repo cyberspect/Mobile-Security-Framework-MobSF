@@ -76,8 +76,6 @@ def view_file(request, api=False):
             'data': dat,
             'sqlite': sql_dump,
             'type': rtyp,
-            'version': settings.MOBSF_VER,
-            'cversion': settings.CYBERSPECT_VER,
         }
         template = 'general/view.html'
         if api:

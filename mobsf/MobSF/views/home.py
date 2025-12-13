@@ -95,11 +95,8 @@ def index(request):
             + settings.WINDOWS_EXTS)
     context = {
         'title': 'Cyberspect: Upload App',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
         'mimes': mimes,
         'exts': '|'.join(exts),
-        'is_admin': is_admin(request),
         'email': sso_email(request),
         'tenant_static': settings.TENANT_STATIC_URL,
     }
@@ -265,8 +262,6 @@ def api_docs(request):
     context = {
         'title': 'API Docs',
         'api_key': key,
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
         'is_admin': True,
     }
     template = 'general/apidocs.html'
@@ -277,9 +272,6 @@ def support(request):
     """Support Route."""
     context = {
         'title': 'Support',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
-        'is_admin': is_admin(request),
         'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/support.html'
@@ -290,9 +282,6 @@ def about(request):
     """About Route."""
     context = {
         'title': 'About',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
-        'is_admin': is_admin(request),
     }
     template = 'general/about.html'
     return render(request, template, context)
@@ -302,8 +291,6 @@ def donate(request):
     """Donate Route."""
     context = {
         'title': 'Donate',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
     }
     template = 'general/donate.html'
     return render(request, template, context)
@@ -313,9 +300,6 @@ def error(request):
     """Error Route."""
     context = {
         'title': 'Error',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
-        'is_admin': is_admin(request),
     }
     template = 'general/error.html'
     return render(request, template, context)
@@ -325,9 +309,6 @@ def zip_format(request):
     """Zip Format Message Route."""
     context = {
         'title': 'Zipped Source Instruction',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
-        'is_admin': is_admin(request),
     }
     template = 'general/zip.html'
     return render(request, template, context)
@@ -343,8 +324,6 @@ def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
     context = {
         'title': 'Dynamic Analysis',
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
     }
     template = 'general/dynamic.html'
     return render(request, template, context)
@@ -434,10 +413,7 @@ def recent_scans(request, page_size=20, page_number=1):
     context = {
         'title': 'Scanned Apps',
         'entries': entries,
-        'version': settings.MOBSF_VER,
         'page_obj': page_obj,
-        'cversion': settings.CYBERSPECT_VER,
-        'is_admin': isadmin,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,

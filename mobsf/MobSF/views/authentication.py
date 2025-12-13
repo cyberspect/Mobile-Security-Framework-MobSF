@@ -83,7 +83,6 @@ def login_view(request):
         'form': form,
         'sso': sso,
         'allow_pwd': allow_pwd,
-        'is_admin': is_admin(request),
     }
     return render(request, 'auth/login.html', context)
 

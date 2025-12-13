@@ -98,9 +98,6 @@ def admin_view(request):
         'min_date': min_exp_date.strftime('%Y-%m-%d'),
         'max_date': max_exp_date.strftime('%Y-%m-%d'),
         'default_exp_date': default_exp_date.strftime('%Y-%m-%d'),
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
-        'is_admin': is_admin(request),
     }
     template = 'general/admin.html'
     return render(request, template, context)

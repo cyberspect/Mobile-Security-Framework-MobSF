@@ -20,8 +20,6 @@ def get_context_from_db_entry(db_entry):
         logger.info('Analysis is already Done. Fetching data from the DB...')
         context = {
             'title': 'Static Analysis',
-            'version': settings.MOBSF_VER,
-            'cversion': settings.CYBERSPECT_VER,
             'file_name': db_entry[0].FILE_NAME,
             'app_name': db_entry[0].APP_NAME,
             'publisher_name': db_entry[0].PUBLISHER_NAME,

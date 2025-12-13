@@ -115,8 +115,6 @@ def users(request):
     context = {
         'title': 'All Users',
         'users': users,
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
     }
     return render(request, 'auth/users.html', context)
 
