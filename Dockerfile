@@ -59,8 +59,10 @@ ARG TARGETPLATFORM
 COPY scripts/dependencies.sh mobsf/MobSF/tools_download.py ./
 RUN ./dependencies.sh
 
+# Copy dependency files first (changes when dependencies change)
+COPY pyproject.toml poetry.lock ./
+
 # Install Python dependencies
-COPY pyproject.toml .
 RUN poetry config virtualenvs.create false && \
   poetry lock && \
   poetry install --only main --no-root --no-interaction --no-ansi && \
@@ -68,8 +70,7 @@ RUN poetry config virtualenvs.create false && \
   rm -rf /root/.cache/
 
 # Cleanup
-RUN \
-    apt remove -y \
+RUN apt remove -y \
         git \
         python3-dev \
         wget && \
@@ -78,19 +79,21 @@ RUN \
     apt autoremove -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
-# Copy source code
+# Set working directory (rarely changes)
 WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
+
+# Copy source code LAST (changes most frequently)
 COPY . .
-
-HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
-
-# Expose MobSF Port and Proxy Port
-EXPOSE 8000 1337
 
 # Create mobsf user
 RUN groupadd --gid $USER_ID $MOBSF_USER && \
     useradd $MOBSF_USER --uid $USER_ID --gid $MOBSF_USER --shell /bin/false && \
     chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
+
+# Expose MobSF Port and Proxy Port
+EXPOSE 8000 1337
+
+HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Switch to mobsf user
 USER $MOBSF_USER
