@@ -21,9 +21,6 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.cyberspect_utils import (
-    is_admin,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -73,12 +70,7 @@ def run(request):
             'title': f'{typ.capitalize()} Source',
             'hash': md5,
             'source_type': typ,
-            'version': settings.MOBSF_VER,
             'api_key': api_key(settings.MOBSF_HOME),
-            #  Cyberspect additions begin
-            'cversion': settings.CYBERSPECT_VER,
-            'is_admin': is_admin(request),
-            #  Cyberspect additions end
         }
         template = 'static_analysis/source_tree.html'
         return render(request, template, context)

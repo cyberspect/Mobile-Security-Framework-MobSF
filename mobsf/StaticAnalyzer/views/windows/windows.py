@@ -50,7 +50,8 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
 )
-from mobsf.MobSF.cyberspect_utils import (
+
+from cyberspect.utils import (
     is_admin,
     update_scan_timestamp,  # Cyberspect mod - use this not home's
 )
@@ -174,7 +175,6 @@ def staticanalyzer_windows_internal(request, checksum, api=False):
             context = get_context_from_analysis(app_dic,
                                                 xml_dic,
                                                 bin_an_dic)
-            context['virus_total'] = None
         template = 'static_analysis/windows_binary_analysis.html'
         context['virus_total'] = None
         if settings.VT_ENABLED:

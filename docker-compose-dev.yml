@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: "postgres:latest"
+    restart: always
+    volumes:
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mobsf
+    ports:
+      - "5432:5432"
+    networks:
+        - mobsf
+  
+  mobsf:
+    container_name: cyberspect
+    env_file:
+      - ./cyberspect.env
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    user: "mobsf:mobsf"
+    volumes:
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+      - $HOME/MobSF/cyberspect_data:/mnt/cyberspect
+    ports:
+     - "8000:8000"
+    networks:
+      - mobsf
+    depends_on:
+      - postgres
+    links:
+      - "postgres"
+
+  qcluster:
+    container_name: cyberspect-qcluster
+    env_file:
+      - ./qcluster.env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "manage.py", "qcluster"]
+    user: "mobsf:mobsf"
+    volumes:
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+      - $HOME/MobSF/cyberspect_data:/mnt/cyberspect
+    networks:
+      - mobsf
+    depends_on:
+      - postgres
+      - mobsf
+    links:
+      - "postgres"
+      - "mobsf"
+networks:
+  mobsf:

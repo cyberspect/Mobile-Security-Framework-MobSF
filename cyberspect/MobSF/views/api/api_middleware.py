@@ -1,27 +1,32 @@
 # -*- coding: utf_8 -*-
 import hashlib
+import logging
 
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 
-from mobsf.MobSF.cyberspect_utils import make_api_response, utcnow
 from mobsf.MobSF.utils import api_key
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
+
+from cyberspect.MobSF.views.api import api_static_analysis as cs_api_sz
+from cyberspect.utils import make_api_response, utcnow
+
+logger = logging.getLogger(__name__)
 
 
 class RestApiAuthMiddleware(MiddlewareMixin):
     """Middleware for REST API."""
 
-    readonly_funcs = [api_sz.api_upload, api_sz.api_scan_metadata,
-                      api_sz.api_scan, api_sz.api_async_scan,
-                      api_sz.api_rescan, api_sz.api_pdf_report,
+    readonly_funcs = [api_sz.api_upload, cs_api_sz.api_scan_metadata,
+                      api_sz.api_scan, cs_api_sz.api_async_scan,
+                      cs_api_sz.api_rescan, api_sz.api_pdf_report,
                       api_sz.api_json_report, api_sz.api_view_source,
-                      api_sz.api_recent_scans, api_sz.api_release_scans,
+                      api_sz.api_recent_scans, cs_api_sz.api_release_scans,
                       api_sz.api_compare, api_sz.api_scorecard,
-                      api_sz.api_cyberspect_get_scan,
-                      api_sz.api_cyberspect_recent_scans,
-                      api_sz.api_cyberspect_completed_scans]
+                      cs_api_sz.api_cyberspect_get_scan,
+                      cs_api_sz.api_cyberspect_recent_scans,
+                      cs_api_sz.api_cyberspect_completed_scans]
 
     def process_request(self, request):
         """Process API Request."""
@@ -35,6 +40,12 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         if request.path == '/health':
             request.META['email'] = ''
             request.META['role'] = ''
+            return None
+
+        # Skip middleware for admin endpoint in local dev mode
+        if request.path == '/admin' and settings.LOCAL_DEV_MODE:
+            request.META['role'] = 'FULL_ACCESS'
+            request.META['email'] = 'admin@cyberspect.com'
             return None
 
         # Check restricted endpoint AFTER test bypass
@@ -70,7 +81,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
                 and not view_func == api_sz.api_upload):
             return self.unauthorized()
         apikey = self.get_api_key(request.META)
-        if apikey == api_key():
+        if apikey == api_key(settings.MOBSF_HOME):
             request.META['role'] = 'FULL_ACCESS'
             request.META['email'] = 'admin@cyberspect.com'
             return
@@ -79,9 +90,11 @@ class RestApiAuthMiddleware(MiddlewareMixin):
         db_obj = ApiKeys.objects.filter(KEY_HASH=key_hash,
                                         REVOKED_DATE=None).first()
         if not db_obj:
+            logger.warning('API key is invalid or revoked: %s', key_hash)
             return make_api_response(
                 {'error': 'API key is invalid or revoked.'}, 403)
         if db_obj.EXPIRE_DATE <= utcnow():
+            logger.warning('API key has expired: %s', key_hash)
             return make_api_response(
                 {'error': 'API key has expired.'}, 403)
 
@@ -97,6 +110,8 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             if view_func == api_sz.api_upload:
                 return
 
+        logger.warning('API key does not allow access to endpoint: %s',
+                       key_hash)
         return self.unauthorized(403)
 
     def get_api_key(self, meta):

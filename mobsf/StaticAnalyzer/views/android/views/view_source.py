@@ -24,9 +24,6 @@ from mobsf.StaticAnalyzer.forms import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.cyberspect_utils import (
-    is_admin,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -72,11 +69,6 @@ def run(request, api=False):
             'data': sfile.read_text('utf-8', 'ignore'),
             'type': syntax,
             'sqlite': {},
-            'version': settings.MOBSF_VER,
-            #  Cyberspect additions begin
-            'cversion': settings.CYBERSPECT_VER,
-            'is_admin': is_admin(request),
-            #  Cyberspect additions end
         }
         template = 'general/view.html'
         if api:

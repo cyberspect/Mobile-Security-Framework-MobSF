@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 
 from django.conf import settings
-from django.shortcuts import render
 from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
@@ -16,9 +15,11 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
 )
-from mobsf.StaticAnalyzer.views.ios.dylib import dylib_analysis
 from mobsf.StaticAnalyzer.views.common.a import (
     a_analysis,
+)
+from mobsf.StaticAnalyzer.views.ios.dylib import (
+    dylib_analysis,
 )
 from mobsf.StaticAnalyzer.views.ios.ipa import (
     ios_analysis,
@@ -27,29 +28,16 @@ from mobsf.StaticAnalyzer.views.ios.ipa import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.cyberspect_utils import (
-    is_admin,
-)
 
 logger = logging.getLogger(__name__)
 register.filter('relative_path', relative_path)
 
 
 @login_required
-def static_analyzer_ios(request, checksum):
-    response = static_analyzer_ios_internal(request.GET, checksum)
-    response['is_admin'] = is_admin(request)
-    if 'template' in response:
-        return render(request, response['template'], response)
-    elif 'error' in response:
-        return print_n_send_error_response(request, response['error'])
-    else:
-        return response
-
-
-def static_analyzer_ios_internal(request, checksum, api=False):
+def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
+        logger.info('iOS Static Analysis Started')
         rescan = False
         if api:
             re_scan = request.POST.get('re_scan', 0)
@@ -77,6 +65,7 @@ def static_analyzer_ios_internal(request, checksum, api=False):
         ios_exts = tuple(f'.{i}' for i in settings.IOS_EXTS)
         allowed_exts = ios_exts + ('.zip', 'ios')
         allowed_types = settings.IOS_EXTS + ('zip', 'ios')
+
         if (not filename.lower().endswith(allowed_exts)
                 or file_type not in allowed_types):
             return print_n_send_error_response(
@@ -92,6 +81,7 @@ def static_analyzer_ios_internal(request, checksum, api=False):
             'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
         app_dict['tools_dir'] = tools_dir.as_posix()
         app_dict['icon_path'] = ''
+
         if file_type == 'ipa':
             return ipa_analysis(request, app_dict, rescan, api)
         elif file_type == 'dylib':
@@ -106,6 +96,7 @@ def static_analyzer_ios_internal(request, checksum, api=False):
             logger.error(err)
             append_scan_status(checksum, err)
             raise Exception(err)
+
     except Exception as exp:
         msg = 'Error Performing Static Analysis'
         logger.exception(msg)

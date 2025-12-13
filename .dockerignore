@@ -9,11 +9,14 @@
 tox.ini
 mobsf/db.sqlite3
 Dockerfile
+Dockerfile.dev
+Dockerfile-Backend
 dist
 build
 .DS_Store
 *.egg-info
 docker-compose.yml
+docker-compose-dev.yml
 *.md
 venv
 setup.bat

@@ -169,7 +169,9 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         append_scan_status(checksum, 'init')
         msg = 'iOS Binary (IPA) Analysis Started'
@@ -258,7 +260,11 @@ def ipa_analysis(request, app_dic, rescan, api):
         # IPA Analysis
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(request, 'Permission Denied', False)
-        if settings.ASYNC_ANALYSIS:
+        # Cyberspect mods begin
+        # Add check for async worker to prevent nested async
+        in_async_worker = request.META.get('_in_async_worker', False)
+        if settings.ASYNC_ANALYSIS and not in_async_worker:
+            # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
@@ -275,7 +281,9 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         logger.info('iOS Source Code Analysis Started')
         get_size_and_hashes(app_dic)
@@ -345,7 +353,11 @@ def ios_analysis(request, app_dic, rescan, api):
         # IOS Source Analysis
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(request, 'Permission Denied', False)
-        if settings.ASYNC_ANALYSIS:
+        # Cyberspect mods begin
+        # Add check for async worker to prevent nested async
+        in_async_worker = request.META.get('_in_async_worker', False)
+        if settings.ASYNC_ANALYSIS and not in_async_worker:
+            # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,

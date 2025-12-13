@@ -84,12 +84,21 @@ from mobsf.MobSF.views.authorization import (
     has_permission,
 )
 
+from cyberspect.utils import (
+    update_cyberspect_scan,
+    utcnow,
+)
+
 logger = logging.getLogger(__name__)
 
 
 def initialize_app_dic(app_dic, file_ext):
     checksum = app_dic['md5']
     app_dic['app_file'] = f'{checksum}.{file_ext}'
+    # Log the types for debugging
+
+    # Ensure app_dir is a Path object for path operations
+
     app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
     app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
     return checksum
@@ -145,9 +154,14 @@ def clean_up(app_dic):
 def apk_analysis_task(checksum, app_dic, rescan, queue=False):
     """APK Analysis Task."""
     context = None
+    cyberspect_scan_id = app_dic.get('cyberspect_scan_id')
+    if cyberspect_scan_id:
+        update_cyberspect_scan({'id': cyberspect_scan_id, 'sast_start': utcnow()})
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         append_scan_status(checksum, 'init')
         get_size_and_hashes(app_dic)
@@ -231,11 +245,20 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             trackers,
             rescan,
         )
+        if cyberspect_scan_id:
+            update_cyberspect_scan(
+                {'id': cyberspect_scan_id, 'sast_end': utcnow(), 'success': True})
         if queue:
             return mark_task_completed(
                 checksum, app_dic['subject'], 'Success')
         return context, None
     except Exception as exp:
+        if cyberspect_scan_id:
+            update_cyberspect_scan({'id': cyberspect_scan_id, 'sast_end':
+                                    utcnow(), 'success': False,
+                                    'failure_source': 'SAST',
+                                    'failure_message': repr(exp)},
+                                   )
         if queue:
             return mark_task_completed(
                 checksum, 'Failed', repr(exp))
@@ -262,6 +285,7 @@ def generate_dynamic_context(request, app_dic, checksum, context, api):
 def apk_analysis(request, app_dic, rescan, api):
     """APK Analysis."""
     checksum = initialize_app_dic(app_dic, 'apk')
+
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
@@ -270,7 +294,11 @@ def apk_analysis(request, app_dic, rescan, api):
         # APK Analysis
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(request, 'Permission Denied', False)
-        if settings.ASYNC_ANALYSIS:
+        # Cyberspect mods begin
+        # Add check for async worker to prevent nested async
+        in_async_worker = request.META.get('_in_async_worker', False)
+        if settings.ASYNC_ANALYSIS and not in_async_worker:
+            # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
@@ -287,7 +315,9 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
     context = None
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         cert_dic = {
             'certificate_info': '',

@@ -17,6 +17,7 @@ from mobsf.MobSF.init import (
 )
 
 logger = logging.getLogger(__name__)
+
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -245,15 +246,51 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'cyberspect.context_processors.is_admin_processor',
+                'cyberspect.context_processors.app_versions_processor',
+                'cyberspect.context_processors.recent_scans_processor',
             ],
         },
     },
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# Cyberspect mods begin
+LOCAL_DEV_MODE = bool(os.getenv('CYBERSPECT_LOCAL_DEV_MODE', '0'))
+if LOCAL_DEV_MODE:
+    # Determine if running in tenant mode
+    TENANT_ID = os.getenv('TENANT_ID', '')
+
+    if TENANT_ID:
+        # Tenant-specific static files configuration
+        # Collect to tenant subdirectory
+        STATIC_ROOT = os.path.join(CYBERSPECT_BASE_DIR, 'staticfiles', TENANT_ID)
+
+        # But serve from /static/ (not tenant-specific URL)
+        STATIC_URL = '/static/'
+        TENANT_STATIC_URL = '/static/'
+
+        # Ensure tenant subdirectory exists
+        os.makedirs(STATIC_ROOT, exist_ok=True)
+    else:
+        # Default static files configuration
+        STATIC_ROOT = os.path.join(CYBERSPECT_BASE_DIR, 'staticfiles')
+        STATIC_URL = '/static/'
+        TENANT_STATIC_URL = '/static/'
+
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),
+    ]
+else:
+    # Cyberspect mods end
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# WhiteNoise configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Configure WhiteNoise to serve from the correct root
+# This tells WhiteNoise where to find the static files
+WHITENOISE_ROOT = STATIC_ROOT
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 LOGIN_URL = 'login'
@@ -417,6 +454,7 @@ if not CONFIG_HOME:
     # Common third party classes/paths that will be skipped
     # during static analysis
     import os
+
     SKIP_CLASS_PATH = {
         'com/google/',
         'androidx',
@@ -559,7 +597,9 @@ if not CONFIG_HOME:
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ==========CYBERSPECT SETTINGS ===============
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
+ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
 AWS_INTAKE_LAMBDA = os.getenv('AWS_INTAKE_LAMBDA', '')
 DEPENDENCY_TRACK_URL = os.getenv('DEPENDENCY_TRACK_URL')
 ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
@@ -573,3 +613,16 @@ DEFAULT_PAGINATION_CLASS = 'utils.FasterPageNumberPagination'
 
 # Customization settings
 CZ100 = os.getenv('CZ100', '')
+
+# ==============3rd Party Tools (Always Available)=====================
+# These settings should be accessible regardless of CONFIG_HOME value
+VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
+ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
+JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '/jdk-22.0.2/bin/')
+BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
+JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
+BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
+APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
+JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
+CLASSDUMP_BINARY = os.getenv('MOBSF_CLASSDUMP_BINARY', '')
+CLASSDUMP_SWIFT_BINARY = os.getenv('MOBSF_CLASSDUMP_SWIFT_BINARY', '')

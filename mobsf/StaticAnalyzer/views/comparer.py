@@ -19,7 +19,8 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry,
 )
-from mobsf.MobSF.cyberspect_utils import (
+
+from cyberspect.utils import (
     is_admin,
 )
 

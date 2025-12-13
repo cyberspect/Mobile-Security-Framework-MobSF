@@ -14,7 +14,8 @@ from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
 )
-from mobsf.MobSF.cyberspect_utils import update_scan_timestamp  # Cyberspect mod
+
+from cyberspect.utils import update_scan_timestamp  # Cyberspect mod
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +145,7 @@ def get_context_from_analysis(app_dict,
         msg = 'Rendering to Template'
         logger.exception(msg)
         append_scan_status(app_dict['md5_hash'], msg, repr(exp))
+        return None  # Cyberspect added
 
 
 def save_or_update(update_type,

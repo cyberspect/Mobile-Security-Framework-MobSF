@@ -7,7 +7,6 @@ import shutil
 from pathlib import Path
 
 from django.conf import settings
-from django.shortcuts import render
 from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
@@ -42,9 +41,6 @@ from mobsf.StaticAnalyzer.views.android.so import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.cyberspect_utils import (
-    is_admin,
-)
 
 APK_TYPE = 'apk'
 logger = logging.getLogger(__name__)
@@ -55,20 +51,10 @@ register.filter('pathify', pathify)
 
 
 @login_required
-def static_analyzer(request, checksum):
-    response = static_analyzer_internal(request.GET, checksum, False)
-    response['is_admin'] = is_admin(request)
-    if 'template' in response:
-        return render(request, response['template'], response)
-    elif 'error' in response:
-        return print_n_send_error_response(request, response['error'])
-    else:
-        return response
-
-
-def static_analyzer_internal(request, checksum, api=False):
+def static_analyzer(request, checksum, api=False):
     """Do static analysis on an request and save to db."""
     try:
+        logger.info('Android Static Analysis Started')
         rescan = False
         if api:
             re_scan = request.POST.get('re_scan', 0)
