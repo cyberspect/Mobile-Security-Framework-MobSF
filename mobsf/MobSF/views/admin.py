@@ -13,16 +13,17 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 
-from mobsf.MobSF.cyberspect_utils import (
+from mobsf.MobSF.utils import (
+    print_n_send_error_response,
+)
+from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
+
+from cyberspect.utils import (
     is_admin,
     sso_email,
     tz,
     utcnow,
 )
-from mobsf.MobSF.utils import (
-    print_n_send_error_response,
-)
-from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
 
 logger = logging.getLogger(__name__)
 

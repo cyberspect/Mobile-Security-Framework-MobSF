@@ -8,14 +8,15 @@ from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.MobSF.views.helpers import FileType
-from mobsf.MobSF.cyberspect_utils import (
+from mobsf.MobSF.security import sanitize_filename
+
+from cyberspect.utils import (
     get_siphash,
     get_usergroups,
     is_admin,
     sso_email,
     utcnow,
 )
-from mobsf.MobSF.security import sanitize_filename
 
 logger = logging.getLogger(__name__)
 

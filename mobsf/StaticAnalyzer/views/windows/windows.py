@@ -50,7 +50,8 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
 )
-from mobsf.MobSF.cyberspect_utils import (
+
+from cyberspect.utils import (
     is_admin,
     update_scan_timestamp,  # Cyberspect mod - use this not home's
 )

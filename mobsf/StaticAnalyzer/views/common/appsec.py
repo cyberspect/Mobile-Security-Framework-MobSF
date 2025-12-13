@@ -24,7 +24,8 @@ from mobsf.StaticAnalyzer.views.ios.db_interaction import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.cyberspect_utils import (
+
+from cyberspect.utils import (
     is_admin,
 )
 

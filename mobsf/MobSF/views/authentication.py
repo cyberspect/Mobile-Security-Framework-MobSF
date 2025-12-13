@@ -18,12 +18,13 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required as lg
 
-from mobsf.MobSF.cyberspect_utils import is_admin
 from mobsf.MobSF.security import (
     sanitize_redirect,
 )
 
 from django_ratelimit.decorators import ratelimit
+
+from cyberspect.utils import is_admin
 
 
 def login_required(func):

@@ -42,13 +42,7 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.MobSF.init import api_key
 from mobsf.MobSF.security import sanitize_filename
-from mobsf.MobSF.cyberspect_utils import (
-    get_siphash,
-    is_admin,
-    sso_email,
-    tz,
-    utcnow,
-)
+from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
@@ -62,10 +56,6 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
 )
-from mobsf.StaticAnalyzer.cyberspect_models import (
-    CyberspectScans,
-)
-from mobsf.StaticAnalyzer.views.common import appsec  # Cyberspect import
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
@@ -74,6 +64,21 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     permission_required,
 )
+from mobsf.StaticAnalyzer.views.common import appsec
+# Cyberspect imports
+from mobsf.StaticAnalyzer.cyberspect_models import (
+    CyberspectScans,
+)
+
+from cyberspect.utils import (
+    get_siphash,
+    is_admin,
+    sso_email,
+    tz,
+    update_cyberspect_scan,
+    utcnow,
+)
+
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
