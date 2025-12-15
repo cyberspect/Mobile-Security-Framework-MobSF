@@ -386,7 +386,7 @@ def appsec_dashboard(request, checksum, api=False):
             else:
                 msg = 'Report not found or supported'
                 return print_n_send_error_response(request, msg, api)
-        context['version'] = settings.MOBSF_VER  # Context Processor? 
+        context['version'] = settings.MOBSF_VER  # Context Processor?
         context['cversion'] = settings.CYBERSPECT_VER  # Context Processor?
         context['title'] = 'AppSec Scorecard'
         context['efr01'] = True if settings.EFR_01 == '1' else False

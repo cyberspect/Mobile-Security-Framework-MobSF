@@ -1,6 +1,8 @@
 """Module holding the functions for the db."""
 import logging
 
+from django.conf import settings
+
 from mobsf.MobSF.utils import (
     append_scan_status,
     get_scan_logs,
@@ -31,6 +33,8 @@ def get_context_from_db_entry(db_entry):
             python_dict(db_entry[0].BINARY_ANALYSIS),
             bundle_id)
         context = {
+            'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'title': 'Static Analysis',
             'file_name': db_entry[0].FILE_NAME,
             'app_name': db_entry[0].APP_NAME,
@@ -93,6 +97,8 @@ def get_context_from_analysis(app_dict,
             bin_dict['bin_code_analysis'],
             bundle_id)
         context = {
+            'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'title': 'Static Analysis',
             'file_name': app_dict['file_name'],
             'app_name': info_dict['bin_name'],
@@ -139,6 +145,7 @@ def get_context_from_analysis(app_dict,
         msg = 'Rendering to Template'
         logger.exception(msg)
         append_scan_status(app_dict['md5_hash'], msg, repr(exp))
+        return None  # Cyberspect added
 
 
 def save_or_update(update_type,
