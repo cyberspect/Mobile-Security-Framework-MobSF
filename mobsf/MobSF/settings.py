@@ -255,9 +255,42 @@ TEMPLATES = [
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# Cyberspect mods begin
+LOCAL_DEV_MODE = bool(os.getenv('CYBERSPECT_LOCAL_DEV_MODE', '0'))
+if LOCAL_DEV_MODE:
+    # Determine if running in tenant mode
+    TENANT_ID = os.getenv('TENANT_ID', '')
+
+    if TENANT_ID:
+        # Tenant-specific static files configuration
+        # Collect to tenant subdirectory
+        STATIC_ROOT = os.path.join(CYBERSPECT_BASE_DIR, 'staticfiles', TENANT_ID)
+
+        # But serve from /static/ (not tenant-specific URL)
+        STATIC_URL = '/static/'
+        TENANT_STATIC_URL = '/static/'
+
+        # Ensure tenant subdirectory exists
+        os.makedirs(STATIC_ROOT, exist_ok=True)
+    else:
+        # Default static files configuration
+        STATIC_ROOT = os.path.join(CYBERSPECT_BASE_DIR, 'staticfiles')
+        STATIC_URL = '/static/'
+        TENANT_STATIC_URL = '/static/'
+
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),
+    ]
+else:
+    # Cyberspect mods end
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# WhiteNoise configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Configure WhiteNoise to serve from the correct root
+# This tells WhiteNoise where to find the static files
+WHITENOISE_ROOT = STATIC_ROOT
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
 LOGIN_URL = 'login'
@@ -357,7 +390,7 @@ LOGGING = {
         },
     },
 }
-ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
+ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '1') == '1')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
     'name': 'scan_queue',
@@ -564,7 +597,9 @@ if not CONFIG_HOME:
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ==========CYBERSPECT SETTINGS ===============
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
+ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
 AWS_INTAKE_LAMBDA = os.getenv('AWS_INTAKE_LAMBDA', '')
 DEPENDENCY_TRACK_URL = os.getenv('DEPENDENCY_TRACK_URL')
 ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
@@ -575,7 +610,7 @@ if not TENANT_STATIC_URL.endswith('/'):
     TENANT_STATIC_URL = TENANT_STATIC_URL + '/'
 JADX_THREADS = os.getenv('JADX_THREADS', '4')
 DEFAULT_PAGINATION_CLASS = 'utils.FasterPageNumberPagination'
-LOCAL_DEV_MODE = bool(os.getenv('CYBERSPECT_LOCAL_DEV_MODE', '0'))
+
 # Customization settings
 CZ100 = os.getenv('CZ100', '')
 

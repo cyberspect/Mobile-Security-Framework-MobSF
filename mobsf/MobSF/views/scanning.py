@@ -53,6 +53,7 @@ def add_to_recent_scan(data):
             new_db_obj.save()
         # Cyberspect mods
         else:
+            # Cyberspect mods
             scan = db_obj.first()
             if data.get('email') and (data['email'] not in scan.EMAIL):
                 scan.EMAIL = scan.EMAIL + ',' + data['email']
@@ -95,16 +96,58 @@ def handle_uploaded_file(content, extension, source_content=None):
             md5.update(chunk)
     md5sum = md5.hexdigest()
     anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
-    if not os.path.exists(anal_dir):
-        os.makedirs(anal_dir)
-    with open(f'{anal_dir}{md5sum}{extension}', 'wb+') as destination:
-        if bfr:
-            content.seek(0, 0)
-            while chunk := content.read(8192):
-                destination.write(chunk)
-        else:
-            for chunk in content.chunks():
-                destination.write(chunk)
+
+    # Cyberspect mods (local development mode)
+    if settings.LOCAL_DEV_MODE:
+        # Ensure parent upload directory exists
+        if not os.path.exists(settings.UPLD_DIR):
+            try:
+                os.makedirs(settings.UPLD_DIR, exist_ok=True)
+            except Exception as e:
+                raise
+
+        if not os.path.exists(anal_dir):
+            try:
+                os.makedirs(anal_dir, exist_ok=True)
+            except Exception as e:
+                raise
+
+        # Validate directory was actually created
+        if not os.path.exists(anal_dir):
+            os.makedirs(anal_dir)
+            raise Exception(f'Failed to create upload directory: {anal_dir}')
+
+        file_path = f'{anal_dir}{md5sum}{extension}'
+
+        try:
+            with open(file_path, 'wb+') as destination:
+                if bfr:
+                    content.seek(0, 0)
+                    while chunk := content.read(8192):
+                        destination.write(chunk)
+                else:
+                    for chunk in content.chunks():
+                        destination.write(chunk)
+
+            # Validate file was actually written
+            if not os.path.exists(file_path):
+                raise Exception(f'Failed to write uploaded file: {file_path}')
+
+        except Exception:
+            raise
+    else:
+        # Cyberspect mods end (local development mode)
+        if not os.path.exists(anal_dir):
+            os.makedirs(anal_dir)
+        with open(f'{anal_dir}{md5sum}{extension}', 'wb+') as destination:
+            if bfr:
+                content.seek(0, 0)
+                while chunk := content.read(8192):
+                    destination.write(chunk)
+            else:
+                for chunk in content.chunks():
+                    destination.write(chunk)
+
     # Cyberspect mods
     if (source_content):
         bfr = isinstance(source_content, io.BufferedReader)
@@ -192,6 +235,7 @@ class Scanning(object):
         md5 = handle_uploaded_file(self.file, '.apk')
         self.data['hash'] = md5
         self.data['scan_type'] = 'apk'
+        self.scan_type = 'apk'
         add_to_recent_scan(self.data)
         logger.info('Android APK uploaded')
         return self.data
@@ -261,6 +305,7 @@ class Scanning(object):
 
     def scan_ipa(self):
         """IOS Binary."""
+        logger.info('DEBUG: Scanning.scan_ipa method called')
         md5 = handle_uploaded_file(self.file, '.ipa')
         self.data['hash'] = md5
         self.data['scan_type'] = 'ipa'
