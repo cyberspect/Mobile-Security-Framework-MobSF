@@ -575,6 +575,19 @@ if not TENANT_STATIC_URL.endswith('/'):
     TENANT_STATIC_URL = TENANT_STATIC_URL + '/'
 JADX_THREADS = os.getenv('JADX_THREADS', '4')
 DEFAULT_PAGINATION_CLASS = 'utils.FasterPageNumberPagination'
-
+LOCAL_DEV_MODE = bool(os.getenv('CYBERSPECT_LOCAL_DEV_MODE', '0'))
 # Customization settings
 CZ100 = os.getenv('CZ100', '')
+
+# ==============3rd Party Tools (Always Available)=====================
+# These settings should be accessible regardless of CONFIG_HOME value
+VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
+ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
+JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '/jdk-22.0.2/bin/')
+BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
+JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
+BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
+APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
+JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
+CLASSDUMP_BINARY = os.getenv('MOBSF_CLASSDUMP_BINARY', '')
+CLASSDUMP_SWIFT_BINARY = os.getenv('MOBSF_CLASSDUMP_SWIFT_BINARY', '')
