@@ -64,19 +64,10 @@ def api_scan_metadata(request):
 def api_async_scan(request):
     """POST - Async Scan API."""
     if ('cyberspect_scan_id' in request.POST):
-        # DEBUG begins
-        cyberspect_id = request.POST['cyberspect_scan_id']
-        logger.info('api_async_scan called with cyberspect_scan_id: %s (type: %s)',
-                    cyberspect_id, type(cyberspect_id))
-        # DEBUG ends
         csdata = get_cyberspect_scan(request.POST['cyberspect_scan_id'])
         if not csdata:
             return make_api_response({'error': 'cyberspect_scan_id not found'},
                                      404)
-        # DEBUG begins
-        logger.info('get_cyberspect_scan returned data for ID: %s',
-                    csdata.get('ID', 'N/A'))
-        # DEBUG ends
         scan_data = {
             'cyberspect_scan_id': csdata['ID'],
             'hash': csdata['MOBSF_MD5'],
@@ -168,17 +159,10 @@ def api_download(request):
 def api_cyberspect_get_scan(request):
     """GET - get Cyberspect scan detail."""
     csid = request.GET['id']
-    # DEBUG begins
-    logger.info('api_cyberspect_get_scan called with csid: %s (type: %s)',
-                csid, type(csid))
-    # DEBUG ends
     scan = get_cyberspect_scan(csid)
     if scan:
         return make_api_response(scan, 200)
     else:
-        # DEBUG begins
-        logger.info('api_cyberspect_get_scan found no scan for csid: %s', csid)
-        # DEBUG ends
         return make_api_response({'id': csid}, 404)
 
 
@@ -245,13 +229,9 @@ def scan(scan_data):
     try:
         # Extract Cyberspect data from the scan
         csdata = get_cyberspect_scan(scan_data['cyberspect_scan_id'])
-        # DEBUG: dump the csdata for debugging
-        logger.info('DEBUG: csdata: %s', csdata)
 
         # Check if scan is already in progress - use UPPERCASE key
         if csdata['SAST_START']:
-            logger.info(
-                'DEBUG: Scan ID %s already in progress', scan_data['hash'])
             return
 
         # Set scan status to 'in progress'
@@ -259,8 +239,6 @@ def scan(scan_data):
             'id': csdata['ID'],
             'sast_status': 'in progress',
         }
-        logger.info(
-            'DEBUG: Setting sast_status via update_cyberspect_scan')
         update_cyberspect_scan(data)
 
         # Track scan start time
@@ -268,8 +246,6 @@ def scan(scan_data):
             'id': csdata['ID'],
             'sast_start': utcnow(),
         }
-        logger.info(
-            'DEBUG: Adding sast_start via update_cyberspect_scan')
         update_cyberspect_scan(data)
 
         # Create a mock request object for the static analyzers
@@ -337,8 +313,6 @@ def scan(scan_data):
             data['failure_source'] = 'SAST'
             data['failure_message'] = resp.get('error', 'Unknown error')
 
-        logger.info(
-            'DEBUG: Adding sast_end via update_cyberspect_scan')
         update_cyberspect_scan(data)
         return response
 
@@ -353,7 +327,5 @@ def scan(scan_data):
             'failure_message': msg,
             'sast_end': utcnow(),
         }
-        logger.info(
-            'DEBUG: An exception occurred in update_cyberspect_scan')
         update_cyberspect_scan(data)
         return make_api_response(data, 500)

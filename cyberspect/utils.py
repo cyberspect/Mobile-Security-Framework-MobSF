@@ -99,7 +99,6 @@ def tz(value):
 
 def update_cyberspect_scan(data):
     """Update Cyberspect scan record."""
-    # logger.info('DEBUG: in update_cyberspect_scan (utils.py)')
     try:
         if (('id' not in data) and ('dt_project_id' in data)):
             db_obj = CyberspectScans.objects \
@@ -146,8 +145,6 @@ def update_cyberspect_scan(data):
             if 'dependency_types' in data:
                 db_obj.DEPENDENCY_TYPES = data['dependency_types']
             db_obj.save()
-            # logger.info('DEBUG: in update_cyberspect_scan (utils.py)')
-            # logger.info('DEBUG: Updated Cyberspect scan record for ID %s', csid)
             return model_to_dict(db_obj)
         else:
             return {'error': f'Scan ID {csid} not found'}
