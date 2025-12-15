@@ -22,9 +22,9 @@ from mobsf.MobSF.views.home import (
 )
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android.views import view_source
-from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer_internal
+from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
-from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios_internal
+from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from mobsf.StaticAnalyzer.views.common.async_task import list_tasks
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -81,16 +81,16 @@ def api_scan(request):
     scan_type = robj[0].SCAN_TYPE
     # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
     if scan_type in settings.ANDROID_EXTS:
-        resp = static_analyzer_internal(request, checksum, True)
+        resp = static_analyzer(request, checksum, True)
         if 'type' in resp:
-            resp = static_analyzer_ios_internal(request, checksum, True)
+            resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # IPA
     elif scan_type in settings.IOS_EXTS:
-        resp = static_analyzer_ios_internal(request, checksum, True)
+        resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
@@ -104,8 +104,6 @@ def api_scan(request):
             response = make_api_response(resp, 200)
     return response
 
-    return scan(request.POST)
-
 
 @request_method(['POST'])
 @csrf_exempt
@@ -118,7 +116,10 @@ def api_scan_logs(request):
     if not resp:
         return make_api_response(
             {'error': 'No scan logs found'}, 400)
-    return make_api_response({'logs': resp}, 200)
+    response = make_api_response({
+        'logs': resp,
+    }, 200)
+    return response
 
 
 @request_method(['POST'])

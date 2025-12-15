@@ -16,9 +16,11 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
 )
-from mobsf.StaticAnalyzer.views.ios.dylib import dylib_analysis
 from mobsf.StaticAnalyzer.views.common.a import (
     a_analysis,
+)
+from mobsf.StaticAnalyzer.views.ios.dylib import (
+    dylib_analysis,
 )
 from mobsf.StaticAnalyzer.views.ios.ipa import (
     ios_analysis,
@@ -37,20 +39,10 @@ register.filter('relative_path', relative_path)
 
 
 @login_required
-def static_analyzer_ios(request, checksum):
-    response = static_analyzer_ios_internal(request.GET, checksum)
-    response['is_admin'] = is_admin(request)
-    if 'template' in response:
-        return render(request, response['template'], response)
-    elif 'error' in response:
-        return print_n_send_error_response(request, response['error'])
-    else:
-        return response
-
-
-def static_analyzer_ios_internal(request, checksum, api=False):
+def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
+        logger.info('iOS Static Analysis Started')
         rescan = False
         if api:
             re_scan = request.POST.get('re_scan', 0)
@@ -78,6 +70,7 @@ def static_analyzer_ios_internal(request, checksum, api=False):
         ios_exts = tuple(f'.{i}' for i in settings.IOS_EXTS)
         allowed_exts = ios_exts + ('.zip', 'ios')
         allowed_types = settings.IOS_EXTS + ('zip', 'ios')
+
         if (not filename.lower().endswith(allowed_exts)
                 or file_type not in allowed_types):
             return print_n_send_error_response(
@@ -93,20 +86,32 @@ def static_analyzer_ios_internal(request, checksum, api=False):
             'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
         app_dict['tools_dir'] = tools_dir.as_posix()
         app_dict['icon_path'] = ''
+
         if file_type == 'ipa':
-            return ipa_analysis(request, app_dict, rescan, api)
+            result = ipa_analysis(request, app_dict, rescan, api)
         elif file_type == 'dylib':
-            return dylib_analysis(request, app_dict, rescan, api)
+            result = dylib_analysis(request, app_dict, rescan, api)
         elif file_type == 'a':
-            return a_analysis(request, app_dict, rescan, api)
+            result = a_analysis(request, app_dict, rescan, api)
         elif file_type in ('ios', 'zip'):
-            return ios_analysis(request, app_dict, rescan, api)
+            result = ios_analysis(request, app_dict, rescan, api)
         else:
             err = ('File Type not supported, '
                    'Only IPA, A, DYLIB and ZIP are supported')
             logger.error(err)
             append_scan_status(checksum, err)
             raise Exception(err)
+
+        # Add admin check for web requests
+        if isinstance(result, dict) and hasattr(request, 'user'):
+            result['is_admin'] = is_admin(request)
+            if 'template' in result:
+                return render(request, result['template'], result)
+            elif 'error' in result:
+                return print_n_send_error_response(request, result['error'])
+
+        return result
+
     except Exception as exp:
         msg = 'Error Performing Static Analysis'
         logger.exception(msg)
