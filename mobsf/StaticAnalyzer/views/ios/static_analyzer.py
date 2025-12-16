@@ -88,29 +88,19 @@ def static_analyzer_ios(request, checksum, api=False):
         app_dict['icon_path'] = ''
 
         if file_type == 'ipa':
-            result = ipa_analysis(request, app_dict, rescan, api)
+            return ipa_analysis(request, app_dict, rescan, api)
         elif file_type == 'dylib':
-            result = dylib_analysis(request, app_dict, rescan, api)
+            return dylib_analysis(request, app_dict, rescan, api)
         elif file_type == 'a':
-            result = a_analysis(request, app_dict, rescan, api)
+            return a_analysis(request, app_dict, rescan, api)
         elif file_type in ('ios', 'zip'):
-            result = ios_analysis(request, app_dict, rescan, api)
+            return ios_analysis(request, app_dict, rescan, api)
         else:
             err = ('File Type not supported, '
                    'Only IPA, A, DYLIB and ZIP are supported')
             logger.error(err)
             append_scan_status(checksum, err)
             raise Exception(err)
-
-        # Add admin check for web requests
-        if isinstance(result, dict) and hasattr(request, 'user'):
-            result['is_admin'] = is_admin(request)
-            if 'template' in result:
-                return render(request, result['template'], result)
-            elif 'error' in result:
-                return print_n_send_error_response(request, result['error'])
-
-        return result
 
     except Exception as exp:
         msg = 'Error Performing Static Analysis'
