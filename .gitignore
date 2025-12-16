@@ -86,3 +86,5 @@ staticfiles/*
 cyberspect/Postman/
 
 mobsf/static/divisions.json
+
+*.env
