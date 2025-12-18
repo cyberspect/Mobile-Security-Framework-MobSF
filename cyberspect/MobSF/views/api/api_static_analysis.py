@@ -14,11 +14,7 @@ from mobsf.StaticAnalyzer.models import (
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.MobSF.views.home import (
     RecentScans,
-    cyberspect_rescan,
     generate_download,
-    get_cyberspect_scan,
-    scan_metadata,
-    update_scan,
 )
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
@@ -29,6 +25,12 @@ from cyberspect.utils import (
     sso_email,
     update_cyberspect_scan,
     utcnow,
+)
+from cyberspect.MobSF.views.home import (
+    cyberspect_rescan,
+    get_cyberspect_scan,
+    scan_metadata,
+    update_scan,
 )
 
 

@@ -56,6 +56,7 @@ from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
+from cyberspect.MobSF.views import home as cs_home
 from cyberspect.MobSF.views.api import api_static_analysis as cs_api_sz
 
 bundle_id_regex = r'(?P<bundle_id>([a-zA-Z0-9]{1}[\w.-]{1,255}))$'
@@ -213,7 +214,7 @@ if settings.API_ONLY == '0':
         re_path(r'^generate_downloads/$',
                 home.generate_download,
                 name='generate_downloads'),
-        re_path(r'^support$', home.support, name='support'),
+        re_path(r'^support$', cs_home.support, name='support'),
         re_path(r'^about$', home.about, name='about'),
         re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
@@ -221,16 +222,16 @@ if settings.API_ONLY == '0':
         re_path(fr'^recent_scans/{paginate}/$',
                 home.recent_scans,
                 name='scans_paginated'),
-        re_path(r'^update_scan/$', home.update_scan, name='update_scan'),
+        re_path(r'^update_scan/$', cs_home.update_scan, name='update_scan'),
         re_path(r'^delete_scan/$', home.delete_scan, name='delete_scan'),
         re_path(r'^search$', home.search),
         re_path(r'^status/$', home.scan_status, name='status'),
-        re_path(r'^app_info$', home.app_info),
+        re_path(r'^app_info$', cs_home.app_info),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^zip_format/$', home.zip_format),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
-        re_path(r'^logout$', home.logout_aws),
-        re_path(r'^health$', home.health),
+        re_path(r'^logout$', cs_home.logout_aws),
+        re_path(r'^health$', cs_home.health),
         re_path(r'^admin$', admin.admin_view, name='admin'),
         re_path(r'^admin/create_api_key$', admin.create_api_key_post),
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
