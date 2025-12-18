@@ -133,61 +133,41 @@ class Upload(object):
     def upload_html(self):
         logger.info('File uploaded via web UI by user %s',
                     sso_email(self.request))
-        try:
-            request = self.request
-            response_data = {
-                'description': '',
-                'status': 'error',
-            }
-            if request.method != 'POST':
-                msg = 'Method not Supported!'
-                logger.error(msg)
-                response_data['description'] = msg
-                return self.resp_json(response_data)
-
-            if not self.form.is_valid():
-                msg = 'Invalid Form Data!'
-                logger.error(msg)
-                response_data['description'] = msg
-                return self.resp_json(response_data)
-
-            self.file = request.FILES['file']
-            self.file_type = FileType(self.file)
-            if not self.file_type.is_allow_file():
-                msg = 'File format not supported: ' \
-                    + self.file.content_type
-                logger.error(msg)
-                response_data['description'] = msg
-                return self.resp_json(response_data)
-
-            if self.file_type.is_ipa():
-                if platform.system() not in LINUX_PLATFORM:
-                    msg = 'Static Analysis of iOS IPA requires Mac or Linux'
-                    logger.error(msg)
-                    response_data['description'] = msg
-                    return self.resp_json(response_data)
-
-            response_data = self.upload()
-            # Cyberspect mods begin
-            self.cyberspect_scan_id = new_cyberspect_scan(
-                scheduled=False,
-                md5=response_data['hash'],
-                start_time=utcnow(),
-                scan_type=response_data.get('scan_type'),
-                sso_user=self.email,
-            )
-            response_data['cyberspect_scan_id'] = self.cyberspect_scan_id
-            # Trigger async scan
-            cyberspect_scan_intake(response_data, self.cyberspect_scan_id)
-            # Cyberspect mods end
+        request = self.request
+        response_data = {
+            'description': '',
+            'status': 'error',
+        }
+        if request.method != 'POST':
+            msg = 'Method not Supported!'
+            logger.error(msg)
+            response_data['description'] = msg
             return self.resp_json(response_data)
-        except Exception as exp:
-            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
-            logger.error(exmsg)
-            msg = str(exp)
-            exp_doc = exp.__doc__
-            self.track_failure(msg)
-            return print_n_send_error_response(request, msg, True, exp_doc)
+
+        if not self.form.is_valid():
+            msg = 'Invalid Form Data!'
+            logger.error(msg)
+            response_data['description'] = msg
+            return self.resp_json(response_data)
+
+        self.file = request.FILES['file']
+        self.file_type = FileType(self.file)
+        if not self.file_type.is_allow_file():
+            msg = 'File format not supported: ' \
+                + self.file.content_type
+            logger.error(msg)
+            response_data['description'] = msg
+            return self.resp_json(response_data)
+
+        if self.file_type.is_ipa():
+            if platform.system() not in LINUX_PLATFORM:
+                msg = 'Static Analysis of iOS IPA requires Mac or Linux'
+                logger.error(msg)
+                response_data['description'] = msg
+                return self.resp_json(response_data)
+
+        response_data = self.upload()
+        return self.resp_json(response_data)
 
     def upload_api(self):
         """API File Upload."""
@@ -208,17 +188,6 @@ class Upload(object):
             return api_response, HTTP_BAD_REQUEST
         # Cyberspect mods end
         api_response = self.upload()
-        self.md5 = api_response['hash']
-        self.cyberspect_scan_id = new_cyberspect_scan(
-            scheduled=False,
-            md5=self.md5,
-            start_time=utcnow(),
-            scan_type=api_response.get('scan_type'),
-            sso_user=self.email,
-        )
-        api_response['cyberspect_scan_id'] = self.cyberspect_scan_id
-        cyberspect_scan_intake(api_response, self.cyberspect_scan_id)
-        # Cyberspect mods end
         return api_response, 200
 
     def upload(self):
@@ -229,41 +198,53 @@ class Upload(object):
         file_name = sanitize_filename(self.file.name)
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.file_type.is_apk():
-            return scanning.scan_apk()
+            result = scanning.scan_apk()
         elif self.file_type.is_xapk():
-            return scanning.scan_xapk()
+            result = scanning.scan_xapk()
         elif self.file_type.is_apks():
-            return scanning.scan_apks()
+            result = scanning.scan_apks()
         elif self.file_type.is_aab():
-            return scanning.scan_aab()
+            result = scanning.scan_aab()
         elif self.file_type.is_jar():
-            return scanning.scan_jar()
+            result = scanning.scan_jar()
         elif self.file_type.is_aar():
-            return scanning.scan_aar()
+            result = scanning.scan_aar()
         elif self.file_type.is_so():
-            return scanning.scan_so()
+            result = scanning.scan_so()
         elif self.file_type.is_zip():
-            return scanning.scan_zip()
+            result = scanning.scan_zip()
         elif self.file_type.is_ipa():
-            return scanning.scan_ipa()
+            result = scanning.scan_ipa()
         elif self.file_type.is_dylib():
-            return scanning.scan_dylib()
+            result = scanning.scan_dylib()
         elif self.file_type.is_a():
-            return scanning.scan_a()
+            result = scanning.scan_a()
         elif self.file_type.is_appx():
-            return scanning.scan_appx()
+            result = scanning.scan_appx()
 
-    def track_failure(self, error_message):
-        if self.cyberspect_scan_id == 0:
-            return
-        data = {
-            'id': self.cyberspect_scan_id,
-            'success': False,
-            'failure_source': 'SAST',
-            'failure_message': error_message,
-            'sast_end': utcnow(),
-        }
-        update_cyberspect_scan(data)
+        # Cyberspect mods begin
+        try:
+            self.cyberspect_scan_id = new_cyberspect_scan(
+                scheduled=False,
+                md5=result['hash'],
+                start_time=utcnow(),
+                scan_type=result.get('scan_type'),
+                sso_user=self.email,
+            )
+            result['cyberspect_scan_id'] = self.cyberspect_scan_id
+            # Trigger async scan
+            cyberspect_scan_intake(result, self.cyberspect_scan_id)
+        except Exception as exp:
+            exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
+            logger.error(exmsg)
+            msg = str(exp)
+            exp_doc = exp.__doc__
+            self.track_failure(msg)
+            return print_n_send_error_response(request, msg, True, exp_doc)
+
+        # Cyberspect mods end
+
+        return result
 
 
 @login_required
@@ -672,7 +653,11 @@ def delete_scan(request, api=False):
         scan = RecentScansDB.objects.filter(MD5=md5_hash)
         if not scan.exists():
             return send_response({'deleted': 'Scan not found in Database'}, api)
-        if settings.ASYNC_ANALYSIS:
+        # Cyberspect mods begin
+        # Add check for async worker to prevent nested async
+        in_async_worker = request.META.get('_in_async_worker', False)
+        if settings.ASYNC_ANALYSIS and not in_async_worker:
+            # Cyberspect mods end
             # Handle Async Tasks
             et = EnqueuedTask.objects.filter(checksum=md5_hash).first()
             if et:
@@ -722,6 +707,7 @@ class RecentScans(object):
         result = RecentScansDB.objects.all().values().order_by('-TIMESTAMP')
         try:
             paginator = Paginator(result, page_size)
+            # Cyberspect mods begin
             if (int(page) > paginator.num_pages):
                 data = {
                     'content': [],
@@ -735,9 +721,12 @@ class RecentScans(object):
                     'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
+                # Cyberspect mods end
         except Exception as exp:
+            # Cyberspect mods begin
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)
+            # Cyberspect mods end
             data = {'error': str(exp)}
         return data
 

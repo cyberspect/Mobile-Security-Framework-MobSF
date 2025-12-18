@@ -390,7 +390,7 @@ LOGGING = {
         },
     },
 }
-ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '1') == '1')
+ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
     'name': 'scan_queue',

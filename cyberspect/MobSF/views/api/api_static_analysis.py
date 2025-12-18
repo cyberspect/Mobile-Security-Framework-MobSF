@@ -221,11 +221,6 @@ def api_update_cyberspect_scan(request):
         return make_api_response({'id': request.POST['id']}, 404)
 
 
-def async_scan(scan_data):
-    """Async scan wrapper that accepts an Upload instance."""
-    scan(scan_data)
-
-
 def scan(scan_data):
     """Perform static analysis scan using an Upload instance."""
     try:

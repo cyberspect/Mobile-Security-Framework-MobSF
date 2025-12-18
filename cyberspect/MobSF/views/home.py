@@ -130,7 +130,7 @@ def cyberspect_scan_intake(upload_or_data, cyberspect_scan_id=None):
 
     # Use django-q2 async_task to enqueue the scan
     task_id = async_task(
-        'cyberspect.MobSF.views.api.api_static_analysis.async_scan', scan_data)
+        'cyberspect.MobSF.views.api.api_static_analysis.scan', scan_data)
     logger.info(
         '[API_ASYNC_SCAN] Created django - q task with ID: %s for checksum: %s',
         task_id, scan_data['hash'],

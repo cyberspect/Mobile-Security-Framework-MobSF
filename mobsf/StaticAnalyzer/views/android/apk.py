@@ -292,8 +292,11 @@ def apk_analysis(request, app_dic, rescan, api):
         # APK Analysis
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(request, 'Permission Denied', False)
-
-        if settings.ASYNC_ANALYSIS:
+        # Cyberspect mods begin
+        # Add check for async worker to prevent nested async
+        in_async_worker = request.META.get('_in_async_worker', False)
+        if settings.ASYNC_ANALYSIS and not in_async_worker:
+            # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
