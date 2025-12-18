@@ -7,7 +7,6 @@ import shutil
 from pathlib import Path
 
 from django.conf import settings
-from django.shortcuts import render
 from django.template.defaulttags import register
 
 from mobsf.MobSF.utils import (
@@ -41,10 +40,6 @@ from mobsf.StaticAnalyzer.views.android.so import (
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
-)
-
-from cyberspect.utils import (
-    is_admin,
 )
 
 APK_TYPE = 'apk'

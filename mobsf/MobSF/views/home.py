@@ -24,9 +24,6 @@ from django.shortcuts import (
     render,
 )
 from django.template.defaulttags import register
-from django.forms.models import model_to_dict
-
-from django_q.tasks import async_task
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
@@ -75,11 +72,9 @@ from cyberspect.MobSF.views.home import (
     new_cyberspect_scan,
 )
 from cyberspect.utils import (
-    get_siphash,
     is_admin,
     sso_email,
     tz,
-    update_cyberspect_scan,
     utcnow,
 )
 
