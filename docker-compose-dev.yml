@@ -20,6 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    user: "mobsf:mobsf"
     volumes:
       - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
       - $HOME/MobSF/cyberspect_data:/mnt/cyberspect
@@ -40,6 +41,7 @@ services:
       context: .
       dockerfile: Dockerfile
     command: ["python", "manage.py", "qcluster"]
+    user: "mobsf:mobsf"
     volumes:
       - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
       - $HOME/MobSF/cyberspect_data:/mnt/cyberspect

@@ -100,7 +100,7 @@ EXPOSE 8000 1337
 HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Switch to mobsf user
-USER root
+USER $MOBSF_USER
 
 # Run MobSF
 CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/entrypoint.sh"]
