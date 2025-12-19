@@ -159,7 +159,9 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         update_cyberspect_scan({'id': cyberspect_scan_id, 'sast_start': utcnow()})
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         append_scan_status(checksum, 'init')
         get_size_and_hashes(app_dic)
@@ -313,7 +315,9 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
     context = None
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         cert_dic = {
             'certificate_info': '',

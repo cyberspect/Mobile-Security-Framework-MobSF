@@ -3,7 +3,13 @@ import os
 import traceback as tb
 from wsgiref.util import FileWrapper
 
-from django.http import HttpResponse
+from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
+from django.http import (
+    HttpRequest, 
+    HttpResponse,
+    QueryDict,
+)
 from django.views.decorators.csrf import csrf_exempt
 
 from django_q.tasks import async_task
@@ -18,6 +24,10 @@ from mobsf.MobSF.views.home import (
 )
 from mobsf.MobSF.views.api.api_middleware import make_api_response
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
+from mobsf.StaticAnalyzer.views.common.async_task import (
+    mark_task_completed,
+    mark_task_started,
+)
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
 from mobsf.StaticAnalyzer.views.windows import windows
 
@@ -35,6 +45,39 @@ from cyberspect.MobSF.views.home import (
 
 
 logger = logging.getLogger(__name__)
+
+
+def _create_mock_request(scan_data, csdata):
+    """
+    Create a mock Django request object for static analyzers.
+    
+    Args:
+        scan_data: Dictionary with scan parameters
+        csdata: Cyberspect scan data
+        
+    Returns:
+        HttpRequest: Mock request object
+    """
+    request = HttpRequest()
+    request.method = 'POST'
+    
+    # Create a proper QueryDict for POST data
+    post_data = QueryDict(mutable=True)
+    post_data['hash'] = scan_data['hash']
+    post_data['re_scan'] = scan_data.get('rescan', '0')
+    request.POST = post_data
+    
+    # Set META attributes to mimic API authentication middleware
+    request.META['email'] = csdata.get('EMAIL', 'admin@cyberspect.com')
+    request.META['role'] = 'FULL_ACCESS'
+    
+    # Mark that we're in an async worker to prevent nested async
+    request.META['_in_async_worker'] = True
+    
+    # Set anonymous user
+    request.user = AnonymousUser()
+    
+    return request
 
 
 @request_method(['GET'])
@@ -223,56 +266,42 @@ def api_update_cyberspect_scan(request):
 
 def scan(scan_data):
     """Perform static analysis scan using an Upload instance."""
+
+    scan_id = scan_data['cyberspect_scan_id']
+    checksum = scan_data['hash']
+
     try:
         # Extract Cyberspect data from the scan
-        csdata = get_cyberspect_scan(scan_data['cyberspect_scan_id'])
+        csdata = get_cyberspect_scan(scan_id)
 
         # Check if scan is already in progress - use UPPERCASE key
         if csdata['SAST_START']:
             return
 
         # Set scan status to 'in progress'
-        data = {
+        update_cyberspect_scan({
             'id': csdata['ID'],
             'sast_status': 'in progress',
-        }
-        update_cyberspect_scan(data)
-
-        # Track scan start time
-        data = {
-            'id': csdata['ID'],
             'sast_start': utcnow(),
-        }
-        update_cyberspect_scan(data)
+        })
+
+        logger.info(
+            '[SCAN] Starting analysis for scan %s, checksum %s',
+            scan_id,
+            checksum,
+        )
 
         # Create a mock request object for the static analyzers
-        # Mimic API authentication by setting META attributes
-        from django.http import HttpRequest, QueryDict
+        request = _create_mock_request(scan_data, csdata)
 
-        request = HttpRequest()
-        request.method = 'POST'
-
-        # Create a proper QueryDict for POST data
-        post_data = QueryDict(mutable=True)
-        post_data['hash'] = scan_data['hash']
-        post_data['re_scan'] = scan_data.get('rescan', '0')
-        request.POST = post_data
-
-        # Set META attributes to mimic API authentication middleware
-        # This matches the behavior when using the default API key
-        request.META['email'] = csdata.get('EMAIL', 'admin@cyberspect.com')
-        request.META['role'] = 'FULL_ACCESS'
-
-        # For compatibility with any code that checks request.user
-        # (though it shouldn't be needed with DISABLE_AUTHENTICATION)
-        from django.contrib.auth.models import AnonymousUser
-        request.user = AnonymousUser()
+        # Mark task as started in EnqueuedTask
+        checksum = scan_data['hash']
+        mark_task_started(checksum)
 
         response = None
         resp = {}  # Initialize resp to avoid UnboundLocalError
         metadata = scan_metadata(csdata['MOBSF_MD5'])
         scan_type = metadata['SCAN_TYPE']
-        checksum = csdata['MOBSF_MD5']
 
         # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
         if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
@@ -309,20 +338,38 @@ def scan(scan_data):
             data['success'] = False
             data['failure_source'] = 'SAST'
             data['failure_message'] = resp.get('error', 'Unknown error')
+            # Mark task as failed
+            mark_task_completed(checksum, 'Failed', resp.get('error', 'Unknown error'))
+        else:
+            data['success'] = True
+            update_cyberspect_scan(data)
+            # Mark task as completed successfully
+            app_name = resp.get('app_name', resp.get('file_name', 'Analysis Completed'))
+            mark_task_completed(checksum, app_name, 'Success')
 
-        update_cyberspect_scan(data)
         return response
 
     except Exception as exp:
+        # Log the full traceback
         exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
-        logger.error(exmsg)
-        msg = str(exp)
-        data = {
-            'id': scan_data['cyberspect_scan_id'],  # FIXED: use scan_data
+        logger.error(
+            '[SCAN] Error in scan %s: %s',
+            scan_id,
+            exmsg,
+        )
+        
+        # Mark scan as failed
+        update_cyberspect_scan({
+            'id': scan_id,
+            'sast_status': 'failed',
+            'sast_start': None,  # Clear in-progress flag
+            'sast_end': utcnow(),
             'success': False,
             'failure_source': 'SAST',
-            'failure_message': msg,
-            'sast_end': utcnow(),
-        }
-        update_cyberspect_scan(data)
-        return make_api_response(data, 500)
+            'failure_message': str(exp),
+        })
+        
+        # Mark task as failed
+        mark_task_completed(checksum, 'Failed', str(exp))
+        
+        return make_api_response({'error': str(exp)}, 500)

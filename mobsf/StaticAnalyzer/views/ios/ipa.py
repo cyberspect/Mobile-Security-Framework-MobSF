@@ -169,7 +169,9 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         append_scan_status(checksum, 'init')
         msg = 'iOS Binary (IPA) Analysis Started'
@@ -279,7 +281,9 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # it's a code smell to change the Django global setting
+            # at runtime
             mark_task_started(checksum)
         logger.info('iOS Source Code Analysis Started')
         get_size_and_hashes(app_dic)
