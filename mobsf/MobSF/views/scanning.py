@@ -103,13 +103,15 @@ def handle_uploaded_file(content, extension, source_content=None):
         if not os.path.exists(settings.UPLD_DIR):
             try:
                 os.makedirs(settings.UPLD_DIR, exist_ok=True)
-            except Exception:
+            except Exception as e:
+                logger.error('Failed to create upload directory %s: %s', settings.UPLD_DIR, e)
                 raise
 
         if not os.path.exists(anal_dir):
             try:
                 os.makedirs(anal_dir, exist_ok=True)
-            except Exception:
+            except Exception as e:
+                logger.error('Failed to create analysis directory %s: %s', anal_dir, e)
                 raise
 
         # Validate directory was actually created
