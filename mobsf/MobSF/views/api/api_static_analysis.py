@@ -97,7 +97,7 @@ def api_scan(request):
             response = make_api_response(resp, 200)
     # APPX
     elif scan_type in settings.WINDOWS_EXTS:
-        resp = windows.staticanalyzer_windows_internal(request, checksum, True)
+        resp = windows.staticanalyzer_windows(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
@@ -116,10 +116,7 @@ def api_scan_logs(request):
     if not resp:
         return make_api_response(
             {'error': 'No scan logs found'}, 400)
-    response = make_api_response({
-        'logs': resp,
-    }, 200)
-    return response
+    return make_api_response({'logs': resp}, 200)
 
 
 @request_method(['POST'])
