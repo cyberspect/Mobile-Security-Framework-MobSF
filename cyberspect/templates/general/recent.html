@@ -28,9 +28,7 @@
                  <div class="box">
         <div class="box-header with-border">
             <h3 class="box-title">Scanned Apps{% if filter %} [{{filter}}]{% endif %}</h3>
-            {% if async_scans %}
             <p class="lead">View scan progress in the <strong><a href="{% url 'list_tasks' %}">Scan Queue</a></strong></p>
-            {% endif %}
         </div>
 
         <div class="box-body">
