@@ -21,6 +21,7 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.StaticAnalyzer.models import (
+    EnqueuedTask,
     RecentScansDB,
 )
 # Cyberspect imports
@@ -130,10 +131,18 @@ def cyberspect_scan_intake(upload_or_data, cyberspect_scan_id=None):
 
     # Use django-q2 async_task to enqueue the scan
     task_id = async_task(
-        'cyberspect.MobSF.views.api.api_static_analysis.scan', scan_data)
+        'cyberspect.MobSF.views.api.api_static_analysis.scan',
+        scan_data,
+        save=False)
     logger.info(
         '[API_ASYNC_SCAN] Created django - q task with ID: %s for checksum: %s',
         task_id, scan_data['hash'],
+    )
+    # Create an EnqueuedTask entry to track the task in the Scan Queue
+    EnqueuedTask.objects.create(
+        task_id=task_id,
+        checksum=scan_data['hash'],
+        file_name=scan_data.get('file_name', '')[:254]
     )
 
     # Update intake end time immediately
