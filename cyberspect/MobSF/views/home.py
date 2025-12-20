@@ -15,11 +15,12 @@ from django.shortcuts import (
 from django.forms.models import model_to_dict
 
 from django_q.tasks import async_task
+
 from django.utils import timezone
+
 from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
-from mobsf.MobSF.views.scanning import Scanning
 from mobsf.StaticAnalyzer.models import (
     EnqueuedTask,
     RecentScansDB,
@@ -119,8 +120,6 @@ def cyberspect_scan_intake(upload_or_data, cyberspect_scan_id=None):
         upload_or_data: Either an Upload object or a dictionary with scan data
         cyberspect_scan_id: Optional scan ID (used when upload_or_data is a dict)
     """
-    logger.info("=== cyberspect_scan_intake called ===")
-    
     # Handle both Upload objects and plain dictionaries
     if isinstance(upload_or_data, dict):
         # Called from cyberspect_rescan with a dictionary
@@ -129,26 +128,25 @@ def cyberspect_scan_intake(upload_or_data, cyberspect_scan_id=None):
             scan_data['cyberspect_scan_id'] = cyberspect_scan_id
     else:
         # Called from Upload.upload_api or Upload.upload_html
-        scanning = Scanning(upload_or_data.request)
         scan_data = extract_cyberspect_scan_data(upload_or_data)
 
     # Use django-q2 async_task to enqueue the scan
     checksum = scan_data['hash']
     file_name = scan_data.get('file_name', 'unknown')
-    
-    logger.info(f"Creating async task for checksum: {checksum}")
-    
+    msg = f'Creating async task for checksum: {checksum}'
+    logger.info(msg)
+
     task_id = async_task(
         'cyberspect.MobSF.views.api.api_static_analysis.scan',
         scan_data,
         task_name=f'scan_{checksum}',
     )
-    
+
     logger.info(
         '[API_ASYNC_SCAN] Created django-q task with ID: %s for checksum: %s',
         task_id, checksum,
     )
-    
+
     # Create an EnqueuedTask entry to track the task in the Scan Queue
     enqueued = EnqueuedTask.objects.create(
         task_id=task_id,
@@ -157,8 +155,8 @@ def cyberspect_scan_intake(upload_or_data, cyberspect_scan_id=None):
         status='Enqueued',
         created_at=timezone.now(),
     )
-    
-    logger.info(f"Created EnqueuedTask with ID: {enqueued.id}")
+    msg = f'Created EnqueuedTask with ID: {enqueued.id}'
+    logger.info(msg)
 
     # Update intake end time immediately
     update_data = {

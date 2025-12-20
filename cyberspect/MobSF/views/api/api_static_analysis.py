@@ -3,10 +3,9 @@ import os
 import traceback as tb
 from wsgiref.util import FileWrapper
 
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import (
-    HttpRequest, 
+    HttpRequest,
     HttpResponse,
     QueryDict,
 )
@@ -50,33 +49,33 @@ logger = logging.getLogger(__name__)
 def _create_mock_request(scan_data, csdata):
     """
     Create a mock Django request object for static analyzers.
-    
+
     Args:
         scan_data: Dictionary with scan parameters
         csdata: Cyberspect scan data
-        
+
     Returns:
         HttpRequest: Mock request object
     """
     request = HttpRequest()
     request.method = 'POST'
-    
+
     # Create a proper QueryDict for POST data
     post_data = QueryDict(mutable=True)
     post_data['hash'] = scan_data['hash']
     post_data['re_scan'] = scan_data.get('rescan', '0')
     request.POST = post_data
-    
+
     # Set META attributes to mimic API authentication middleware
     request.META['email'] = csdata.get('EMAIL', 'admin@cyberspect.com')
     request.META['role'] = 'FULL_ACCESS'
-    
+
     # Mark that we're in an async worker to prevent nested async
     request.META['_in_async_worker'] = True
-    
+
     # Set anonymous user
     request.user = AnonymousUser()
-    
+
     return request
 
 
@@ -266,7 +265,6 @@ def api_update_cyberspect_scan(request):
 
 def scan(scan_data):
     """Perform static analysis scan using an Upload instance."""
-
     scan_id = scan_data['cyberspect_scan_id']
     checksum = scan_data['hash']
 
@@ -357,7 +355,7 @@ def scan(scan_data):
             scan_id,
             exmsg,
         )
-        
+
         # Mark scan as failed
         update_cyberspect_scan({
             'id': scan_id,
@@ -368,8 +366,8 @@ def scan(scan_data):
             'failure_source': 'SAST',
             'failure_message': str(exp),
         })
-        
+
         # Mark task as failed
         mark_task_completed(checksum, 'Failed', str(exp))
-        
+
         return make_api_response({'error': str(exp)}, 500)
