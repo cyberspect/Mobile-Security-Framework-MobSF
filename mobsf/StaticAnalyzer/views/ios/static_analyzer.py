@@ -65,7 +65,6 @@ def static_analyzer_ios(request, checksum, api=False):
         ios_exts = tuple(f'.{i}' for i in settings.IOS_EXTS)
         allowed_exts = ios_exts + ('.zip', 'ios')
         allowed_types = settings.IOS_EXTS + ('zip', 'ios')
-
         if (not filename.lower().endswith(allowed_exts)
                 or file_type not in allowed_types):
             return print_n_send_error_response(
@@ -96,7 +95,6 @@ def static_analyzer_ios(request, checksum, api=False):
             logger.error(err)
             append_scan_status(checksum, err)
             raise Exception(err)
-
     except Exception as exp:
         msg = 'Error Performing Static Analysis'
         logger.exception(msg)

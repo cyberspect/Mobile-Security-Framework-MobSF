@@ -38,7 +38,6 @@ from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
-    async_task,
     pdf,
     shared_func,
     suppression,
