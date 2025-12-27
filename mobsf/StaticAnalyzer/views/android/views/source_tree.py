@@ -10,8 +10,8 @@ from django.shortcuts import (
     render,
 )
 
+from mobsf.MobSF.init import api_key
 from mobsf.MobSF.utils import (
-    api_key,
     is_md5,
     print_n_send_error_response,
 )
@@ -20,9 +20,6 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
-)
-from mobsf.MobSF.cyberspect_utils import (
-    is_admin,
 )
 
 logger = logging.getLogger(__name__)
@@ -73,10 +70,7 @@ def run(request):
             'title': f'{typ.capitalize()} Source',
             'hash': md5,
             'source_type': typ,
-            'version': settings.MOBSF_VER,
-            'cversion': settings.CYBERSPECT_VER,
-            'api_key': api_key(),
-            'is_admin': is_admin(request),
+            'api_key': api_key(settings.MOBSF_HOME),
         }
         template = 'static_analysis/source_tree.html'
         return render(request, template, context)

@@ -2,7 +2,6 @@
 """Module for manifest_view."""
 
 import logging
-import os
 from pathlib import Path
 
 from django.conf import settings
@@ -18,9 +17,6 @@ from mobsf.StaticAnalyzer.views.android.manifest_utils import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.cyberspect_utils import (
-    is_admin,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -30,22 +26,19 @@ def run(request, checksum):
     """View the manifest."""
     try:
         supported = ['eclipse', 'studio', 'apk', 'aar']
-        directory = settings.BASE_DIR  # BASE DIR
         typ = request.GET['type']  # APK or SOURCE
         if is_md5(checksum) and (typ in supported):
-            app_dir = os.path.join(
-                settings.UPLD_DIR, checksum + '/')  # APP DIRECTORY
-            tools_dir = os.path.join(
-                directory, 'StaticAnalyzer/tools/')  # TOOLS DIR
-            app_path = os.path.join(app_dir, checksum + '.apk')
-            manifest_file = get_manifest_file(
-                app_dir,
-                app_path,
-                tools_dir,
-                typ)
-            mfile = Path(manifest_file)
-            if mfile.exists():
-                manifest = mfile.read_text('utf-8', 'ignore')
+            app_dir = Path(settings.UPLD_DIR) / checksum
+            app_dic = {
+                'md5': checksum,
+                'app_dir': app_dir,
+                'app_path': app_dir / f'{checksum}.apk',
+                'tools_dir': Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'tools',
+                'zipped': typ,
+            }
+            manifest_file = get_manifest_file(app_dic)
+            if manifest_file and manifest_file.exists():
+                manifest = manifest_file.read_text('utf-8', 'ignore')
             else:
                 manifest = ''
             context = {
@@ -54,9 +47,6 @@ def run(request, checksum):
                 'data': manifest,
                 'type': 'xml',
                 'sqlite': {},
-                'version': settings.MOBSF_VER,
-                'cversion': settings.CYBERSPECT_VER,
-                'is_admin': is_admin(request),
             }
             template = 'general/view.html'
             return render(request, template, context)

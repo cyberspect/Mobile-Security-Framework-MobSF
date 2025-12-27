@@ -223,34 +223,38 @@ sidebar-collapse
     if (json.status === 'error') {
       _("status").innerText = json.description;
     } else {
-      i = 1;
-      setInterval(function () {
-        dot = '';
-        for (x = 1; x <= i; x++) {
-          dot += '.';
-        }
-        _("status").innerText = "Analyzing" + dot;
-        i += 1;
-        if (i == 5) {
-          i = 1;
-        }
-      }, 2000);
-      window.location.href = "/recent_scans";
+      _("status").innerText = "Analyzing...";
+      // Redirect after a short delay to allow the user to see the "Analyzing" message.
+      setTimeout(function () {
+        window.location.href = "/recent_scans";
+      }, 1000); // 1 second delay
     }
   }
   function progressHandler(event) {
-    var percent = (event.loaded / event.total) * 100;
-    _("progressBar").value = Math.round(percent);
-    _("status").innerText = Math.round(percent) + "% Uploaded...";
+    if (event.lengthComputable) {
+      var percent = (event.loaded / event.total) * 100;
+      // Cap progress at 95% to leave room for server processing
+      _("progressBar").value = Math.min(Math.round(percent), 95);
+      _("status").innerText = Math.min(Math.round(percent), 95) + "% Uploaded...";
+    }
   }
   function completeHandler(event) {
+    // Set progress bar to 100% when complete
+    _("progressBar").value = 100;
+    
     if (event.target.status !== 200) {
       var json = { status: "error", description: event.target.responseText };
       responseHandler(json);
     }
     else {
-      var json = JSON.parse(event.target.responseText);
-      responseHandler(json);
+      try {
+        var json = JSON.parse(event.target.responseText);
+        responseHandler(json);
+      } catch (e) {
+        console.error("Failed to parse response:", event.target.responseText);
+        var json = { status: "error", description: "Invalid server response" };
+        responseHandler(json);
+      }
     }
   }
   function errorHandler(event) {

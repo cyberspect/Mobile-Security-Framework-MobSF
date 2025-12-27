@@ -61,21 +61,6 @@ def dylib_analysis(request, app_dict, rescan, api):
         MD5=checksum)
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
-
-        # Ensure virus_total is always in context
-        if 'virus_total' not in context:
-            context['virus_total'] = None
-
-        if settings.VT_ENABLED:
-            vt = VirusTotal.VirusTotal(checksum)
-            context['virus_total'] = vt.get_result(
-                context['app_info']['app_path'])
-        context['appsec'] = {}
-        context['average_cvss'] = None
-        template = 'static_analysis/ios_binary_analysis.html'
-        if api:
-            return context
-        return render(request, template, context)
     else:
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
@@ -116,6 +101,8 @@ def dylib_analysis(request, app_dict, rescan, api):
             'bundle_supported_platforms': [],
             'bundle_version_name': '',
         }
+        app_dict['infoplist'] = infoplist_dict
+        app_dict['all_files'] = all_files
         app_dict['appstore'] = ''
         app_dict['secrets'] = []
         bin_dict = {
@@ -165,29 +152,20 @@ def dylib_analysis(request, app_dict, rescan, api):
         code_dict['code_anal'] = {}
         code_dict['firebase'] = firebase_analysis(
             checksum,
-            code_dict['domains'])
+            code_dict)
         code_dict['trackers'] = trackers
         context = save_get_ctx(
             app_dict,
-            infoplist_dict,
             code_dict,
             bin_dict,
-            all_files,
             rescan)
-
-    # Ensure virus_total is always in context
-    if 'virus_total' not in context:
-        context['virus_total'] = None
-
+    context['virus_total'] = None
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
         context['virus_total'] = vt.get_result(
             app_dict['app_path'])
-
-    if 'appsec' not in context:
-        context['appsec'] = {}
-    if 'average_cvss' not in context:
-        context['average_cvss'] = None
+    context['appsec'] = {}
+    context['average_cvss'] = None
     template = 'static_analysis/ios_binary_analysis.html'
     if api:
         return context

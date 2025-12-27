@@ -14,7 +14,8 @@ from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
 )
-from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
+
+from cyberspect.utils import update_scan_timestamp  # Cyberspect mod
 
 logger = logging.getLogger(__name__)
 
@@ -82,12 +83,12 @@ def get_context_from_db_entry(db_entry):
 
 
 def get_context_from_analysis(app_dict,
-                              info_dict,
                               code_dict,
-                              bin_dict,
-                              all_files):
+                              bin_dict):
     """Get the context for IPA/ZIP from analysis results."""
     try:
+        info_dict = app_dict['infoplist']
+        all_files = app_dict['all_files']
         bundle_id = info_dict['id']
         code = process_suppression(
             code_dict['code_anal'],
@@ -144,16 +145,17 @@ def get_context_from_analysis(app_dict,
         msg = 'Rendering to Template'
         logger.exception(msg)
         append_scan_status(app_dict['md5_hash'], msg, repr(exp))
+        return None  # Cyberspect added
 
 
 def save_or_update(update_type,
                    app_dict,
-                   info_dict,
                    code_dict,
-                   bin_dict,
-                   all_files):
+                   bin_dict):
     """Save/Update an IPA/ZIP DB entry."""
     try:
+        info_dict = app_dict['infoplist']
+        all_files = app_dict['all_files']
         values = {
             'FILE_NAME': app_dict['file_name'],
             'APP_NAME': info_dict['bin_name'],
@@ -220,7 +222,7 @@ def save_or_update(update_type,
         append_scan_status(app_dict['md5_hash'], msg, repr(exp))
 
 
-def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
+def save_get_ctx(app_dict, code_dict, bin_dict, rescan):
     # Saving to DB
     logger.info('Connecting to DB')
     if rescan:
@@ -237,13 +239,9 @@ def save_get_ctx(app_dict, pdict, code_dict, bin_dict, all_files, rescan):
     save_or_update(
         action,
         app_dict,
-        pdict,
         code_dict,
-        bin_dict,
-        all_files)
+        bin_dict)
     return get_context_from_analysis(
         app_dict,
-        pdict,
         code_dict,
-        bin_dict,
-        all_files)
+        bin_dict)

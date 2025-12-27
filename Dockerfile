@@ -32,6 +32,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && \
     apt install -y --no-install-recommends \
+    android-sdk-build-tools \
     android-tools-adb \
     build-essential \
     curl \
@@ -64,6 +65,7 @@ RUN ./dependencies.sh
 
 # Copy dependency files first (changes when dependencies change)
 COPY pyproject.toml poetry.lock ./
+
 # Install Python dependencies
 RUN poetry config virtualenvs.create false && \
   poetry lock && \

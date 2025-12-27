@@ -24,7 +24,8 @@ from mobsf.StaticAnalyzer.views.ios.db_interaction import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.cyberspect_utils import (
+
+from cyberspect.utils import (
     is_admin,
 )
 
@@ -41,9 +42,20 @@ def common_fields(findings, data):
             sev = cd['metadata']['severity']
         desc = cd['metadata']['description']
         ref = cd['metadata'].get('ref', '')
+
+        files_dict = cd.get('files', {})
+        files_lines = [f'{file}, line(s) {lines}'
+                       for file, lines in files_dict.items()]
+        all_files_str = '\n'.join(files_lines)
+
+        if files_dict:
+            fdesc = f'{desc}\n{ref}\n\nFiles:\n{all_files_str}'
+        else:
+            fdesc = f'{desc}\n{ref}'
+
         findings[sev].append({
             'title': cd['metadata']['description'],
-            'description': f'{desc}\n{ref}',
+            'description': fdesc,
             'section': 'code',
         })
     # Permissions
@@ -74,7 +86,7 @@ def common_fields(findings, data):
     # File Analysis
     cert_files = None
     cfp = []
-    for fa in data['file_analysis']:
+    for fa in data.get('file_analysis', []):
         if isinstance(fa, str):
             # FA is being used by so/dylib
             continue
@@ -374,8 +386,8 @@ def appsec_dashboard(request, checksum, api=False):
             else:
                 msg = 'Report not found or supported'
                 return print_n_send_error_response(request, msg, api)
-        context['version'] = settings.MOBSF_VER
-        context['cversion'] = settings.CYBERSPECT_VER
+        context['version'] = settings.MOBSF_VER  # Context Processor?
+        context['cversion'] = settings.CYBERSPECT_VER  # Context Processor?
         context['title'] = 'AppSec Scorecard'
         context['efr01'] = True if settings.EFR_01 == '1' else False
         if api:
