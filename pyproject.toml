@@ -8,7 +8,10 @@ license = "GPL-3.0-only"
 readme = "README.md"
 repository = "https://github.com/MobSF/Mobile-Security-Framework-MobSF"
 documentation = "https://mobsf.github.io/docs/"
-packages = [{ include = "mobsf", format = ["sdist", "wheel"]}]
+packages = [
+    { include = "mobsf", format = ["sdist", "wheel"]},
+    { include = "cyberspect", format = ["sdist", "wheel"]}
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -73,6 +76,23 @@ django-brake = "^1.6.0"
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.3.0"
 tox = "^4.31.0"
+autopep8 = "^2.3.2"
+pydocstyle = "^6.3.0"
+flake8-broken-line = "^1.0.0"
+flake8-bugbear = "^25.11.29"
+flake8-builtins = "^3.1.0"
+flake8-colors = "^0.1.9"
+flake8-commas = "^4.0.0"
+flake8-comprehensions = "^3.17.0"
+flake8-docstrings = "^1.7.0"
+flake8-eradicate = "^1.5.0"
+flake8-import-order = "^0.19.2"
+flake8-logging-format = "^2024.24.12"
+flake8-quotes = "^3.4.0"
+flake8-self = "^0.2.2"
+pep8-naming = "^0.15.1"
+radon = "^6.0.1"
+codespell = "^2.4.1"
 
 [build-system]
 requires = ["poetry-core"]
