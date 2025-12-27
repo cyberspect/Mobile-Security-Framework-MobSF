@@ -57,7 +57,7 @@ def download_file(url, file_path):
             raise Exception(f'Failed to download file. Status code: {response.status}')
 
 
-def install_jadx(mobsf_home, version='1.5.0'):
+def install_jadx(mobsf_home, version='1.5.1'):
     """Install JADX dynamically."""
     try:
         url = ('https://github.com/skylot/jadx/releases/download/'
