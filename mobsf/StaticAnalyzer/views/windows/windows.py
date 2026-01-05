@@ -52,7 +52,6 @@ from mobsf.MobSF.views.authorization import (
 )
 
 from cyberspect.utils import (
-    is_admin,
     update_scan_timestamp,  # Cyberspect mod - use this not home's
 )
 
@@ -69,19 +68,7 @@ config = None
 
 
 @login_required
-def staticanalyzer_windows(request, checksum):
-    response = staticanalyzer_windows_internal(request.GET, checksum)
-    response['is_admin'] = is_admin(request)
-    if 'template' in response:
-        return render(request, response['template'], response)
-    elif 'error' in response:
-        return print_n_send_error_response(request, response['error'])
-    else:
-        return response
-
-
-@login_required
-def staticanalyzer_windows_internal(request, checksum, api=False):
+def staticanalyzer_windows(request, checksum, api=False):
     """Analyse a windows app."""
     try:
         # Input validation
@@ -175,6 +162,7 @@ def staticanalyzer_windows_internal(request, checksum, api=False):
             context = get_context_from_analysis(app_dic,
                                                 xml_dic,
                                                 bin_an_dic)
+            context['virus_total'] = None
         template = 'static_analysis/windows_binary_analysis.html'
         context['virus_total'] = None
         if settings.VT_ENABLED:

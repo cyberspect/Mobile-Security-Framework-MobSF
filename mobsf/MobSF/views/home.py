@@ -61,8 +61,8 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     permission_required,
 )
-from mobsf.StaticAnalyzer.views.common import appsec
 # Cyberspect imports
+from mobsf.StaticAnalyzer.views.common import appsec
 from mobsf.StaticAnalyzer.cyberspect_models import (
     CyberspectScans,
 )
@@ -77,6 +77,7 @@ from cyberspect.utils import (
     tz,
     utcnow,
 )
+# Cyberspect imports end
 
 
 LINUX_PLATFORM = ['Darwin', 'Linux']
@@ -101,7 +102,7 @@ def index(request):
         'title': 'Cyberspect: Upload App',
         'mimes': mimes,
         'exts': '|'.join(exts),
-        'email': sso_email(request),
+        'email': sso_email(request),  # Cyberspect mod
         'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/home2.html'
@@ -250,15 +251,15 @@ class Upload(object):
 @login_required
 def api_docs(request):
     """Api Docs Route."""
-    if (not is_admin(request)):
-        return print_n_send_error_response(request, 'Unauthorized')
+    if (not is_admin(request)):  # Cyberspect mod
+        return print_n_send_error_response(request, 'Unauthorized')  # Cyberspect mod
 
     key = '*******'
     try:
         if (settings.DISABLE_AUTHENTICATION == '1'
                 or request.user.is_staff
                 or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
-            key = api_key()
+            key = api_key(settings.MOBSF_HOME)
     except Exception:
         logger.exception('[ERROR] Failed to get API key')
     context = {
@@ -325,6 +326,7 @@ def dynamic_analysis(request):
 def recent_scans(request, page_size=20, page_number=1):
     """Show Recent Scans Route."""
     entries = []
+    # Cyberspect mods begin
     sfilter = request.GET.get('filter', '')
     if sfilter:
         if re.match('[0-9a-f]{32}', sfilter):
@@ -345,6 +347,7 @@ def recent_scans(request, page_size=20, page_number=1):
     db_obj = db_obj.order_by('-TIMESTAMP').values()
 
     paginator = Paginator(db_obj, page_size)
+    # Cyberspect mods end
     page_obj = paginator.get_page(page_number)
     page_obj.page_size = page_size
     md5_list = [i['MD5'] for i in page_obj]

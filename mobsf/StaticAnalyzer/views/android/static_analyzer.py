@@ -2,8 +2,6 @@
 """Android Static Code Analysis."""
 
 import logging
-import os
-import shutil
 from pathlib import Path
 
 from django.conf import settings
@@ -12,7 +10,6 @@ from django.template.defaulttags import register
 from mobsf.MobSF.utils import (
     android_component,
     append_scan_status,
-    is_dir_exists,
     is_md5,
     key,
     pathify,
@@ -135,65 +132,3 @@ def static_analyzer(request, checksum, api=False):
         exp = exp.__doc__
         append_scan_status(checksum, errmsg, repr(exp))
         return print_n_send_error_response(request, repr(exp), api, exp)
-
-
-def is_android_source(app_dir):
-    """Detect Android Source and IDE Type."""
-    # Eclipse
-    man = os.path.isfile(os.path.join(app_dir, 'AndroidManifest.xml'))
-    src = os.path.exists(os.path.join(app_dir, 'src/'))
-    if man and src:
-        return 'eclipse', True
-    # Studio
-    man = os.path.isfile(
-        os.path.join(app_dir, 'app/src/main/AndroidManifest.xml'),
-    )
-    java = os.path.exists(os.path.join(app_dir, 'app/src/main/java/'))
-    kotlin = os.path.exists(os.path.join(app_dir, 'app/src/main/kotlin/'))
-    if man and (java or kotlin):
-        return 'studio', True
-    return None, False
-
-
-def valid_source_code(checksum, app_dir):
-    """Test if this is an valid source code zip."""
-    try:
-        msg = 'Detecting source code type'
-        logger.info(msg)
-        append_scan_status(checksum, msg)
-        ide, is_and = is_android_source(app_dir)
-        if ide:
-            return ide, is_and
-        # Relaxed Android Source check, one level down
-        for x in os.listdir(app_dir):
-            obj = os.path.join(app_dir, x)
-            if not is_dir_exists(obj):
-                continue
-            ide, is_and = is_android_source(obj)
-            if ide:
-                move_to_parent(obj, app_dir)
-                return ide, is_and
-        # iOS Source
-        xcode = [f for f in os.listdir(app_dir) if f.endswith('.xcodeproj')]
-        if xcode:
-            return 'ios', True
-        # Relaxed iOS Source Check
-        for x in os.listdir(app_dir):
-            obj = os.path.join(app_dir, x)
-            if not is_dir_exists(obj):
-                continue
-            if [f for f in os.listdir(obj) if f.endswith('.xcodeproj')]:
-                return 'ios', True
-        return '', False
-    except Exception as exp:
-        msg = 'Error identifying source code type from zip'
-        logger.exception(msg)
-        append_scan_status(checksum, msg, repr(exp))
-
-
-def move_to_parent(inside, app_dir):
-    """Move contents of inside to app dir."""
-    for x in os.listdir(inside):
-        full_path = os.path.join(inside, x)
-        shutil.move(full_path, app_dir)
-    shutil.rmtree(inside)
