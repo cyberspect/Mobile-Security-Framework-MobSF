@@ -59,7 +59,7 @@ from . import settings
 from cyberspect.MobSF.views import home as cs_home
 from cyberspect.MobSF.views.api import api_static_analysis as cs_api_sz
 
-bundle_id_regex = r'(?P<bundle_id>([a-zA-Z0-9]{1}[\w.-]{1,255}))$'
+bundle_id_regex = r'(?P<bundle_id>.+)$'
 checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
 
@@ -237,6 +237,7 @@ if settings.API_ONLY == '0':
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
         re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
         re_path(r'^robots.txt$', home.robots_txt),
+        re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
         re_path(r'^tasks$',
                 async_task.list_tasks,
                 name='list_tasks'),

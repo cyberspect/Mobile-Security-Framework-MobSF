@@ -285,7 +285,6 @@ def generate_dynamic_context(request, app_dic, checksum, context, api):
 def apk_analysis(request, app_dic, rescan, api):
     """APK Analysis."""
     checksum = initialize_app_dic(app_dic, 'apk')
-
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)

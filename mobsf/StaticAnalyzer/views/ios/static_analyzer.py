@@ -37,7 +37,6 @@ register.filter('relative_path', relative_path)
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
     try:
-        logger.info('iOS Static Analysis Started')
         rescan = False
         if api:
             re_scan = request.POST.get('re_scan', 0)
@@ -80,7 +79,6 @@ def static_analyzer_ios(request, checksum, api=False):
             'directory'] / 'StaticAnalyzer' / 'tools' / 'ios'
         app_dict['tools_dir'] = tools_dir.as_posix()
         app_dict['icon_path'] = ''
-
         if file_type == 'ipa':
             return ipa_analysis(request, app_dict, rescan, api)
         elif file_type == 'dylib':

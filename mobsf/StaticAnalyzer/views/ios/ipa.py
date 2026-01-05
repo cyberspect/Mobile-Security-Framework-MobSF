@@ -263,13 +263,9 @@ def ipa_analysis(request, app_dic, rescan, api):
         # Cyberspect mods begin
         # Add check for async worker to prevent nested async
         in_async_worker = request.META.get('_in_async_worker', False)
-        if settings.ASYNC_ANALYSIS and not in_async_worker:
-            # Cyberspect mods end
-            return async_analysis(
-                checksum,
-                api,
-                app_dic.get('file_name', ''),
-                ipa_analysis_task, checksum, app_dic, rescan)
+        # Cyberspect mods end
+        return async_analysis(
+            ipa_analysis_task, checksum, app_dic, rescan)
         context, err = ipa_analysis_task(checksum, app_dic, rescan)
         if err:
             return print_n_send_error_response(request, err, api)

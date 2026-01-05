@@ -14,7 +14,6 @@ from mobsf.MobSF.utils import (
     run_with_timeout,
 )
 
-
 logger = logging.getLogger(__name__)
 
 

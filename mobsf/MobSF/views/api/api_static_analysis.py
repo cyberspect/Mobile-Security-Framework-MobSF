@@ -1,7 +1,5 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
-import logging
-
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings

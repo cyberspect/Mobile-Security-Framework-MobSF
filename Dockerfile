@@ -20,10 +20,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USER_ID=9901 \
     MOBSF_PLATFORM=docker \
     MOBSF_ADB_BINARY=/usr/bin/adb \
-    JDK_FILE=openjdk-22.0.2_linux-x64_bin.tar.gz \
-    JDK_FILE_ARM=openjdk-22.0.2_linux-aarch64_bin.tar.gz \
-    WKH_FILE=wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
-    WKH_FILE_ARM=wkhtmltox_0.12.6.1-3.bookworm_arm64.deb \
     JAVA_HOME=/jdk-22.0.2 \
     PATH=/jdk-22.0.2/bin:/root/.local/bin:$PATH \
     DJANGO_SUPERUSER_USERNAME=mobsf \
@@ -63,10 +59,8 @@ ARG TARGETPLATFORM
 COPY scripts/dependencies.sh mobsf/MobSF/tools_download.py ./
 RUN ./dependencies.sh
 
-# Copy dependency files first (changes when dependencies change)
-COPY pyproject.toml poetry.lock ./
-
 # Install Python dependencies
+COPY pyproject.toml .
 RUN poetry config virtualenvs.create false && \
   poetry lock && \
   poetry install --only main --no-root --no-interaction --no-ansi && \
@@ -74,7 +68,8 @@ RUN poetry config virtualenvs.create false && \
   rm -rf /root/.cache/
 
 # Cleanup
-RUN apt remove -y \
+RUN \
+    apt remove -y \
         git \
         python3-dev \
         wget && \

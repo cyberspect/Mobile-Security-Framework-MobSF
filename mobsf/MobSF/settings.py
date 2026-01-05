@@ -17,7 +17,6 @@ from mobsf.MobSF.init import (
 )
 
 logger = logging.getLogger(__name__)
-
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -428,6 +427,8 @@ IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
 IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
 IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
 IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+IDP_MAINTAINER_GROUP = os.getenv('MOBSF_IDP_MAINTAINER_GROUP', 'Maintainer')
+IDP_VIEWER_GROUP = os.getenv('MOBSF_IDP_VIEWER_GROUP', 'Viewer')
 # SP Configuration
 SP_HOST = os.getenv('MOBSF_SP_HOST')
 SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
@@ -454,7 +455,6 @@ if not CONFIG_HOME:
     # Common third party classes/paths that will be skipped
     # during static analysis
     import os
-
     SKIP_CLASS_PATH = {
         'com/google/',
         'androidx',
