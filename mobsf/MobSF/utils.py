@@ -16,7 +16,6 @@ import signal
 import string
 import subprocess
 import stat
-import socket
 import sqlite3
 import unicodedata
 import threading

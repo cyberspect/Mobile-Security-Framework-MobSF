@@ -102,8 +102,8 @@ def index(request):
         'title': 'Cyberspect: Upload App',
         'mimes': mimes,
         'exts': '|'.join(exts),
-        'email': sso_email(request), # Cyberspect mod
-        'tenant_static': settings.TENANT_STATIC_URL, 
+        'email': sso_email(request),  # Cyberspect mod
+        'tenant_static': settings.TENANT_STATIC_URL,
     }
     template = 'general/home2.html'
     return render(request, template, context)
@@ -251,8 +251,8 @@ class Upload(object):
 @login_required
 def api_docs(request):
     """Api Docs Route."""
-    if (not is_admin(request)): # Cyberspect mod
-        return print_n_send_error_response(request, 'Unauthorized') # Cyberspect mod
+    if (not is_admin(request)):  # Cyberspect mod
+        return print_n_send_error_response(request, 'Unauthorized')  # Cyberspect mod
 
     key = '*******'
     try:
