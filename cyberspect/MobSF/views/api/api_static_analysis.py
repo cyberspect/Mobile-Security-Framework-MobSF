@@ -370,4 +370,7 @@ def scan(scan_data):
         # Mark task as failed
         mark_task_completed(checksum, 'Failed', str(exp))
 
-        return make_api_response({'error': str(exp)}, 500)
+        return make_api_response(
+            {'error': 'Static analysis scan failed.'},
+            500,
+        )
