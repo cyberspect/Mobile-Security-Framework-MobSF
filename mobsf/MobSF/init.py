@@ -18,16 +18,16 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-VERSION = '4.3.2'
 # Cyberspect version - a non-emmpty string below will display the
 # Cyberspect version number in the footer and VERSION as the MobSF version
 CYBERSPECT_VERSION = '2026.01'
+VERSION = '4.4.1'
 BANNER = r"""
-  __  __       _    ____  _____       _  _    _____ 
- |  \/  | ___ | |__/ ___||  ___|_   _| || |  |___ / 
- | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_   |_ \ 
- | |  | | (_) | |_) |__) |  _|  \ V /|__   _| ___) |
- |_|  |_|\___/|_.__/____/|_|     \_/    |_|(_)____/ 
+  __  __       _    ____  _____       _  _   _  _   
+ |  \/  | ___ | |__/ ___||  ___|_   _| || | | || |  
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_| || |_ 
+ | |  | | (_) | |_) |__) |  _|  \ V /|__   _|__   _|
+ |_|  |_|\___/|_.__/____/|_|     \_/    |_|(_) |_|  
 """  # noqa: W291
 # ASCII Font: Standard
 

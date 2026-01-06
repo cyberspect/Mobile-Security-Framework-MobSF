@@ -95,10 +95,6 @@ logger = logging.getLogger(__name__)
 def initialize_app_dic(app_dic, file_ext):
     checksum = app_dic['md5']
     app_dic['app_file'] = f'{checksum}.{file_ext}'
-    # Log the types for debugging
-
-    # Ensure app_dir is a Path object for path operations
-
     app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
     app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
     return checksum
@@ -159,7 +155,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         update_cyberspect_scan({'id': cyberspect_scan_id, 'sast_start': utcnow()})
     try:
         if queue:
-            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod - comment out: settings.ASYNC_ANALYSIS = True
             # it's a code smell to change the Django global setting
             # at runtime
             mark_task_started(checksum)
@@ -271,7 +267,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
 def generate_dynamic_context(request, app_dic, checksum, context, api):
     """Generate Dynamic Context."""
     context['appsec'] = get_android_dashboard(context, True)
-    context['average_cvss'] = get_avg_cvss(context['code_analysis'])
+    context['average_cvss'] = get_avg_cvss(context['code_analysis']['findings'])
     logcat_file = Path(app_dic['app_dir']) / 'logcat.txt'
     context['dynamic_analysis_done'] = logcat_file.exists()
     context['virus_total'] = None
@@ -314,7 +310,7 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
     context = None
     try:
         if queue:
-            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod - comment out: settings.ASYNC_ANALYSIS = True
             # it's a code smell to change the Django global setting
             # at runtime
             mark_task_started(checksum)
@@ -394,7 +390,7 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
 def generate_dynamic_src_context(request, context, api):
     """Generate Dynamic Source Context."""
     context['appsec'] = get_android_dashboard(context, True)
-    context['average_cvss'] = get_avg_cvss(context['code_analysis'])
+    context['average_cvss'] = get_avg_cvss(context['code_analysis']['findings'])
     template = 'static_analysis/android_source_analysis.html'
     return context if api else render(request, template, context)
 
