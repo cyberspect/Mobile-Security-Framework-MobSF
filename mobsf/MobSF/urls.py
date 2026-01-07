@@ -2,10 +2,8 @@ import urllib3
 
 from django.urls import re_path
 
-from mobsf.DynamicAnalyzer.views.common import (
-    device,
-    frida,
-)
+from mobsf.DynamicAnalyzer.views.common import device
+from mobsf.DynamicAnalyzer.views.common.frida import views as frida
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
 from mobsf.DynamicAnalyzer.views.android import (
     operations,
@@ -144,7 +142,7 @@ urlpatterns = [
     # Shared
     re_path(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
     re_path(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
-    re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script),
+    re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script_content),
     re_path(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
     # iOS Specific
     re_path(r'^api/v1/ios/corellium_supported_models$',
@@ -347,8 +345,8 @@ if settings.API_ONLY == '0':
         re_path(r'^list_frida_scripts/$',
                 frida.list_frida_scripts,
                 name='list_frida_scripts'),
-        re_path(r'^get_script/$',
-                frida.get_script,
+        re_path(r'^get_script_content/$',
+                frida.get_script_content,
                 name='get_script'),
         re_path(r'^dynamic_view_file/$',
                 device.view_file,

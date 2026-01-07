@@ -42,8 +42,9 @@
     <img src="{% static 'img/mobsf_logo.png' %}" height="35" />
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'home' %}" class="nav-link">UPLOAD</a></li>  
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'recent' %}" class="nav-link">SCANS</a></li>        
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'home' %}" class="nav-link">UPLOAD</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'recent' %}" class="nav-link">SCANS</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'list_tasks' %}" class="nav-link">QUEUE</a></li>
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'support' %}" class="nav-link">SUPPORT</a></li>
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
         {% with is_admin_flag=is_admin|default:False %}

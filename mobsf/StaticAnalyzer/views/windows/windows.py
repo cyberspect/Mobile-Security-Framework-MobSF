@@ -28,6 +28,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
+from mobsf.MobSF.views.home import update_scan_timestamp
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -49,10 +50,6 @@ from mobsf.MobSF.views.authentication import (
 from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
-)
-
-from cyberspect.utils import (
-    update_scan_timestamp,  # Cyberspect mod - use this not home's
 )
 
 logger = logging.getLogger(__name__)

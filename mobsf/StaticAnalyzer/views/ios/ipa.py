@@ -169,7 +169,7 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod - comment out: settings.ASYNC_ANALYSIS = True
             # it's a code smell to change the Django global setting
             # at runtime
             mark_task_started(checksum)
@@ -281,7 +281,7 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            # Cyberspect mod: settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod - comment out: settings.ASYNC_ANALYSIS = True
             # it's a code smell to change the Django global setting
             # at runtime
             mark_task_started(checksum)

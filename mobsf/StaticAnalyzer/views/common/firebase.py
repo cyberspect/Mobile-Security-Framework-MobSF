@@ -1,4 +1,3 @@
-
 """Firebase Analysis."""
 import logging
 from urllib.parse import urlparse
