@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: "postgres:latest"
+    image: "postgres:14"
     restart: always
     volumes:
       - $HOME/MobSF/postgresql_data:/var/lib/postgresql
