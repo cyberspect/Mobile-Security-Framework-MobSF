@@ -74,6 +74,8 @@ def ios_view_report(request, bundle_id, api=False):
         screenshots = get_screenshots(checksum, download_dir)
         context = {
             'hash': checksum,
+            'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'title': 'iOS Dynamic Analysis Report',
             'instance_id': dev,
             'bundleid': bundle_id,

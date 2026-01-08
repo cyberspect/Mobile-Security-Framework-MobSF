@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.12-slim-bookworm
+FROM python:3.13-slim-bookworm
 
 LABEL \
     name="MobSF" \
@@ -78,21 +78,19 @@ RUN \
     apt autoremove -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* > /dev/null 2>&1
 
-# Set working directory (rarely changes)
+# Copy source code
 WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
-
-# Copy source code LAST (changes most frequently)
 COPY . .
+
+HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
+
+# Expose MobSF Port and Proxy Port
+EXPOSE 8000 1337
 
 # Create mobsf user
 RUN groupadd --gid $USER_ID $MOBSF_USER && \
     useradd $MOBSF_USER --uid $USER_ID --gid $MOBSF_USER --shell /bin/false && \
     chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
-
-# Expose MobSF Port and Proxy Port
-EXPOSE 8000 1337
-
-HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Switch to mobsf user
 USER $MOBSF_USER

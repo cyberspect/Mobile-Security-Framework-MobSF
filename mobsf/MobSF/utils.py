@@ -136,6 +136,8 @@ def print_version():
     logger.info('File storage: %s', settings.MOBSF_HOME)
     logger.info('Administrators: %s', settings.ADMIN_USERS)
     # End Cyberspect addition
+    python_version = sys.version.split(' ')[0]
+    logger.info('Python Version: %s', python_version)
     cores, threads, ram = get_system_resources()
     logger.info('CPU Cores: %s, Threads: %s, RAM: %.2f GB', cores, threads, ram)
     find_java_binary()
