@@ -103,7 +103,7 @@ def index(request):
         'mimes': mimes,
         'exts': '|'.join(exts),
         'email': sso_email(request),  # Cyberspect mod
-        'tenant_static': settings.TENANT_STATIC_URL,
+        'tenant_static': settings.TENANT_STATIC_URL,  # Cyberspect mod
     }
     template = 'general/home2.html'
     return render(request, template, context)
@@ -648,11 +648,11 @@ def generate_download(request, api=False):
             return redirect(f'/download/{file_name}')
         else:
             return {'file_name': file_name}
-    except Exception as exp:
-        exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
-        logger.error(exmsg)
-        return print_n_send_error_response(request, str(exp), api)
         # Cyberspect add ends
+    except Exception:
+        msg = 'Generating Downloads'
+        logger.exception(msg)
+        return print_n_send_error_response(request, msg)
 
 
 @login_required
@@ -750,6 +750,7 @@ class RecentScans(object):
             data = {'error': str(exp)}
         return data
 
+    # Cyberspect adds begin
     def cyberspect_recent_scans(self):
         page = self.request.GET.get('page', 1)
         page_size = self.request.GET.get('page_size', 10)
@@ -857,6 +858,7 @@ class RecentScans(object):
             logger.error(exmsg)
             data = {'error': str(exp)}
         return data
+    # Cyberspect adds end
 
 
 def update_scan_timestamp(scan_hash):

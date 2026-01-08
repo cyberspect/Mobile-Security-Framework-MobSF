@@ -33,6 +33,8 @@ def get_context_from_db_entry(db_entry):
             python_dict(db_entry[0].BINARY_ANALYSIS),
             bundle_id)
         context = {
+            'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'title': 'Static Analysis',
             'file_name': db_entry[0].FILE_NAME,
             'app_name': db_entry[0].APP_NAME,

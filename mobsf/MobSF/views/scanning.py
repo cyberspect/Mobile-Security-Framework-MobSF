@@ -7,8 +7,9 @@ import os
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.security import sanitize_filename
+# Cyberspect imports begin
+from mobsf.MobSF.views.helpers import FileType
 
 from cyberspect.utils import (
     get_siphash,
@@ -17,6 +18,7 @@ from cyberspect.utils import (
     sso_email,
     utcnow,
 )
+# Cyberspect imports end
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +175,8 @@ class Scanning(object):
         # Cyberspect mods
         if ('file' in request.FILES):
             self.file = request.FILES['file']
-            self.file_name = sanitize_filename(self.file.name)
+            self.file_name = sanitize_filename(
+                request.FILES['file'].name)
             self.file_type = FileType(self.file)
             self.file_size = self.file.size
         else:
@@ -348,6 +351,7 @@ class Scanning(object):
         logger.info('Windows APPX uploaded')
         return self.data
 
+    # Cyberspect add begins
     def populate_data_dict(self):
         """Cyberspect specific function: Populates the data dictionary."""
         self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,
@@ -373,3 +377,4 @@ class Scanning(object):
             'cyberspect_scan_id': self.cyberspect_scan_id,
             'rescan': self.rescan,
         }
+    # Cyberspect add begins
