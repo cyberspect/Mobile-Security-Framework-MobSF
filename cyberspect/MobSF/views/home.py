@@ -5,6 +5,8 @@ import os
 import re
 import traceback as tb
 
+import boto3
+
 from django.conf import settings
 from django.db.models import Q
 from django.http import HttpResponse
@@ -157,6 +159,9 @@ def cyberspect_scan_intake(upload_or_data, cyberspect_scan_id=None):
     )
     msg = f'Created EnqueuedTask with ID: {enqueued.id}'
     logger.info(msg)
+
+    # invoke lambda
+    invoke_intake_lambda(scan_data)
 
     # Update intake end time immediately
     update_data = {
@@ -337,3 +342,32 @@ def update_scan(request, api=False):
             return print_n_send_error_response(request, msg, True, exp_doc)
         else:
             return print_n_send_error_response(request, msg, False, exp_doc)
+
+
+def invoke_intake_lambda(scan):
+    if not settings.AWS_INTAKE_LAMBDA:
+        logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
+        return
+
+    lclient = boto3.client('lambda')
+    file_path = os.path.join(settings.UPLD_DIR, scan['hash'] + '/') \
+        + scan['hash'] + '.' + scan['scan_type']
+    if (os.path.exists(file_path + '.src')):
+        file_path = file_path + '.src'
+    lambda_params = {
+        'cyberspect_scan_id': scan['cyberspect_scan_id'],
+        'hash': scan['hash'],
+        'short_hash': scan['short_hash'],
+        'user_app_name': scan['user_app_name'],
+        'user_app_version': scan['user_app_version'],
+        'scan_type': scan['scan_type'],
+        'email': scan['email'],
+        'file_name': file_path,
+        'rescan': scan['rescan'],
+    }
+    logger.info('Executing Cyberspect intake lambda: %s with params: %s',
+                settings.AWS_INTAKE_LAMBDA, lambda_params)
+    lclient.invoke(FunctionName=settings.AWS_INTAKE_LAMBDA,
+                   InvocationType='Event',
+                   Payload=json.dumps(lambda_params).encode('utf-8'))
+    return
