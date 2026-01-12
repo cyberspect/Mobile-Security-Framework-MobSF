@@ -99,8 +99,8 @@ HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 EXPOSE 8000 8000 1337 1337
 
 RUN chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
-RUN chmod +x /home/mobsf/Mobile-Security-Framework-MobSF/scripts/background_tasks.sh
+RUN chmod +x /home/mobsf/Mobile-Security-Framework-MobSF/scripts/qcluster.sh
 USER mobsf
 
 # Run MobSF background tasks
-CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/background_tasks.sh"]
+CMD ["/home/mobsf/Mobile-Security-Framework-MobSF/scripts/qcluster.sh"]
