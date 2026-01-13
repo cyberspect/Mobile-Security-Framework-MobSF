@@ -394,6 +394,7 @@ LOGGING = {
         },
     },
 }
+# This will evaluate to True if the environment variable MOBSF_ASYNC_ANALYSIS is explicitly set to '1'
 ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
