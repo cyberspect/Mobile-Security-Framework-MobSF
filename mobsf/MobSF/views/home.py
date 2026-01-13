@@ -70,8 +70,10 @@ from mobsf.StaticAnalyzer.cyberspect_models import (
 from cyberspect.MobSF.views.home import (
     cyberspect_scan_intake,
     new_cyberspect_scan,
+    track_failure,
 )
 from cyberspect.utils import (
+    get_siphash,
     is_admin,
     sso_email,
     tz,
@@ -232,15 +234,17 @@ class Upload(object):
                 scan_type=result.get('scan_type'),
                 sso_user=self.email,
             )
-            result['cyberspect_scan_id'] = self.cyberspect_scan_id
-            # Trigger async scan
+            if 'short_hash' not in result:
+                result['short_hash'] = get_siphash(result['hash'])
+            if 'cyberspect_scan_id' not in result:
+                result['cyberspect_scan_id'] = self.cyberspect_scan_id
             cyberspect_scan_intake(result, self.cyberspect_scan_id)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)
             msg = str(exp)
             exp_doc = exp.__doc__
-            self.track_failure(msg)
+            track_failure(msg, self.cyberspect_scan_id)
             return print_n_send_error_response(request, msg, True, exp_doc)
 
         # Cyberspect mods end

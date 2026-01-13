@@ -125,9 +125,13 @@ def cyberspect_scan_intake(upload_or_data, cyberspect_scan_id=None):
     # Handle both Upload objects and plain dictionaries
     if isinstance(upload_or_data, dict):
         # Called from cyberspect_rescan with a dictionary
-        scan_data = upload_or_data
-        if cyberspect_scan_id:
+        scan_data = upload_or_data.copy()
+        if 'short_hash' not in scan_data:
+            scan_data['short_hash'] = get_siphash(scan_data['hash'])
+        if 'cyberspect_scan_id' not in scan_data and cyberspect_scan_id:
             scan_data['cyberspect_scan_id'] = cyberspect_scan_id
+        if 'rescan' not in scan_data:
+            scan_data['rescan'] = '0'
     else:
         # Called from Upload.upload_api or Upload.upload_html
         scan_data = extract_cyberspect_scan_data(upload_or_data)
@@ -195,7 +199,7 @@ def extract_cyberspect_scan_data(upload_obj):
         'email': upload_obj.email,
         'user_groups': upload_obj.user_groups,
         'release': upload_obj.release,
-        'rescan': upload_obj.rescan,
+        'rescan': upload_obj.rescan or '0',
         'analyzer': 'static_analyzer',
     }
 
@@ -282,11 +286,11 @@ def support(request):
     return render(request, template, context)
 
 
-def track_failure(self, error_message):
-    if self.cyberspect_scan_id == 0:
+def track_failure(error_message, cyberspect_scan_id):
+    if cyberspect_scan_id == 0:
         return
     data = {
-        'id': self.cyberspect_scan_id,
+        'id': cyberspect_scan_id,
         'success': False,
         'failure_source': 'SAST',
         'failure_message': error_message,
@@ -347,6 +351,14 @@ def update_scan(request, api=False):
 def invoke_intake_lambda(scan):
     if not settings.AWS_INTAKE_LAMBDA:
         logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
+        logging.info('cyberspect_scan_id : %s ', scan['cyberspect_scan_id'])
+        logging.info('hash : %s ', scan['hash'])
+        logging.info('short_hash : %s ', scan['short_hash'])
+        logging.info('user_app_name : %s ', scan['user_app_name'])
+        logging.info('user_app_version : %s ', scan['user_app_version'])
+        logging.info('scan_type : %s ', scan['scan_type'])
+        logging.info('email:  %s: ', scan['email'])
+        logging.info('rescan : %s ', scan['rescan'])
         return
 
     lclient = boto3.client('lambda')
