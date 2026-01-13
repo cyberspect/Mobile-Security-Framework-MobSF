@@ -94,7 +94,7 @@ COPY . .
 HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
 # Expose MobSF Port and Proxy Port
-EXPOSE 8000 8000 1337 1337
+EXPOSE 8000 1337
 
 # Enable Postgres support by default
 ARG POSTGRES=True
