@@ -32,7 +32,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # need to determine the base directory for Cyberspect relted files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
-MOBSF_HOME = os.getenv('FILES_PATH', get_mobsf_home(USE_HOME, BASE_DIR))
+DERIVED_MOBSF_DIR = get_mobsf_home(USE_HOME, BASE_DIR)
+MOBSF_HOME = os.getenv('FILES_PATH', DERIVED_MOBSF_DIR)
 # Download Directory
 DWD_DIR = os.path.join(MOBSF_HOME, 'downloads/')
 # Screenshot Directory
@@ -49,7 +50,19 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 DOWNLOADED_TOOLS_DIR = os.path.join(MOBSF_HOME, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
-
+# Cyberspect DEBUG 
+logger.info('Base Directory: %s', BASE_DIR)
+logger.info('Cyberspect Base Directory: %s', CYBERSPECT_BASE_DIR)
+logger.info('Derived MobSF Directory: %s', DERIVED_MOBSF_DIR)
+logger.info('MobSF Home Directory: %s', MOBSF_HOME)
+logger.info('Download Directory: %s', DWD_DIR)
+logger.info('Screenshot Directory: %s', SCREEN_DIR)
+logger.info('Upload Directory: %s', UPLD_DIR)
+logger.info('Database Directory: %s', DB_DIR)
+logger.info('Signatures Directory: %s', SIGNATURE_DIR)
+logger.info('Tools Directory: %s', TOOLS_DIR)
+logger.info('Downloaded Tools Directory: %s', DOWNLOADED_TOOLS_DIR)
+# Cyberspect DEBUG END
 # ==========Load MobSF User Settings==========
 try:
     if USE_HOME:

@@ -351,14 +351,6 @@ def update_scan(request, api=False):
 def invoke_intake_lambda(scan):
     if not settings.AWS_INTAKE_LAMBDA:
         logging.warning('Environment variable AWS_INTAKE_LAMBDA not set')
-        logging.info('cyberspect_scan_id : %s ', scan['cyberspect_scan_id'])
-        logging.info('hash : %s ', scan['hash'])
-        logging.info('short_hash : %s ', scan['short_hash'])
-        logging.info('user_app_name : %s ', scan['user_app_name'])
-        logging.info('user_app_version : %s ', scan['user_app_version'])
-        logging.info('scan_type : %s ', scan['scan_type'])
-        logging.info('email:  %s: ', scan['email'])
-        logging.info('rescan : %s ', scan['rescan'])
         return
 
     lclient = boto3.client('lambda')
