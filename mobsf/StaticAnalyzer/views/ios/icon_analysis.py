@@ -29,6 +29,8 @@ def get_icon_from_ipa(app_dict):
         logger.info(msg)
         append_scan_status(md5, msg)
         bin_path = os.path.join(bin_dir, binary + '.app')
+        msg = f'Binary path: {bin_path}'
+        logger.debug(msg)
         if not is_dir_exists(bin_path):
             logger.warning('Could not find app binary directory')
             return
@@ -38,8 +40,12 @@ def get_icon_from_ipa(app_dict):
             return
         icon_file = icons.pop()
         outfile = Path(settings.DWD_DIR) / f'{md5}-icon.png'
+        msg = f'Icon path: {outfile.as_posix()}'
+        logger.debug(msg)
         app_dict['icon_path'] = outfile.name
         tools_dir = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'tools' / 'ios'
+        msg = f'Tools dir: {tools_dir.as_posix()}'
+        logger.debug(msg)
         arch = platform.machine()
         system = platform.system()
         # Uncrush PNG. CgBI -> PNG

@@ -76,6 +76,15 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     secrets = []
 
     # IPA URL and Email Extract
+    logging.debug('IPA URL and Email Extrac')
+    msg = 'md_5_hash: {}'.format(app_dict['md5_hash'])
+    logging.debug(msg)
+    msg = 'bin_dir: {}'.format(app_dict['bin_dir'])
+    logging.debug(msg)
+    msg = 'files_long: {}'.format(app_dict['files_long'])
+    logging.debug(msg)
+    msg = 'strings: {}'.format(app_dict['strings'])
+    logging.debug(msg)
     str_meta = extract_urls_n_email(
         app_dict['md5_hash'],
         app_dict['bin_dir'],

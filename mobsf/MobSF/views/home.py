@@ -701,18 +701,32 @@ def delete_scan(request, api=False):
         # Delete Upload Dir Contents
         try:
             app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
+            msg = f'About to delete dir: {app_upload_dir}'
+            logging.debug(msg)
             if is_dir_exists(app_upload_dir):
+                msg = f'Dir exists Deleting {app_upload_dir}'
+                logging.debug(msg)
                 shutil.rmtree(app_upload_dir)
             # Delete Download Dir Contents
             dw_dir = settings.DWD_DIR
             for item in os.listdir(dw_dir):
+                msg = f'listdir Item: {item}'
+                logging.debug(msg)
                 item_path = os.path.join(dw_dir, item)
+                msg = f'Deleting {item_path} in {dw_dir}'
+                logging.debug(msg)
                 valid_item = item.startswith(md5_hash + '-')
+                msg = f'Valid item: {valid_item}'
+                logging.debug(msg)
                 # Delete all related files
                 if is_file_exists(item_path) and valid_item:
+                    msg = f'Deleting {item_path}'
+                    logging.debug(msg)
                     os.remove(item_path)
                 # Delete related directories
                 if is_dir_exists(item_path) and valid_item:
+                    msg = f'Removing path {item_path}'
+                    logging.debug(msg)
                     shutil.rmtree(item_path, ignore_errors=True)
         except OSError as e:
             excmsg = str(e)
