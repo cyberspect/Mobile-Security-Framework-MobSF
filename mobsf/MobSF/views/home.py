@@ -715,9 +715,10 @@ def delete_scan(request, api=False):
                 if is_dir_exists(item_path) and valid_item:
                     shutil.rmtree(item_path, ignore_errors=True)
         except OSError as e:
-            msg = str(e)
-            logger.exception(
-                'Failed to delete scan files: {msg} - {app_upload_dir} - {dw_dir} - {item_path} - {valid_item} - {item}')
+            excmsg = str(e)
+            msg = f'Failed to delete scan files: {excmsg} - '
+            f'{app_upload_dir} - {dw_dir} - {item_path} - {valid_item} - {item}'
+            logger.error(msg)
         return send_response({'deleted': 'yes'}, api)
     except Exception as exp:
         msg = str(exp)
