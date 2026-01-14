@@ -92,14 +92,14 @@ def tz(value):
     if isinstance(value, datetime.datetime):
         if value.tzinfo is None:
             # Naive datetime, assume UTC
-            return timezone.make_aware(value, timezone.utc)
+            return timezone.make_aware(value, datetime.timezone.utc)
         else:
             # Aware datetime, convert to UTC
-            return value.astimezone(timezone.utc)
+            return value.astimezone(datetime.timezone.utc)
     # Parse string into time zone aware datetime, assume UTC
     value = str(value).replace('T', ' ').replace('Z', '').replace('+00:00', '')
     unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    return timezone.make_aware(unware_time, timezone.utc)
+    return timezone.make_aware(unware_time, datetime.timezone.utc)
 
 
 def update_cyberspect_scan(data):
