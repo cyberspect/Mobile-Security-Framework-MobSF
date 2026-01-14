@@ -32,7 +32,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # need to determine the base directory for Cyberspect relted files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
-MOBSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
+MOBSF_HOME = os.getenv('FILES_PATH', get_mobsf_home(USE_HOME, BASE_DIR))
 # Download Directory
 DWD_DIR = os.path.join(MOBSF_HOME, 'downloads/')
 # Screenshot Directory
@@ -394,7 +394,7 @@ LOGGING = {
         },
     },
 }
-# This will evaluate to True if the environment variable MOBSF_ASYNC_ANALYSIS is explicitly set to '1'
+# Evaluates to True if MOBSF_ASYNC_ANALYSIS is explicitly set to '1'
 ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
