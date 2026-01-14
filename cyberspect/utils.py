@@ -88,13 +88,18 @@ def sso_email(request):
 
 
 def tz(value):
-    """Format datetime object with timezone."""
+    """Format datetime object with timezone, ensuring UTC."""
     if isinstance(value, datetime.datetime):
-        return value.replace(tzinfo=datetime.timezone.utc)
-    # Parse string into time zone aware datetime
+        if value.tzinfo is None:
+            # Naive datetime, assume UTC
+            return timezone.make_aware(value, timezone.utc)
+        else:
+            # Aware datetime, convert to UTC
+            return value.astimezone(timezone.utc)
+    # Parse string into time zone aware datetime, assume UTC
     value = str(value).replace('T', ' ').replace('Z', '').replace('+00:00', '')
     unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    return unware_time.replace(tzinfo=datetime.timezone.utc)
+    return timezone.make_aware(unware_time, timezone.utc)
 
 
 def update_cyberspect_scan(data):
@@ -114,6 +119,8 @@ def update_cyberspect_scan(data):
                 db_obj.MOBSF_MD5 = data['mobsf_md5']
             if 'dt_project_id' in data and data['dt_project_id']:
                 db_obj.DT_PROJECT_ID = data['dt_project_id']
+            if 'intake_start' in data and data['intake_start']:
+                db_obj.INTAKE_START = tz(data['intake_start'])
             if 'intake_end' in data and data['intake_end']:
                 db_obj.INTAKE_END = tz(data['intake_end'])
             if 'sast_start' in data and data['sast_start']:
