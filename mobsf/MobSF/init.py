@@ -124,7 +124,9 @@ def get_mobsf_home(use_home, base_dir):
         base_dir = Path(base_dir)
         mobsf_home = ''
         if use_home:
-            mobsf_home = Path.home() / '.MobSF'
+            mobsf_files_path = os.getenv('FILES_PATH',
+                                         os.path.expanduser('~'))
+            mobsf_home = os.path.join(mobsf_files_path, '.MobSF')
             custom_home = os.getenv('MOBSF_HOME_DIR')
             if custom_home:
                 p = Path(custom_home)

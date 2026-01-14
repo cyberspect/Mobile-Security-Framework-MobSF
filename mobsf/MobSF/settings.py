@@ -29,21 +29,20 @@ USE_HOME = True
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Cyberspect addition
-# need to determine the base directory for Cyberspect relted files
+# need to determine the base directory for Cyberspect related files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
 MOBSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
-CYBERSPECT_HOME = os.getenv('FILES_PATH', MOBSF_HOME)
 # Download Directory
-DWD_DIR = os.path.join(CYBERSPECT_HOME, 'downloads/')
+DWD_DIR = os.path.join(MOBSF_HOME, 'downloads/')
 # Screenshot Directory
-SCREEN_DIR = os.path.join(CYBERSPECT_HOME, 'downloads/screen/')
+SCREEN_DIR = os.path.join(MOBSF_HOME, 'downloads/screen/')
 # Upload Directory
-UPLD_DIR = os.path.join(CYBERSPECT_HOME, 'uploads/')
+UPLD_DIR = os.path.join(MOBSF_HOME, 'uploads/')
 # Database Directory
-DB_DIR = os.path.join(CYBERSPECT_HOME, 'db.sqlite3')
+DB_DIR = os.path.join(MOBSF_HOME, 'db.sqlite3')
 # Signatures used by modules
-SIGNATURE_DIR = os.path.join(CYBERSPECT_HOME, 'signatures/')
+SIGNATURE_DIR = os.path.join(MOBSF_HOME, 'signatures/')
 # Tools Directory
 TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 # Downloaded Tools Directory
