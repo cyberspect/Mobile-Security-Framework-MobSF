@@ -2,7 +2,6 @@
 """MobSF REST API V 1."""
 from django.views.decorators.csrf import csrf_exempt
 
-from mobsf.MobSF.cyberspect_utils import make_api_response
 from mobsf.MobSF.views.helpers import request_method
 from mobsf.DynamicAnalyzer.views.android import (
     dynamic_analyzer,
@@ -11,10 +10,10 @@ from mobsf.DynamicAnalyzer.views.android import (
     tests_common,
     tests_frida,
 )
-from mobsf.DynamicAnalyzer.views.common import (
-    device,
-    frida,
-)
+from mobsf.DynamicAnalyzer.views.common import device
+from mobsf.DynamicAnalyzer.views.common.frida import views as frida
+
+from cyberspect.utils import make_api_response
 
 
 # Dynamic Analyzer APIs
@@ -243,7 +242,7 @@ def api_list_frida_scripts(request):
 
 @request_method(['POST'])
 @csrf_exempt
-def api_get_script(request):
+def api_get_script_content(request):
     """POST - Frida Get Script."""
     if not request.POST.getlist('scripts[]'):
         return make_api_response(
@@ -251,7 +250,7 @@ def api_get_script(request):
     if 'device' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    resp = frida.get_script(request, True)
+    resp = frida.get_script_content(request, True)
     if resp['status'] == 'ok':
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)

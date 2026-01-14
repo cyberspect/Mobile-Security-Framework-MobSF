@@ -8,21 +8,21 @@ import datetime
 import json
 import re
 
-from django.conf import settings
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 
-from mobsf.MobSF.cyberspect_utils import (
+from mobsf.MobSF.utils import (
+    print_n_send_error_response,
+)
+from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
+
+from cyberspect.utils import (
     is_admin,
     sso_email,
     tz,
     utcnow,
 )
-from mobsf.MobSF.utils import (
-    print_n_send_error_response,
-)
-from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
 
 logger = logging.getLogger(__name__)
 
@@ -98,9 +98,6 @@ def admin_view(request):
         'min_date': min_exp_date.strftime('%Y-%m-%d'),
         'max_date': max_exp_date.strftime('%Y-%m-%d'),
         'default_exp_date': default_exp_date.strftime('%Y-%m-%d'),
-        'version': settings.MOBSF_VER,
-        'cversion': settings.CYBERSPECT_VER,
-        'is_admin': is_admin(request),
     }
     template = 'general/admin.html'
     return render(request, template, context)

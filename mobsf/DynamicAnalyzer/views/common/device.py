@@ -13,16 +13,15 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.utils import (
     is_md5,
-    is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
     read_sqlite,
 )
 
-from biplist import (
-    writePlistToString,
+from plistlib import (
+    FMT_XML,
+    dumps,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +51,12 @@ def view_file(request, api=False):
         src = Path(settings.UPLD_DIR) / md5_hash / 'DYNAMIC_DeviceData'
         sfile = src / fil
         src = src.as_posix()
-        if not is_safe_path(src, sfile.as_posix()) or is_path_traversal(fil):
+        if not is_safe_path(src, sfile.as_posix(), fil):
             err = 'Path Traversal Attack Detected'
             return print_n_send_error_response(request, err, api)
         dat = sfile.read_text('ISO-8859-1')
         if fil.endswith('.plist') and dat.startswith('bplist0'):
-            dat = writePlistToString(dat).decode('utf-8', 'ignore')
+            dat = dumps(dat, fmt=FMT_XML).decode('utf-8', 'ignore')
         if fil.endswith(('.xml', '.plist')) and typ in ['xml', 'plist']:
             rtyp = 'xml'
         elif typ == 'db':
@@ -77,7 +76,6 @@ def view_file(request, api=False):
             'sqlite': sql_dump,
             'type': rtyp,
             'version': settings.MOBSF_VER,
-            'cversion': settings.CYBERSPECT_VER,
         }
         template = 'general/view.html'
         if api:

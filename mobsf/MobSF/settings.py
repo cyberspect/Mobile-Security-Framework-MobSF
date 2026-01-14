@@ -12,11 +12,11 @@ from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
     get_mobsf_version,
+    get_secret_from_file_or_env,
     load_source,
 )
 
 logger = logging.getLogger(__name__)
-
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -50,7 +50,6 @@ DOWNLOADED_TOOLS_DIR = os.path.join(MOBSF_HOME, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
 
-
 # ==========Load MobSF User Settings==========
 try:
     if USE_HOME:
@@ -69,19 +68,6 @@ except Exception:
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
 SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MOBSF_HOME)
 
-# ==============3rd Party Tools (Always Available)=====================
-# These settings should be accessible regardless of CONFIG_HOME value
-VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
-ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
-JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '/jdk-22.0.2/bin/')
-BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
-JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
-BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
-APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
-JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
-CLASSDUMP_BINARY = os.getenv('MOBSF_CLASSDUMP_BINARY', '')
-CLASSDUMP_SWIFT_BINARY = os.getenv('MOBSF_CLASSDUMP_SWIFT_BINARY', '')
-
 # =============ALLOWED DOWNLOAD EXTENSIONS=====
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
@@ -92,6 +78,9 @@ ALLOWED_EXTENSIONS = {
     '.zip': 'application/zip',
     '.tar': 'application/x-tar',
     '.apk': 'application/octet-stream',
+    '.apks': 'application/octet-stream',
+    '.xapk': 'application/octet-stream',
+    '.aab': 'application/octet-stream',
     '.ipa': 'application/octet-stream',
     '.jar': 'application/java-archive',
     '.aar': 'application/octet-stream',
@@ -99,6 +88,7 @@ ALLOWED_EXTENSIONS = {
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
     '.pcap': 'application/vnd.tcpdump.pcap',
+    '.appx': 'application/vns.ms-appx',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -131,14 +121,8 @@ APPX_MIME = [
 ]
 # Supported File Extensions
 ANDROID_EXTS = (
-    'apk',
-    'xapk',
-    'apks',
-    'zip',
-    'aab',
-    'so',
-    'jar',
-    'aar',
+    'apk', 'xapk', 'apks', 'zip',
+    'aab', 'so', 'jar', 'aar',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
 WINDOWS_EXTS = ()  # ('appx',)
@@ -157,11 +141,11 @@ VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
 ITUNES_URL = 'https://itunes.apple.com/lookup'
-GITHUB_URL = (
-    'https://github.com/MobSF/Mobile-Security-Framework-MobSF/' 'releases/latest'
-)
+GITHUB_URL = ('https://github.com/MobSF/Mobile-Security-Framework-MobSF/'
+              'releases/latest')
 FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
 GOOGLE = 'https://www.google.com'
+PLAYSTORE = 'https://play.google.com'
 BAIDU = 'https://www.baidu.com/'
 APKPURE = 'https://m.apkpure.com/android/{}/download?from=details'
 APKTADA = 'https://apktada.com/download-apk/'
@@ -173,17 +157,16 @@ APKPLZ = 'https://apkplz.net/download-app/'
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-if (
-    os.environ.get('POSTGRES_USER')
-    and os.environ.get('POSTGRES_PASSWORD')
-    and os.environ.get('POSTGRES_HOST')
-):
+if (os.environ.get('POSTGRES_USER')
+        and (os.environ.get('POSTGRES_PASSWORD')
+             or os.environ.get('POSTGRES_PASSWORD_FILE'))
+        and os.environ.get('POSTGRES_HOST')):
     # Postgres support
     default = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('POSTGRES_DB', 'mobsf'),
         'USER': os.environ['POSTGRES_USER'],
-        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+        'PASSWORD': get_secret_from_file_or_env('POSTGRES_PASSWORD'),
         'HOST': os.environ['POSTGRES_HOST'],
         'PORT': int(os.getenv('POSTGRES_PORT', 5432)),
     }
@@ -205,6 +188,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
     # 'django.contrib.admin',
+    'django_q',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -226,6 +210,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.RemoteUserMiddleware',
+    'django_ratelimit.middleware.RatelimitMiddleware',
 )
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.RemoteUserBackend',)
 MIDDLEWARE = (
@@ -261,37 +246,78 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'cyberspect.context_processors.is_admin_processor',
+                'cyberspect.context_processors.app_versions_processor',
+                'cyberspect.context_processors.recent_scans_processor',
             ],
         },
     },
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# Cyberspect mods begin
+LOCAL_DEV_MODE = bool(os.getenv('CYBERSPECT_LOCAL_DEV_MODE', '0'))
+if LOCAL_DEV_MODE:
+    # Determine if running in tenant mode
+    TENANT_ID = os.getenv('TENANT_ID', '')
+
+    if TENANT_ID:
+        # Tenant-specific static files configuration
+        # Collect to tenant subdirectory
+        STATIC_ROOT = os.path.join(CYBERSPECT_BASE_DIR, 'staticfiles', TENANT_ID)
+
+        # But serve from /static/ (not tenant-specific URL)
+        STATIC_URL = '/static/'
+        TENANT_STATIC_URL = '/static/'
+
+        # Ensure tenant subdirectory exists
+        os.makedirs(STATIC_ROOT, exist_ok=True)
+    else:
+        # Default static files configuration
+        STATIC_ROOT = os.path.join(CYBERSPECT_BASE_DIR, 'staticfiles')
+        STATIC_URL = '/static/'
+        TENANT_STATIC_URL = '/static/'
+
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),
+    ]
+else:
+    # Cyberspect mods end
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# WhiteNoise configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-# 256MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
+# Configure WhiteNoise to serve from the correct root
+# This tells WhiteNoise where to find the static files
+WHITENOISE_ROOT = STATIC_ROOT  # Cyberspect mod
+# 256MB limit for file uploads
+DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
+# 400MB per file limit for uncompressed files
+ZIP_MAX_UNCOMPRESSED_FILE_SIZE = 400 * 1024 * 1024
+# 3GB total limit for all uncompressed files
+ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE = 3000 * 1024 * 1024
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = '/'
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'UserAttributeSimilarityValidator'
-        ),
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'UserAttributeSimilarityValidator'),
     },
     {
-        'NAME': ('django.contrib.auth.password_validation.' 'MinimumLengthValidator'),
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'MinimumLengthValidator'),
         'OPTIONS': {
             'min_length': 6,
         },
     },
     {
-        'NAME': ('django.contrib.auth.password_validation.' 'CommonPasswordValidator'),
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'CommonPasswordValidator'),
     },
     {
-        'NAME': ('django.contrib.auth.password_validation.' 'NumericPasswordValidator'),
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'NumericPasswordValidator'),
     },
 ]
 # Better logging
@@ -335,6 +361,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'django_q': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
         'django.db.backends': {
             'handlers': ['console', 'logfile'],
             # DEBUG will log all queries, so change it to WARNING.
@@ -363,13 +394,32 @@ LOGGING = {
         },
     },
 }
+ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
+ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
+Q_CLUSTER = {
+    'name': 'scan_queue',
+    'workers': int(os.getenv('MOBSF_ASYNC_WORKERS', '2')),
+    'recycle': 100,
+    'timeout': ASYNC_ANALYSIS_TIMEOUT * 60,
+    'retry': (ASYNC_ANALYSIS_TIMEOUT * 60) + 100,
+    'compress': True,
+    'label': 'scan_queue',
+    'orm': 'default',
+    'max_attempts': 1,
+    'save_limit': -1,
+    'ack_failures': True,
+}
+QUEUE_MAX_SIZE = 100
+MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION', '1')
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
-USE_X_FORWARDED_HOST = bool(os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
-USE_X_FORWARDED_PORT = bool(os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
+USE_X_FORWARDED_HOST = bool(
+    os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
+USE_X_FORWARDED_PORT = bool(
+    os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
@@ -382,6 +432,8 @@ IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
 IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
 IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
 IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+IDP_MAINTAINER_GROUP = os.getenv('MOBSF_IDP_MAINTAINER_GROUP', 'Maintainer')
+IDP_VIEWER_GROUP = os.getenv('MOBSF_IDP_VIEWER_GROUP', 'Viewer')
 # SP Configuration
 SP_HOST = os.getenv('MOBSF_SP_HOST')
 SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
@@ -408,7 +460,6 @@ if not CONFIG_HOME:
     # Common third party classes/paths that will be skipped
     # during static analysis
     import os
-
     SKIP_CLASS_PATH = {
         'com/google/',
         'androidx',
@@ -453,18 +504,41 @@ if not CONFIG_HOME:
 
     DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1')
     APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1')
-    QUARK_ENABLED = bool(os.getenv('MOBSF_QUARK_ENABLED', ''))
     # ==================================================
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
     # Private key
     WINDOWS_VM_SECRET = os.getenv(
-        'MOBSF_WINDOWS_VM_SECRET', 'mobsf/MobSF/windows_vm_priv_key.asc',
-    )
+        'MOBSF_WINDOWS_VM_SECRET', 'mobsf/MobSF/windows_vm_priv_key.asc')
     # IP and Port of the MobSF Windows VM
     # example: WINDOWS_VM_IP = '127.0.0.1'   ;noqa E800
     WINDOWS_VM_IP = os.getenv('MOBSF_WINDOWS_VM_IP')
     WINDOWS_VM_PORT = os.getenv('MOBSF_WINDOWS_VM_PORT', '8000')
     # ==================================================
+
+    # ==============3rd Party Tools=====================
+    """
+    If you want to use a different version of 3rd party tools used by MobSF.
+    You can do that by specifying the path here. If specified, MobSF will run
+    the tool from this location.
+    """
+
+    # Android 3P Tools
+    BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
+    JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
+    BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
+    VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
+    APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
+    ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
+    AAPT2_BINARY = os.getenv('MOBSF_AAPT2_BINARY', '')
+    AAPT_BINARY = os.getenv('MOBSF_AAPT_BINARY', '')
+
+    # iOS 3P Tools
+    JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
+    CLASSDUMP_BINARY = os.getenv('MOBSF_CLASSDUMP_BINARY', '')
+    CLASSDUMP_SWIFT_BINARY = os.getenv('MOBSF_CLASSDUMP_SWIFT_BINARY', '')
+
+    # COMMON
+    JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '')
 
     """
     Examples:
@@ -491,8 +565,10 @@ if not CONFIG_HOME:
 
     # ========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
-    UPSTREAM_PROXY_ENABLED = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
-    UPSTREAM_PROXY_SSL_VERIFY = os.getenv('MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
+    UPSTREAM_PROXY_ENABLED = bool(os.getenv(
+        'MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+    UPSTREAM_PROXY_SSL_VERIFY = os.getenv(
+        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
     UPSTREAM_PROXY_TYPE = os.getenv('MOBSF_UPSTREAM_PROXY_TYPE', 'http')
     UPSTREAM_PROXY_IP = os.getenv('MOBSF_UPSTREAM_PROXY_IP', '127.0.0.1')
     UPSTREAM_PROXY_PORT = int(os.getenv('MOBSF_UPSTREAM_PROXY_PORT', '3128'))
@@ -526,7 +602,9 @@ if not CONFIG_HOME:
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ==========CYBERSPECT SETTINGS ===============
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-2')
+ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
 AWS_INTAKE_LAMBDA = os.getenv('AWS_INTAKE_LAMBDA', '')
 DEPENDENCY_TRACK_URL = os.getenv('DEPENDENCY_TRACK_URL')
 ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
@@ -540,3 +618,16 @@ DEFAULT_PAGINATION_CLASS = 'utils.FasterPageNumberPagination'
 
 # Customization settings
 CZ100 = os.getenv('CZ100', '')
+
+# ==============3rd Party Tools (Always Available)=====================
+# These settings should be accessible regardless of CONFIG_HOME value
+VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
+ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
+JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '/jdk-22.0.2/bin/')
+BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
+JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
+BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
+APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
+JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
+CLASSDUMP_BINARY = os.getenv('MOBSF_CLASSDUMP_BINARY', '')
+CLASSDUMP_SWIFT_BINARY = os.getenv('MOBSF_CLASSDUMP_SWIFT_BINARY', '')

@@ -84,28 +84,31 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
         'strings': [],
         'bin_info': {},
         'bin_type': '',
+        'bin_path': None,
     }
     try:
         binary_findings = {}
         msg = 'Starting Binary Analysis'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        dirs = Path(src).glob('*')
-        dot_app_dir = ''
-        bin_name = ''
-        for dir_ in dirs:
-            if dir_.suffix == '.app':
-                dot_app_dir = dir_.as_posix()
-                break
-        # Bin Dir - Dir/Payload/x.app/
-        bin_dir = Path(src) / dot_app_dir
+
+        dot_app_path = next(Path(src).glob('**/*.app'), None)
+
+        if not dot_app_path:
+            logger.warning('Could not find .app directory.')
+            return bin_dict
+
+        bin_dir = dot_app_path
+
         if not executable_name:
-            bin_name = dot_app_dir.replace('.app', '')
+            bin_name = dot_app_path.stem
         else:
             _bin = bin_dir / executable_name
             if _bin.exists():
                 bin_name = executable_name
-        # Bin Path - Dir/Payload/x.app/x
+            else:
+                bin_name = dot_app_path.stem
+
         bin_path = bin_dir / bin_name
         if not (bin_path.exists() and bin_path.is_file()):
             msg = (
@@ -133,8 +136,8 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
             bin_dict['bin_info'] = bin_info
             bin_dict['bin_type'] = bin_type
             logger.info('Running strings against the Binary')
-            bin_dict['strings'] = strings_on_binary(
-                bin_path.as_posix())
+            bin_dict['strings'] = strings_on_binary(bin_path.as_posix())
+            bin_dict['bin_path'] = bin_path
     except Exception as exp:
         msg = 'Failed to run IPA Binary Analysis'
         logger.exception(msg)

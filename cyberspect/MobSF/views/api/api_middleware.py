@@ -10,21 +10,23 @@ from mobsf.MobSF.utils import api_key
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
 
+from cyberspect.MobSF.views.api import api_static_analysis as cs_api_sz
+
 logger = logging.getLogger(__name__)
 
 
 class RestApiAuthMiddleware(MiddlewareMixin):
     """Middleware for REST API."""
 
-    readonly_funcs = [api_sz.api_upload, api_sz.api_scan_metadata,
-                      api_sz.api_scan, api_sz.api_async_scan,
-                      api_sz.api_rescan, api_sz.api_pdf_report,
+    readonly_funcs = [api_sz.api_upload, cs_api_sz.api_scan_metadata,
+                      api_sz.api_scan, cs_api_sz.api_async_scan,
+                      cs_api_sz.api_rescan, api_sz.api_pdf_report,
                       api_sz.api_json_report, api_sz.api_view_source,
-                      api_sz.api_recent_scans, api_sz.api_release_scans,
+                      api_sz.api_recent_scans, cs_api_sz.api_release_scans,
                       api_sz.api_compare, api_sz.api_scorecard,
-                      api_sz.api_cyberspect_get_scan,
-                      api_sz.api_cyberspect_recent_scans,
-                      api_sz.api_cyberspect_completed_scans]
+                      cs_api_sz.api_cyberspect_get_scan,
+                      cs_api_sz.api_cyberspect_recent_scans,
+                      cs_api_sz.api_cyberspect_completed_scans]
 
     def process_request(self, request):
         """Process API Request."""
@@ -33,17 +35,6 @@ class RestApiAuthMiddleware(MiddlewareMixin):
             request.META['email'] = 'test@cyberspect.com'
             request.META['role'] = 'FULL_ACCESS'
             return None
-
-        # Skip middleware for health check
-        if request.path == '/health':
-            request.META['email'] = ''
-            request.META['role'] = ''
-            return None
-
-        # Check restricted endpoint AFTER test bypass
-        if self.restricted_endpoint(request):
-            return make_api_response(
-                {'error': 'Access Denied'}, 403)
 
         request.META['email'] = ''
         request.META['role'] = ''
@@ -73,7 +64,7 @@ class RestApiAuthMiddleware(MiddlewareMixin):
                 and not view_func == api_sz.api_upload):
             return self.unauthorized()
         apikey = self.get_api_key(request.META)
-        if apikey == api_key():
+        if apikey == api_key(settings.BASE_DIR):
             request.META['role'] = 'FULL_ACCESS'
             request.META['email'] = 'admin@cyberspect.com'
             return

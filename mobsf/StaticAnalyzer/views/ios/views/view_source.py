@@ -5,9 +5,8 @@ import json
 import logging
 import ntpath
 import os
+import plistlib
 from pathlib import Path
-
-import biplist
 
 from django.conf import settings
 from django.http import HttpResponseRedirect
@@ -27,9 +26,6 @@ from mobsf.StaticAnalyzer.forms import (
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
-)
-from mobsf.MobSF.cyberspect_utils import (
-    is_admin,
 )
 
 logger = logging.getLogger(__name__)
@@ -87,7 +83,7 @@ def run(request, api=False):
             src = base
         sfile = src / fil
         sfile = sfile.as_posix()
-        if not is_safe_path(src, sfile):
+        if not is_safe_path(src, sfile, fil):
             msg = 'Path Traversal Detected!'
             if api:
                 return {'error': 'Path Traversal Detected!'}
@@ -111,13 +107,17 @@ def run(request, api=False):
         elif typ == 'plist':
             file_format = 'json'
             try:
-                dat = biplist.readPlist(sfile)
-                dat = json.dumps(dat, indent=4, sort_keys=True)
-            except biplist.InvalidPlistException:
+                with open(sfile, 'rb') as f:
+                    # Attempt to load the plist, binary or XML
+                    dat = plistlib.load(f)
+                    # Convert the plist data to JSON for output
+                    dat = json.dumps(dat, indent=4, sort_keys=True)
+            except plistlib.InvalidFileException:
+                # Handle invalid plist files (e.g., if it isn't binary or XML)
                 file_format = 'xml'
                 dat = Path(sfile).read_text()
             except Exception:
-                pass
+                dat = None
         elif typ == 'db':
             file_format = 'asciidoc'
             sql_dump = read_sqlite(sfile)
@@ -150,9 +150,6 @@ def run(request, api=False):
             'type': file_format,
             'data': dat,
             'sqlite': sql_dump,
-            'version': settings.MOBSF_VER,
-            'cversion': settings.CYBERSPECT_VER,
-            'is_admin': is_admin(request),
         }
         template = 'general/view.html'
         if api:

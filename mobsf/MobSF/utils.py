@@ -16,12 +16,15 @@ import signal
 import string
 import subprocess
 import stat
-import socket
 import sqlite3
 import unicodedata
 import threading
-from urllib.parse import urlparse
+from urllib.parse import unquote
 from pathlib import Path
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    TimeoutError as ThreadPoolTimeoutError,
+)
 
 from packaging.version import Version
 
@@ -35,6 +38,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF. init import api_key
 
 from . import settings
 
@@ -56,6 +60,8 @@ EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
 GOOGLE_API_KEY_REGEX = re.compile(r'AIza[0-9A-Za-z-_]{35}$')
 GOOGLE_APP_ID_REGEX = re.compile(r'\d{1,2}:\d{1,50}:android:[a-f0-9]{1,50}')
+PKG_REGEX = re.compile(
+    r'package\s+([a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*);')
 
 
 class Color(object):
@@ -91,18 +97,15 @@ def upstream_proxy(flaw_type):
     return proxies, verify
 
 
-def api_key():
-    """Print REST API Key."""
-    if os.environ.get('MOBSF_API_KEY'):
-        return os.environ['MOBSF_API_KEY']
-
-    secret_file = os.path.join(settings.MOBSF_HOME, 'secret')
-    if is_file_exists(secret_file):
-        try:
-            _api_key = open(secret_file).read().strip()
-            return gen_sha256_hash(_api_key)
-        except Exception:
-            logger.exception('Cannot Read API Key')
+def get_system_resources():
+    """Get CPU and Memory Available."""
+    # Get number of physical cores
+    physical_cores = psutil.cpu_count(logical=False)
+    # Get number of logical processors (threads)
+    logical_processors = psutil.cpu_count(logical=True)
+    # Get total RAM
+    total_ram = psutil.virtual_memory().total / (1024 ** 3)  # Convert bytes to GB
+    return physical_cores, logical_processors, total_ram
 
 
 def print_version():
@@ -110,14 +113,15 @@ def print_version():
     logger.info(settings.BANNER)
     ver = settings.MOBSF_VER
     logger.info('Author: Ajin Abraham | opensecurity.in')
+    mobsf_api_key = api_key(settings.MOBSF_HOME)
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
-        print('REST API Key: ' + api_key())
+        print(f'REST API Key: {mobsf_api_key}')
         print('Default Credentials: mobsf/mobsf')
     else:
         logger.info(
             '%sMobile Security Framework %s%s', Color.GREY, ver, Color.END)
-        print(f'REST API Key: {Color.BOLD}{api_key()}{Color.END}')
+        print(f'REST API Key: {Color.BOLD}{mobsf_api_key}{Color.END}')
         print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
@@ -132,6 +136,10 @@ def print_version():
     logger.info('File storage: %s', settings.MOBSF_HOME)
     logger.info('Administrators: %s', settings.ADMIN_USERS)
     # End Cyberspect addition
+    python_version = sys.version.split(' ')[0]
+    logger.info('Python Version: %s', python_version)
+    cores, threads, ram = get_system_resources()
+    logger.info('CPU Cores: %s, Threads: %s, RAM: %.2f GB', cores, threads, ram)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
@@ -194,6 +202,32 @@ def find_java_binary():
     return 'java'
 
 
+def find_aapt(tool_name):
+    """Find the specified tool (aapt or aapt2)."""
+    # Check system PATH for the tool
+    tool_path = shutil.which(tool_name)
+    if tool_path:
+        return tool_path
+
+    # Check common Android SDK locations
+    home_dir = Path.home()  # Get the user's home directory
+    sdk_paths = [
+        home_dir / 'Library' / 'Android' / 'sdk',  # macOS
+        home_dir / 'Android' / 'Sdk',              # Linux
+        home_dir / 'AppData' / 'Local' / 'Android' / 'Sdk',  # Windows
+    ]
+
+    for sdk_path in sdk_paths:
+        build_tools_path = sdk_path / 'build-tools'
+        if build_tools_path.exists():
+            for version in sorted(build_tools_path.iterdir(), reverse=True):
+                tool_path = version / tool_name
+                if tool_path.exists():
+                    return str(tool_path)
+
+    return None
+
+
 def print_n_send_error_response(request,
                                 msg,
                                 api=False,
@@ -208,8 +242,6 @@ def print_n_send_error_response(request,
             'title': 'Error',
             'exp': exp,
             'doc': msg,
-            'version': settings.MOBSF_VER,
-            'cversion': settings.CYBERSPECT_VER,
         }
         template = 'general/error.html'
         return render(request, template, context, status=500)
@@ -457,7 +489,7 @@ def check_basic_env():
         import lxml  # noqa F401
     except ImportError:
         logger.exception('lxml is not installed!')
-        os.kill(os.getpid(), signal.SIGTERM)        
+        os.kill(os.getpid(), signal.SIGTERM)
     if not is_file_exists(find_java_binary()):
         logger.error(
             'JDK 8+ is not available. '
@@ -471,7 +503,6 @@ def check_basic_env():
                     'Java/jdk1.7.0_17/bin/"'
                     '\nJAVA_DIRECTORY = "/usr/bin/"')
         os.kill(os.getpid(), signal.SIGTERM)
-    logger.info('MobSF Basic Environment Check Passed')
 
 
 def update_local_db(db_name, url, local_file):
@@ -577,8 +608,10 @@ def get_proxy_ip(identifier):
     return proxy_ip
 
 
-def is_safe_path(safe_root, check_path):
+def is_safe_path(safe_root, check_path, raw_file):
     """Detect Path Traversal."""
+    if is_path_traversal(raw_file):
+        return False
     safe_root = os.path.realpath(os.path.normpath(safe_root))
     check_path = os.path.realpath(os.path.normpath(check_path))
     return os.path.commonprefix([check_path, safe_root]) == safe_root
@@ -679,11 +712,39 @@ def common_check(instance_id):
 
 def is_path_traversal(user_input):
     """Check for path traversal."""
-    if (('../' in user_input)
-        or ('%2e%2e' in user_input)
-        or ('..' in user_input)
-            or ('%252e' in user_input)):
-        logger.error('Path traversal attack detected')
+    if not user_input:
+        return False
+
+    # Disallow absolute paths and windows paths and backslashes
+    if os.path.isabs(user_input) or user_input.startswith(('\\', '//')):
+        logger.error('Path traversal attack detected with absolute path')
+        return True
+
+    # Normalize and decode URL-encoded characters
+    try:
+        # Handle URL decoding (e.g., %2e -> .)
+        decoded = unquote(user_input)
+        # Handle double URL decoding (e.g., %252e -> %2e -> .)
+        double_decoded = unquote(decoded)
+    except Exception:
+        logger.error('Path traversal attack detected with invalid URL encoding')
+        return True
+
+    # Check for path traversal in both original and decoded versions
+    dangerous_patterns = ['..', '../', '..\\', '..\\\\']
+
+    # Check original filename
+    if any(pattern in user_input for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    # Check decoded versions
+    if any(pattern in decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    if any(pattern in double_decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
         return True
     return False
 
@@ -770,6 +831,11 @@ def replace(value, arg):
     return value.replace(what, to)
 
 
+def pathify(value):
+    """Convert to path."""
+    return value.replace('.', '/')
+
+
 def relative_path(value):
     """Show relative path to two parents."""
     sep = None
@@ -843,6 +909,7 @@ def get_android_dm_exception_msg():
 
 def get_android_src_dir(app_dir, typ):
     """Get Android source code location."""
+    src = None
     if typ == 'apk':
         src = app_dir / 'java_source'
     elif typ == 'studio':
@@ -867,58 +934,6 @@ def settings_enabled(attr):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     """Generate random string."""
     return ''.join(random.choice(chars) for _ in range(size))
-
-
-def valid_host(host):
-    """Check if host is valid."""
-    try:
-        prefixs = ('http://', 'https://')
-        if not host.startswith(prefixs):
-            host = f'http://{host}'
-        parsed = urlparse(host)
-        domain = parsed.netloc
-        path = parsed.path
-        if len(domain) == 0:
-            # No valid domain
-            return False
-        if len(path) > 0:
-            # Only host is allowed
-            return False
-        if ':' in domain:
-            # IPv6
-            return False
-        # Local network
-        invalid_prefix = (
-            '100.64.',
-            '127.',
-            '192.',
-            '198.',
-            '10.',
-            '172.',
-            '169.',
-            '0.',
-            '203.0.',
-            '224.0.',
-            '240.0',
-            '255.255.',
-            'localhost',
-            '::1',
-            '64::ff9b::',
-            '100::',
-            '2001::',
-            '2002::',
-            'fc00::',
-            'fe80::',
-            'ff00::')
-        if domain.startswith(invalid_prefix):
-            return False
-        ip = socket.gethostbyname(domain)
-        if ip.startswith(invalid_prefix):
-            # Resolve dns to get IP
-            return False
-        return True
-    except Exception:
-        return False
 
 
 def append_scan_status(checksum, status, exception=None):
@@ -961,21 +976,28 @@ class TaskTimeoutError(Exception):
 
 
 def run_with_timeout(func, limit, *args, **kwargs):
-    def run_func(result, *args, **kwargs):
-        result.append(func(*args, **kwargs))
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(func, *args, **kwargs)
+        try:
+            return future.result(timeout=limit)
+        except ThreadPoolTimeoutError:
+            msg = f'function <{func.__name__}> timed out after {limit} seconds'
+            raise TaskTimeoutError(msg)
 
-    result = []
-    thread = threading.Thread(
-        target=run_func,
-        args=(result, *args),
-        kwargs=kwargs)
-    thread.start()
-    thread.join(limit)
 
-    if thread.is_alive():
-        msg = (f'function <{func.__name__}> '
-               f'timed out after {limit} seconds')
-        raise TaskTimeoutError(msg)
-    if result:
-        return result[0]
-    return None
+def set_permissions(path):
+    base_path = Path(path)
+    # Read/Write for directories without execute
+    perm_dir = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+    # Read/Write for files
+    perm_file = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+
+    # Set permissions for directories and files
+    for item in base_path.rglob('*'):
+        try:
+            if item.is_dir():
+                item.chmod(perm_dir)
+            elif item.is_file():
+                item.chmod(perm_file)
+        except Exception:
+            pass
