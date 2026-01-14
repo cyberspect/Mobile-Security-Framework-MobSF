@@ -699,20 +699,25 @@ def delete_scan(request, api=False):
         StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
         StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
         # Delete Upload Dir Contents
-        app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
-        if is_dir_exists(app_upload_dir):
-            shutil.rmtree(app_upload_dir)
-        # Delete Download Dir Contents
-        dw_dir = settings.DWD_DIR
-        for item in os.listdir(dw_dir):
-            item_path = os.path.join(dw_dir, item)
-            valid_item = item.startswith(md5_hash + '-')
-            # Delete all related files
-            if is_file_exists(item_path) and valid_item:
-                os.remove(item_path)
-            # Delete related directories
-            if is_dir_exists(item_path) and valid_item:
-                shutil.rmtree(item_path, ignore_errors=True)
+        try:
+            app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
+            if is_dir_exists(app_upload_dir):
+                shutil.rmtree(app_upload_dir)
+            # Delete Download Dir Contents
+            dw_dir = settings.DWD_DIR
+            for item in os.listdir(dw_dir):
+                item_path = os.path.join(dw_dir, item)
+                valid_item = item.startswith(md5_hash + '-')
+                # Delete all related files
+                if is_file_exists(item_path) and valid_item:
+                    os.remove(item_path)
+                # Delete related directories
+                if is_dir_exists(item_path) and valid_item:
+                    shutil.rmtree(item_path, ignore_errors=True)
+        except OSError as e:
+            msg = str(e)
+            logger.exception(
+                'Failed to delete scan files: {msg} - {app_upload_dir} - {dw_dir} - {item_path} - {valid_item} - {item}')
         return send_response({'deleted': 'yes'}, api)
     except Exception as exp:
         msg = str(exp)
