@@ -207,7 +207,6 @@ def api_key(home_dir):
             logger.exception('Cannot read API Key from docker secrets')
     # From Environment Variable
     if os.environ.get('MOBSF_API_KEY'):
-        logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
     home_dir = Path(home_dir)
     secret_file = home_dir / 'secret'
