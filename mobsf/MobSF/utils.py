@@ -938,6 +938,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 def append_scan_status(checksum, status, exception=None):
     """Append Scan Status to Database."""
+    logger.debug('Entered append_scan_status')
     try:
         db_obj = RecentScansDB.objects.get(MD5=checksum)
         if status == 'init':
@@ -951,6 +952,7 @@ def append_scan_status(checksum, status, exception=None):
             'exception': exception})
         db_obj.SCAN_LOGS = current_logs
         db_obj.save()
+        logger.debug('Leaving append_scan_status')
     except RecentScansDB.DoesNotExist:
         # Expected to fail for iOS Dynamic Analysis Report Generation
         # Calls MalwareScan and TrackerScan with different checksum

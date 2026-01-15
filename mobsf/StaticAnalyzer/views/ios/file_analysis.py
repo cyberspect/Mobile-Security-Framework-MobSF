@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 def ios_list_files(md5_hash, src, mode):
     """List iOS files."""
+    logger.debug('Enter ios_list_files')
     try:
         msg = 'iOS File Analysis and Normalization'
         logger.info(msg)
@@ -91,7 +92,7 @@ def ios_list_files(md5_hash, src, mode):
                 'issue': 'Certificate/Key Files Hardcoded inside the App.',
                 'files': certz,
             })
-
+        logger.debug('Leaving ios_list_files')
         return {
             'files_short': filez,
             'files_long': full_paths,
