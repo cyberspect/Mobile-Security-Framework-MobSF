@@ -19,9 +19,6 @@ logger = logging.getLogger(__name__)
 
 def extract_urls_n_email(checksum, src, all_files, strings):
     """IPA URL and Email Extraction."""
-    logger.debug('Entered extract_urls_n_email')
-    msg = 'md_5_hash: {}'.format(checksum)
-    logger.debug(msg)
     email_n_file = []
     url_n_file = []
     url_list = []
@@ -59,7 +56,6 @@ def extract_urls_n_email(checksum, src, all_files, strings):
         msg = 'Failed to extract URL and Email from IPA'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
-    logger.debug('Leaving extract_urls_n_email')
     return {
         'urls_list': list(set(url_list)),
         'urlnfile': url_n_file,
@@ -80,15 +76,6 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     secrets = []
 
     # IPA URL and Email Extract
-    logging.debug('Debugging extract_urls_n_email variables')
-    msg = 'md_5_hash: {}'.format(app_dict['md5_hash'])
-    logging.debug(msg)
-    msg = 'bin_dir: {}'.format(app_dict['bin_dir'])
-    logging.debug(msg)
-    msg = 'files_long: {}'.format(app_dict['files_long'])
-    logging.debug(msg)
-    msg = 'strings: {}'.format(app_dict['strings'])
-    logging.debug(msg)
     str_meta = extract_urls_n_email(
         app_dict['md5_hash'],
         app_dict['bin_dir'],
@@ -118,7 +105,6 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
         app_dict['secrets'].extend(secrets)
         app_dict['secrets'] = list(
             set(app_dict['secrets']))
-    logger.debug('Leaving get_strings_metadata')
     return {
         'urls_list': list(set(urls_list)),
         'urlnfile': urls_n_files,
