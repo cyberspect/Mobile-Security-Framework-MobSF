@@ -169,4 +169,4 @@ def update_scan_timestamp(scan_hash):
 
 def utcnow():
     """Return timezone aware UTC now."""
-    return datetime.datetime.now(tz=timezone.utc)
+    return timezone.now()
