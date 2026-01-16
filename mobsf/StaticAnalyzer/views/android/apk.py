@@ -194,7 +194,8 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         cert_dic = cert_info(app_dic, man_data_dic)
         apkid_results = apkid.apkid_analysis(
             checksum,
-            app_dic['app_path'])
+            app_dic['app_path'],
+            in_daemon=queue)  # Pass the queue flag to indicate daemon context
         trackers = Trackers.Trackers(
             checksum,
             app_dic['app_dir'],
