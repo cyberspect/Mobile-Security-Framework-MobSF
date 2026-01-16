@@ -130,8 +130,10 @@ def download_file(url, file_path):
 def install_jadx(mobsf_home, version=None):
     """Install JADX dynamically."""
     try:
+        # Cyberspect mod begins - includes version default to None
         if version is None:
             version = settings.JADX_VERSION
+        # Cyberspect mod ends
         url = ('https://github.com/skylot/jadx/releases/download/'
                f'v{version}/jadx-{version}.zip')
         jadx_dir = Path(mobsf_home) / 'tools' / 'jadx'
