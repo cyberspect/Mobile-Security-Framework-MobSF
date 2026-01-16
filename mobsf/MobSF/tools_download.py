@@ -15,6 +15,8 @@ from urllib.request import (
     getproxies,
 )
 
+from django.conf import settings
+
 logging.basicConfig(
     level=logging.INFO,
     format='[%(levelname)s] %(asctime)-15s - %(message)s',
@@ -125,9 +127,11 @@ def download_file(url, file_path):
             raise Exception(f'Failed to download file. Status code: {response.status}')
 
 
-def install_jadx(mobsf_home, version='1.5.1'):
+def install_jadx(mobsf_home, version=None):
     """Install JADX dynamically."""
     try:
+        if version is None:
+            version = settings.JADX_VERSION
         url = ('https://github.com/skylot/jadx/releases/download/'
                f'v{version}/jadx-{version}.zip')
         jadx_dir = Path(mobsf_home) / 'tools' / 'jadx'
