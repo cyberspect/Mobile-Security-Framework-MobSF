@@ -17,8 +17,12 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def get_multiprocessing_strategy():
+def get_multiprocessing_strategy(in_daemon=False):
     """Get the multiprocessing strategy."""
+    if in_daemon:
+        # Disable multiprocessing when running in daemon context
+        # to avoid "daemonic processes cannot have children" error
+        return None
     if settings.MULTIPROCESSING:
         # Settings take precedence
         mp = settings.MULTIPROCESSING
@@ -35,15 +39,19 @@ def get_multiprocessing_strategy():
 
 
 class SastEngine:
-    def __init__(self, options, path):
+    def __init__(self, options, path, in_daemon=False):
         self.root = path
-        mp = get_multiprocessing_strategy()
+        mp = get_multiprocessing_strategy(in_daemon)
         cpu_core = get_worker_count()
         options['cpu_core'] = cpu_core
         options['multiprocessing'] = mp
         if mp != 'default':
             logger.debug(
                 'Multiprocessing strategy set to %s with (%d) CPU cores', mp, cpu_core)
+        # Cyberspect mods begin
+        elif mp is None:
+            logger.debug('Multiprocessing disabled (running in daemon context)')
+        # Cyberspect mods end
         self.scan_paths = Scanner(options, [path]).get_scan_files()
         self.pattern_matcher = PatternMatcher(options)
 

@@ -194,8 +194,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         cert_dic = cert_info(app_dic, man_data_dic)
         apkid_results = apkid.apkid_analysis(
             checksum,
-            app_dic['app_path'],
-            in_daemon=queue)  # Pass the queue flag to indicate daemon context
+            app_dic['app_path'])
         trackers = Trackers.Trackers(
             checksum,
             app_dic['app_dir'],
@@ -214,7 +213,8 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             app_dic['app_dir'],
             app_dic['zipped'],
             app_dic['manifest_file'],
-            man_data_dic['perm'])
+            man_data_dic['perm'],
+            in_daemon=queue)  # Pass the daemon flag
         # Get the strings and metadata
         get_strings_metadata(
             app_dic,
