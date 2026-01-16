@@ -88,18 +88,13 @@ def sso_email(request):
 
 
 def tz(value):
-    """Format datetime object with timezone, ensuring UTC."""
+    """Format datetime object with timezone."""
     if isinstance(value, datetime.datetime):
-        if value.tzinfo is None:
-            # Naive datetime, assume UTC
-            return timezone.make_aware(value, datetime.timezone.utc)
-        else:
-            # Aware datetime, convert to UTC
-            return value.astimezone(datetime.timezone.utc)
-    # Parse string into time zone aware datetime, assume UTC
+        return value.replace(tzinfo=datetime.timezone.utc)
+    # Parse string into time zone aware datetime
     value = str(value).replace('T', ' ').replace('Z', '').replace('+00:00', '')
     unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    return timezone.make_aware(unware_time, datetime.timezone.utc)
+    return unware_time.replace(tzinfo=datetime.timezone.utc)
 
 
 def update_cyberspect_scan(data):
