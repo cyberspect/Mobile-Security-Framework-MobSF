@@ -20,9 +20,11 @@ logger = logging.getLogger(__name__)
 def get_multiprocessing_strategy(in_daemon=False):
     """Get the multiprocessing strategy."""
     if in_daemon:
-        # Disable multiprocessing when running in daemon context
+        # Use threading when running in daemon context
         # to avoid "daemonic processes cannot have children" error
-        return None
+        # because ProcessPoolExecutor spawns child processes which is
+        # forbidden from daemon processes
+        return 'thread'
     if settings.MULTIPROCESSING:
         # Settings take precedence
         mp = settings.MULTIPROCESSING
@@ -33,7 +35,7 @@ def get_multiprocessing_strategy(in_daemon=False):
         # Set to billiard for async analysis
         mp = 'billiard'
     else:
-        # Defaults to processpoolexecutor for sync analysis
+        # Defaults to ProcessPoolExecutor for sync analysis
         mp = 'default'
     return mp
 
@@ -48,10 +50,6 @@ class SastEngine:
         if mp != 'default':
             logger.debug(
                 'Multiprocessing strategy set to %s with (%d) CPU cores', mp, cpu_core)
-        # Cyberspect mods begin
-        elif mp is None:
-            logger.debug('Multiprocessing disabled (running in daemon context)')
-        # Cyberspect mods end
         self.scan_paths = Scanner(options, [path]).get_scan_files()
         self.pattern_matcher = PatternMatcher(options)
 
@@ -105,10 +103,10 @@ class SastEngine:
 
 
 class ChoiceEngine:
-    def __init__(self, options, path):
+    def __init__(self, options, path, in_daemon=False):
         self.root = path
         options['cpu_core'] = get_worker_count()
-        options['multiprocessing'] = get_multiprocessing_strategy()
+        options['multiprocessing'] = get_multiprocessing_strategy(in_daemon)
         self.scan_paths = Scanner(options, [path]).get_scan_files()
         self.choice_matcher = ChoiceMatcher(options)
 

@@ -342,7 +342,8 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
             app_dic['app_dir'],
             app_dic['zipped'],
             app_dic['manifest_file'],
-            man_data_dic['perm'])
+            man_data_dic['perm'],
+            in_daemon=queue)  # Pass the daemon flag
         # Get the strings and metadata
         get_strings_metadata(
             app_dic,
