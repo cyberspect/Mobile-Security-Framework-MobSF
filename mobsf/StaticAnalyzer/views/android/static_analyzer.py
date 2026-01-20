@@ -39,7 +39,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
-from cyberspect.utils import is_admin
+from cyberspect.utils import is_admin, sso_email
 
 APK_TYPE = 'apk'
 logger = logging.getLogger(__name__)
@@ -52,12 +52,6 @@ register.filter('pathify', pathify)
 @login_required
 def static_analyzer(request, checksum, api=False):
     """Do static analysis on an request and save to db."""
-    if not is_admin(request):
-        return print_n_send_error_response(
-            request,
-            'You don\'t have permission to view this scan',
-            api)
-
     try:
         logger.info('Android Static Analysis Started')
         rescan = False
@@ -80,6 +74,16 @@ def static_analyzer(request, checksum, api=False):
                 request,
                 'The file is not uploaded/available',
                 api)
+
+        # Cyberspect mod begins
+        if not is_admin(request):
+            if sso_email(request) not in robj[0].EMAIL:
+                return print_n_send_error_response(
+                    request,
+                    'You don\'t have permission to view this scan',
+                    api)
+        # Cyberspect mod ends
+
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         allowed_exts = tuple(f'.{i}' for i in settings.ANDROID_EXTS)

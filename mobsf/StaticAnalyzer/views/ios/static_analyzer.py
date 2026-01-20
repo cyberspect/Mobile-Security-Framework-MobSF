@@ -29,7 +29,7 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
-from cyberspect.utils import is_admin
+from cyberspect.utils import is_admin, sso_email
 
 logger = logging.getLogger(__name__)
 register.filter('relative_path', relative_path)
@@ -38,12 +38,6 @@ register.filter('relative_path', relative_path)
 @login_required
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
-    if not is_admin(request):
-        return print_n_send_error_response(
-            request,
-            'You don\'t have permission to view this scan',
-            api)
-
     try:
         rescan = False
         if api:
@@ -64,6 +58,16 @@ def static_analyzer_ios(request, checksum, api=False):
                 request,
                 'The file is not uploaded/available',
                 api)
+
+        # Cyberspect mod begins
+        if not is_admin(request):
+            if sso_email(request) not in robj[0].EMAIL:
+                return print_n_send_error_response(
+                    request,
+                    'You don\'t have permission to view this scan',
+                    api)
+        # Cyberspect mod ends
+
         file_type = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         if file_type == 'dylib' and not Path(filename).suffix:
