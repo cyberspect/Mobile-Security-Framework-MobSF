@@ -91,13 +91,12 @@ def ios_list_files(md5_hash, src, mode):
                 'issue': 'Certificate/Key Files Hardcoded inside the App.',
                 'files': certz,
             })
-
         return {
             'files_short': filez,
             'files_long': full_paths,
             'special_files': sfiles,
         }
     except Exception as exp:
-        msg = 'iOS File Analysis'
+        msg = 'iOS File Analysis Exception occurred'
         logger.exception(msg)
         append_scan_status(md5_hash, msg, repr(exp))

@@ -70,8 +70,10 @@ from mobsf.StaticAnalyzer.cyberspect_models import (
 from cyberspect.MobSF.views.home import (
     cyberspect_scan_intake,
     new_cyberspect_scan,
+    track_failure,
 )
 from cyberspect.utils import (
+    get_siphash,
     is_admin,
     sso_email,
     tz,
@@ -232,15 +234,17 @@ class Upload(object):
                 scan_type=result.get('scan_type'),
                 sso_user=self.email,
             )
-            result['cyberspect_scan_id'] = self.cyberspect_scan_id
-            # Trigger async scan
+            if 'short_hash' not in result:
+                result['short_hash'] = get_siphash(result['hash'])
+            if 'cyberspect_scan_id' not in result:
+                result['cyberspect_scan_id'] = self.cyberspect_scan_id
             cyberspect_scan_intake(result, self.cyberspect_scan_id)
         except Exception as exp:
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))
             logger.error(exmsg)
             msg = str(exp)
             exp_doc = exp.__doc__
-            self.track_failure(msg)
+            track_failure(msg, self.cyberspect_scan_id)
             return print_n_send_error_response(request, msg, True, exp_doc)
 
         # Cyberspect mods end
@@ -695,20 +699,26 @@ def delete_scan(request, api=False):
         StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
         StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
         # Delete Upload Dir Contents
-        app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
-        if is_dir_exists(app_upload_dir):
-            shutil.rmtree(app_upload_dir)
-        # Delete Download Dir Contents
-        dw_dir = settings.DWD_DIR
-        for item in os.listdir(dw_dir):
-            item_path = os.path.join(dw_dir, item)
-            valid_item = item.startswith(md5_hash + '-')
-            # Delete all related files
-            if is_file_exists(item_path) and valid_item:
-                os.remove(item_path)
-            # Delete related directories
-            if is_dir_exists(item_path) and valid_item:
-                shutil.rmtree(item_path, ignore_errors=True)
+        try:
+            app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
+            if is_dir_exists(app_upload_dir):
+                shutil.rmtree(app_upload_dir)
+            # Delete Download Dir Contents
+            dw_dir = settings.DWD_DIR
+            for item in os.listdir(dw_dir):
+                item_path = os.path.join(dw_dir, item)
+                valid_item = item.startswith(md5_hash + '-')
+                # Delete all related files
+                if is_file_exists(item_path) and valid_item:
+                    os.remove(item_path)
+                # Delete related directories
+                if is_dir_exists(item_path) and valid_item:
+                    shutil.rmtree(item_path, ignore_errors=True)
+        except OSError as e:
+            excmsg = str(e)
+            msg = f'Failed to delete scan files: {excmsg} - '
+            f'{app_upload_dir} - {dw_dir} - {item_path} - {valid_item} - {item}'
+            logger.error(msg)
         return send_response({'deleted': 'yes'}, api)
     except Exception as exp:
         msg = str(exp)
