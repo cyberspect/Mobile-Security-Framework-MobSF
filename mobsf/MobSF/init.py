@@ -124,7 +124,10 @@ def get_mobsf_home(use_home, base_dir):
         base_dir = Path(base_dir)
         mobsf_home = ''
         if use_home:
-            mobsf_home = Path.home() / '.MobSF'
+            mobsf_files_path = os.getenv('FILES_PATH',
+                                         os.path.expanduser('~'))
+            # use MobSF (not .MobSF) for AWS EFS
+            mobsf_home = Path(mobsf_files_path) / 'MobSF'
             custom_home = os.getenv('MOBSF_HOME_DIR')
             if custom_home:
                 p = Path(custom_home)
@@ -204,7 +207,6 @@ def api_key(home_dir):
             logger.exception('Cannot read API Key from docker secrets')
     # From Environment Variable
     if os.environ.get('MOBSF_API_KEY'):
-        logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
     home_dir = Path(home_dir)
     secret_file = home_dir / 'secret'

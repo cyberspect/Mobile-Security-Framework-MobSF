@@ -17,8 +17,14 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def get_multiprocessing_strategy():
+def get_multiprocessing_strategy(in_daemon=False):
     """Get the multiprocessing strategy."""
+    if in_daemon:
+        # Use threading when running in daemon context
+        # to avoid "daemonic processes cannot have children" error
+        # because ProcessPoolExecutor spawns child processes which is
+        # forbidden from daemon processes
+        return 'thread'
     if settings.MULTIPROCESSING:
         # Settings take precedence
         mp = settings.MULTIPROCESSING
@@ -29,15 +35,15 @@ def get_multiprocessing_strategy():
         # Set to billiard for async analysis
         mp = 'billiard'
     else:
-        # Defaults to processpoolexecutor for sync analysis
+        # Defaults to ProcessPoolExecutor for sync analysis
         mp = 'default'
     return mp
 
 
 class SastEngine:
-    def __init__(self, options, path):
+    def __init__(self, options, path, in_daemon=False):
         self.root = path
-        mp = get_multiprocessing_strategy()
+        mp = get_multiprocessing_strategy(in_daemon)
         cpu_core = get_worker_count()
         options['cpu_core'] = cpu_core
         options['multiprocessing'] = mp
@@ -97,10 +103,10 @@ class SastEngine:
 
 
 class ChoiceEngine:
-    def __init__(self, options, path):
+    def __init__(self, options, path, in_daemon=False):
         self.root = path
         options['cpu_core'] = get_worker_count()
-        options['multiprocessing'] = get_multiprocessing_strategy()
+        options['multiprocessing'] = get_multiprocessing_strategy(in_daemon)
         self.scan_paths = Scanner(options, [path]).get_scan_files()
         self.choice_matcher = ChoiceMatcher(options)
 

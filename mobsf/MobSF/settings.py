@@ -29,7 +29,7 @@ USE_HOME = True
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Cyberspect addition
-# need to determine the base directory for Cyberspect relted files
+# need to determine the base directory for Cyberspect related files
 CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
 # Cyberspect addition end
 MOBSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
@@ -49,7 +49,6 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 DOWNLOADED_TOOLS_DIR = os.path.join(MOBSF_HOME, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
-
 # ==========Load MobSF User Settings==========
 try:
     if USE_HOME:
@@ -394,6 +393,7 @@ LOGGING = {
         },
     },
 }
+# Evaluates to True if MOBSF_ASYNC_ANALYSIS is explicitly set to '1'
 ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
@@ -625,6 +625,7 @@ VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
 ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
 JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '/jdk-22.0.2/bin/')
 BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
+JADX_VERSION = os.getenv('MOBSF_JADX_VERSION', '1.5.0')  # Cyberspect mod
 JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
 BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
 APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')

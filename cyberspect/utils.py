@@ -114,6 +114,8 @@ def update_cyberspect_scan(data):
                 db_obj.MOBSF_MD5 = data['mobsf_md5']
             if 'dt_project_id' in data and data['dt_project_id']:
                 db_obj.DT_PROJECT_ID = data['dt_project_id']
+            if 'intake_start' in data and data['intake_start']:
+                db_obj.INTAKE_START = tz(data['intake_start'])
             if 'intake_end' in data and data['intake_end']:
                 db_obj.INTAKE_END = tz(data['intake_end'])
             if 'sast_start' in data and data['sast_start']:
@@ -162,4 +164,4 @@ def update_scan_timestamp(scan_hash):
 
 def utcnow():
     """Return timezone aware UTC now."""
-    return datetime.datetime.now(datetime.timezone.utc)
+    return timezone.now()
