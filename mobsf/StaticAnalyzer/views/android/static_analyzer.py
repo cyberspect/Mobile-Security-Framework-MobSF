@@ -39,6 +39,8 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
+from cyberspect.utils import is_admin
+
 APK_TYPE = 'apk'
 logger = logging.getLogger(__name__)
 register.filter('key', key)
@@ -50,6 +52,12 @@ register.filter('pathify', pathify)
 @login_required
 def static_analyzer(request, checksum, api=False):
     """Do static analysis on an request and save to db."""
+    if not is_admin(request):
+        return print_n_send_error_response(
+            request,
+            'You don\'t have permission to view this scan',
+            api)
+
     try:
         logger.info('Android Static Analysis Started')
         rescan = False

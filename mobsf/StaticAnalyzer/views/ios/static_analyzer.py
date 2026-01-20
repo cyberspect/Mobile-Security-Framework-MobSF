@@ -29,6 +29,8 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
+from cyberspect.utils import is_admin
+
 logger = logging.getLogger(__name__)
 register.filter('relative_path', relative_path)
 
@@ -36,6 +38,12 @@ register.filter('relative_path', relative_path)
 @login_required
 def static_analyzer_ios(request, checksum, api=False):
     """Module that performs iOS IPA/ZIP Static Analysis."""
+    if not is_admin(request):
+        return print_n_send_error_response(
+            request,
+            'You don\'t have permission to view this scan',
+            api)
+
     try:
         rescan = False
         if api:
