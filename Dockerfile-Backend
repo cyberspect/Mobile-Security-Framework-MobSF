@@ -90,7 +90,6 @@ RUN \
 
 WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 COPY . .
-RUN chmod +x /home/mobsf/Mobile-Security-Framework-MobSF/scripts/background_tasks.sh
 
 HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
 
