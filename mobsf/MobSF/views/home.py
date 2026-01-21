@@ -390,7 +390,11 @@ def recent_scans(request, page_size=20, page_number=1):
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
         # Check if user owns this scan
-        entry['USER_OWNS_SCAN'] = isadmin or (user_email and entry['EMAIL'] and user_email.lower() == entry['EMAIL'].lower())        
+        entry['USER_OWNS_SCAN'] = (
+            isadmin
+            or (user_email and entry['EMAIL']
+                and user_email.lower() == entry['EMAIL'].lower())
+        )
         item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).last()
         if item:
             entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
