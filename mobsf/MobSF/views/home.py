@@ -393,7 +393,8 @@ def recent_scans(request, page_size=20, page_number=1):
         entry['USER_OWNS_SCAN'] = (
             isadmin
             or (user_email and entry['EMAIL']
-                and user_email.lower() == entry['EMAIL'].lower())
+                and (user_email.lower() == entry['EMAIL'].lower()
+                     or user_email.lower() in [e.strip().lower() for e in entry['EMAIL'].split(',')]))
         )
         item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).last()
         if item:
