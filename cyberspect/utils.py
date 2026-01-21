@@ -48,10 +48,10 @@ def get_usergroups(request):
 
 def is_admin(request):
     """Check if a user is admin."""
-    if (not isinstance(request, WSGIRequest)):
-        return False
     if ('role' in request.META and request.META['role'] == 'FULL_ACCESS'):
         return True
+    if (not isinstance(request, WSGIRequest)):
+        return False
     if (not settings.ADMIN_USERS):
         return False
     if ('email' not in request.META):
