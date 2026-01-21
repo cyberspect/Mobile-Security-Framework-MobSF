@@ -342,12 +342,12 @@ def recent_scans(request, page_size=20, page_number=1):
     else:
         db_obj = RecentScansDB.objects.all()
 
+    user_email = sso_email(request)
     isadmin = is_admin(request)
     if (not isadmin):
-        email_filter = sso_email(request)
-        if (not email_filter):
-            email_filter = '@@'
-        db_obj = db_obj.filter(EMAIL__contains=email_filter)
+        if (not user_email):
+            user_email = '@@'
+        db_obj = db_obj.filter(EMAIL__contains=user_email)
     db_obj = db_obj.order_by('-TIMESTAMP').values()
 
     paginator = Paginator(db_obj, page_size)
@@ -389,6 +389,18 @@ def recent_scans(request, page_size=20, page_number=1):
         entry['CAN_RELEASE'] = (utcnow()
                                 < entry['TIMESTAMP']
                                 + datetime.timedelta(days=30))
+        # Check if user owns this scan
+        entry['USER_OWNS_SCAN'] = (
+            isadmin or (
+                user_email
+                and entry['EMAIL']
+                and (
+                    user_email.lower() == entry['EMAIL'].lower()
+                    or user_email.lower()
+                    in [e.strip().lower() for e in entry['EMAIL'].split(',')]
+                )
+            )
+        )
         item = CyberspectScans.objects.filter(MOBSF_MD5=entry['MD5']).last()
         if item:
             entry['DT_PROJECT_ID'] = item.DT_PROJECT_ID
