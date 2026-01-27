@@ -123,30 +123,61 @@
                             <td>
                                 <p>                                    
                                     {% if e.COMPLETE %}
-                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
-                                        {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
-                                            {% if e.FILE_NAME|slice:"-3:" != '.so' %}
-                                                {% if e.FILE_NAME|slice:"-2:" != '.a' %}
-                                                <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../../../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
-                                                {% endif %}
+                                    <a class="btn btn-primary btn-sm {% if not e.USER_OWNS_SCAN %}disabled{% endif %}" 
+                                      style="margin-bottom: 3px; width: 125px;" 
+                                      href="{% if e.USER_OWNS_SCAN %}../../../{{ e.ANALYZER }}/{{e.MD5}}/{% else %}javascript:void(0);{% endif %}">
+                                        <i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details
+                                    </a><br/>
+                                    
+                                    {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
+                                        {% if e.FILE_NAME|slice:"-3:" != '.so' %}
+                                            {% if e.FILE_NAME|slice:"-2:" != '.a' %}
+                                            <a class="btn btn-primary btn-warning btn-sm {% if not e.USER_OWNS_SCAN %}disabled{% endif %}" 
+                                              style="margin-bottom: 3px; width: 125px;" 
+                                              href="{% if e.USER_OWNS_SCAN %}../../../appsec_dashboard/{{ e.MD5 }}/{% else %}javascript:void(0);{% endif %}">
+                                                <i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard
+                                            </a><br/>
                                             {% endif %}
                                         {% endif %}
-                                        {% if e.DT_PROJECT_ID %}
-                                        <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/{{ e.DT_PROJECT_ID }}/components"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
-                                        {% else %}
-                                        <a class="btn btn-secondary btn-sm disabled" style="width: 125px;" href="#"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
-                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    {% if e.DT_PROJECT_ID %}
+                                    <a class="btn btn-primary btn-sm {% if not e.USER_OWNS_SCAN %}disabled{% endif %}" 
+                                      style="width: 125px;" 
+                                      href="{% if e.USER_OWNS_SCAN %}{{dependency_track_url}}/projects/{{ e.DT_PROJECT_ID }}/components{% else %}javascript:void(0);{% endif %}">
+                                        <i class="fas fa-link" title="View third party dependency details"></i> Dependencies
+                                    </a><br/>
+                                    {% else %}
+                                    <a class="btn btn-secondary btn-sm disabled" style="width: 125px;" href="#">
+                                        <i class="fas fa-link" title="View third party dependency details"></i> Dependencies
+                                    </a><br/>
+                                    {% endif %}
                                     {% endif %}
                                 </p>
                                 <p>
-                                    <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" data-name="{{e.MD5}}" onclick="admin_edit_modal('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>                                    
+                                    <a class="btn btn-outline-primary btn-sm {% if not e.USER_OWNS_SCAN %}disabled{% endif %}" 
+                                      id="adminEdit{{e.MD5}}" 
+                                      data-name="{{e.MD5}}" 
+                                      onclick="{% if e.USER_OWNS_SCAN %}admin_edit_modal('{{e.MD5}}'){% endif %}" 
+                                      href="javascript:void(0);">
+                                        <i class="fas fa-pen" title="Edit Scan"></i>
+                                    </a>
+                                    
                                     {% if e.COMPLETE %}                                        
-                                        <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
-                                        <a class="btn btn-outline-primary btn-sm" href="../../../pdf/{{ e.MD5 }}/"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
+                                    <a class="btn btn-outline-primary btn-sm {% if not e.USER_OWNS_SCAN %}disabled{% endif %}" 
+                                      id="{{ e.MD5 }}" 
+                                      onclick="{% if e.USER_OWNS_SCAN %}delete_scan(this){% endif %}" 
+                                      href="javascript:void(0);">
+                                        <i class="fas fa-trash" title="Delete Scan"></i>
+                                    </a>
+                                    
+                                    <a class="btn btn-outline-primary btn-sm {% if not e.USER_OWNS_SCAN %}disabled{% endif %}" 
+                                      href="{% if e.USER_OWNS_SCAN %}../../../pdf/{{ e.MD5 }}/{% else %}javascript:void(0);{% endif %}">
+                                        <i class="fas fa-file-pdf" title="PDF Report"></i>
+                                    </a>                                                                                                                  
                                     {% endif %}                                    
                                 </p>
-                            </td>
-                        </tr>
+                            </td>                        </tr>
                     {% endfor %}
                     </tbody>
                 </table>
