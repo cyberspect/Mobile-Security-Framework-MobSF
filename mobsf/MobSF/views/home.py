@@ -229,10 +229,9 @@ class Upload(object):
         try:
             self.cyberspect_scan_id = new_cyberspect_scan(
                 scheduled=False,
-                md5=result['hash'],
+                hash=result['hash'],
                 start_time=utcnow(),
-                scan_type=result.get('scan_type'),
-                sso_user=self.email,
+                email=self.email,
             )
             if 'short_hash' not in result:
                 result['short_hash'] = get_siphash(result['hash'])
