@@ -229,7 +229,7 @@ class Upload(object):
         try:
             self.cyberspect_scan_id = new_cyberspect_scan(
                 scheduled=False,
-                hash=result['hash'],
+                apphash=result['hash'],
                 start_time=utcnow(),
                 email=self.email,
             )

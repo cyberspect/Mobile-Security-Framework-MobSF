@@ -88,13 +88,6 @@ def cyberspect_rescan(apphash, scheduled, sso_user):
     rs_obj = RecentScansDB.objects.filter(MD5=apphash).first()
     if not rs_obj:
         return None
-    # Get file sizes
-    file_path = os.path.join(settings.UPLD_DIR, apphash + '/') \
-        + apphash + '.' + rs_obj.SCAN_TYPE
-    file_size = os.path.getsize(file_path)
-    source_file_size = 0
-    if os.path.exists(file_path + '.src'):
-        source_file_size = os.path.getsize(file_path + '.src')
 
     start_time = utcnow()
     scan_id = new_cyberspect_scan(scheduled, apphash, start_time, sso_user)
@@ -230,19 +223,19 @@ def logout_aws(request):
     return resp
 
 
-def new_cyberspect_scan(scheduled, hash, start_time, email):
+def new_cyberspect_scan(scheduled, apphash, start_time, email):
     """Create new Cyberspect scan record with calculated file sizes."""
     # Calculate file sizes from saved files
     from pathlib import Path
     from django.conf import settings
     from mobsf.MobSF.utils import file_size
 
-    app_dir = Path(settings.UPLD_DIR) / hash
+    app_dir = Path(settings.UPLD_DIR) / apphash
 
     # Find the actual file by checking common extensions
     file_path = None
     for ext in ['.apk', '.ipa', '.appx', '.zip', '.xapk', '.apks', '.aab']:
-        potential_path = app_dir / f'{hash}{ext}'
+        potential_path = app_dir / f'{apphash}{ext}'
         if potential_path.exists():
             file_path = potential_path
             break
@@ -257,7 +250,7 @@ def new_cyberspect_scan(scheduled, hash, start_time, email):
     # Insert new record into CyberspectScans
     new_db_obj = CyberspectScans(
         SCHEDULED=scheduled,
-        MOBSF_MD5=hash,
+        MOBSF_MD5=apphash,
         INTAKE_START=start_time,
         FILE_SIZE_PACKAGE=file_size_package,
         FILE_SIZE_SOURCE=file_size_source,
@@ -267,10 +260,10 @@ def new_cyberspect_scan(scheduled, hash, start_time, email):
     return new_db_obj.ID
 
 
-def scan_metadata(hash):
+def scan_metadata(apphash):
     """Get scan metadata."""
-    if re.match('[0-9a-f]{32}', hash):
-        db_obj = RecentScansDB.objects.filter(MD5=hash).first()
+    if re.match('[0-9a-f]{32}', apphash):
+        db_obj = RecentScansDB.objects.filter(MD5=apphash).first()
         if db_obj:
             return model_to_dict(db_obj)
     return None
