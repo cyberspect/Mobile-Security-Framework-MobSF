@@ -134,6 +134,7 @@ def dynamic_analyzer(request, api=False):
             'hash': bundle_hash,
             'instance_id': instance_id,
             'bundle_id': bundleid,
+            'version': settings.MOBSF_VER,
             'form': form,
             'title': 'iOS Dynamic Analyzer'}
         template = 'dynamic_analysis/ios/dynamic_analyzer.html'

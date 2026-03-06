@@ -268,6 +268,7 @@ def api_docs(request):
     context = {
         'title': 'API Docs',
         'api_key': key,
+        'version': settings.MOBSF_VER,
         'is_admin': True,
     }
     template = 'general/apidocs.html'
@@ -287,6 +288,7 @@ def donate(request):
     """Donate Route."""
     context = {
         'title': 'Donate',
+        'version': settings.MOBSF_VER,
     }
     template = 'general/donate.html'
     return render(request, template, context)
@@ -320,6 +322,7 @@ def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
     context = {
         'title': 'Dynamic Analysis',
+        'version': settings.MOBSF_VER,
     }
     template = 'general/dynamic.html'
     return render(request, template, context)
@@ -423,6 +426,7 @@ def recent_scans(request, page_size=20, page_number=1):
     context = {
         'title': 'Scanned Apps',
         'entries': entries,
+        'version': settings.MOBSF_VER,
         'page_obj': page_obj,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
