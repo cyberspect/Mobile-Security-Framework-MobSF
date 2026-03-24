@@ -198,7 +198,6 @@ INSTALLED_APPS = (
     'mobsf.DynamicAnalyzer',
     'mobsf.MobSF',
     'mobsf.MalwareAnalyzer',
-    'background_task',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',

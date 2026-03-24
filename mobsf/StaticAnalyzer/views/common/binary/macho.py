@@ -251,7 +251,7 @@ class MachOChecksec:
     def has_arc(self):
         arc_funcs = ('_objc_release', '_swift_release')
         for func in self.macho.imported_functions:
-            if str(func).strip() in ('_objc_release', '_swift_release'):
+            if str(func).strip() in arc_funcs:
                 return True
         return False
 
