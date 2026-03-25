@@ -34,6 +34,9 @@ jobs:
         python -m pip install pip poetry==1.8.4
         python -m pip install --upgrade setuptools tox
 
+    - name: Clear tox cache
+      run: rm -rf .tox
+
     - name: Lint on Ubuntu
       if: startsWith(matrix.os, 'ubuntu')
       run: |
