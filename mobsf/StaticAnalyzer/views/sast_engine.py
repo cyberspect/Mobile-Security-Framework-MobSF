@@ -17,8 +17,17 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def get_multiprocessing_strategy():
+# Cybespect adds in_daemon=False
+def get_multiprocessing_strategy(in_daemon=False):
     """Get the multiprocessing strategy."""
+    # Cybespect add begins
+    if in_daemon:
+        # Use threading when running in daemon context
+        # to avoid "daemonic processes cannot have children" error
+        # because ProcessPoolExecutor spawns child processes which is
+        # forbidden from daemon processes
+        return 'thread'
+    # Cybespect add ends
     if settings.MULTIPROCESSING:
         # Settings take precedence
         mp = settings.MULTIPROCESSING
@@ -35,9 +44,11 @@ def get_multiprocessing_strategy():
 
 
 class SastEngine:
-    def __init__(self, options, path):
+    # Cybespect adds in_daemon=False
+    def __init__(self, options, path, in_daemon=False):
         self.root = path
-        mp = get_multiprocessing_strategy()
+        # Cybespect adds in_daemon arg
+        mp = get_multiprocessing_strategy(in_daemon)
         cpu_core = get_worker_count()
         options['cpu_core'] = cpu_core
         options['multiprocessing'] = mp
@@ -97,10 +108,12 @@ class SastEngine:
 
 
 class ChoiceEngine:
-    def __init__(self, options, path):
+    # Cybespect adds in_daemon=False
+    def __init__(self, options, path, in_daemon=False):
         self.root = path
         options['cpu_core'] = get_worker_count()
-        options['multiprocessing'] = get_multiprocessing_strategy()
+        # Cybespect adds in_daemon arg
+        options['multiprocessing'] = get_multiprocessing_strategy(in_daemon)
         self.scan_paths = Scanner(options, [path]).get_scan_files()
         self.choice_matcher = ChoiceMatcher(options)
 
