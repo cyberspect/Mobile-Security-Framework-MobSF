@@ -49,6 +49,7 @@ TOOLS_DIR = os.path.join(BASE_DIR, 'DynamicAnalyzer/tools/')
 DOWNLOADED_TOOLS_DIR = os.path.join(MOBSF_HOME, 'tools/')
 # Secret File
 SECRET_FILE = os.path.join(MOBSF_HOME, 'secret')
+
 # ==========Load MobSF User Settings==========
 try:
     if USE_HOME:
@@ -197,7 +198,6 @@ INSTALLED_APPS = (
     'mobsf.DynamicAnalyzer',
     'mobsf.MobSF',
     'mobsf.MalwareAnalyzer',
-    'background_task',
 )
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
@@ -208,7 +208,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django_ratelimit.middleware.RatelimitMiddleware',
 )
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.RemoteUserBackend',)

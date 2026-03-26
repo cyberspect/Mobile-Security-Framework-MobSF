@@ -76,6 +76,7 @@ def login_view(request):
         form = AuthenticationForm()
     context = {
         'title': 'Sign In',
+        'version': settings.VERSION,
         'next': redirect_url,
         'form': form,
         'sso': sso,

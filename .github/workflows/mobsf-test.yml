@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read
+
 env:
   MOBSF_DISABLE_AUTHENTICATION: "1"
 
@@ -15,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04]
-        python-version: ['3.13']
+        python-version: ['3.12']
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -30,6 +33,9 @@ jobs:
         python -m ensurepip --upgrade
         python -m pip install pip poetry==1.8.4
         python -m pip install --upgrade setuptools tox
+
+    - name: Clear tox cache
+      run: rm -rf .tox
 
     - name: Lint on Ubuntu
       if: startsWith(matrix.os, 'ubuntu')
