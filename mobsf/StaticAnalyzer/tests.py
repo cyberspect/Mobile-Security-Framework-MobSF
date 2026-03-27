@@ -218,8 +218,10 @@ def api_test():
         for upl in uploaded:
             resp = http_client.post(
                 '/api/v1/scan',
+                # Cyberspect mods begin
                 {'hash': upl['hash'],
                  'cyberspect_scan_id': upl['cyberspect_scan_id']},
+                # Cyberspect mods ends
                 HTTP_AUTHORIZATION=auth)
             if resp.status_code == 200:
                 logger.info('[OK] Static Analysis Complete: %s',

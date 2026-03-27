@@ -84,10 +84,13 @@ from mobsf.MobSF.views.authorization import (
     has_permission,
 )
 
+# Cyberspect mods begin
 from cyberspect.utils import (
     update_cyberspect_scan,
     utcnow,
 )
+# Cyberspect mods end
+
 
 logger = logging.getLogger(__name__)
 
@@ -150,9 +153,11 @@ def clean_up(app_dic):
 def apk_analysis_task(checksum, app_dic, rescan, queue=False):
     """APK Analysis Task."""
     context = None
+    # Cyberspect mods begin
     cyberspect_scan_id = app_dic.get('cyberspect_scan_id')
     if cyberspect_scan_id:
         update_cyberspect_scan({'id': cyberspect_scan_id, 'sast_start': utcnow()})
+    # Cyberspect mods end
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
@@ -214,7 +219,9 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             app_dic['zipped'],
             app_dic['manifest_file'],
             man_data_dic['perm'],
+            # Cyberspect mods begin
             in_daemon=queue)  # Pass the daemon flag
+            # Cyberspect mods end
         # Get the strings and metadata
         get_strings_metadata(
             app_dic,
@@ -240,20 +247,24 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             trackers,
             rescan,
         )
+        # Cyberspect mods begin
         if cyberspect_scan_id:
             update_cyberspect_scan(
                 {'id': cyberspect_scan_id, 'sast_end': utcnow(), 'success': True})
+        # Cyberspect mods end
         if queue:
             return mark_task_completed(
                 checksum, app_dic['subject'], 'Success')
         return context, None
     except Exception as exp:
+        # Cyberspect mods begin
         if cyberspect_scan_id:
             update_cyberspect_scan({'id': cyberspect_scan_id, 'sast_end':
                                     utcnow(), 'success': False,
                                     'failure_source': 'SAST',
                                     'failure_message': repr(exp)},
                                    )
+        # Cyberspect mods end
         if queue:
             return mark_task_completed(
                 checksum, 'Failed', repr(exp))
@@ -292,7 +303,7 @@ def apk_analysis(request, app_dic, rescan, api):
         # Add check for async worker to prevent nested async
         in_async_worker = request.META.get('_in_async_worker', False)
         if settings.ASYNC_ANALYSIS and not in_async_worker:
-            # Cyberspect mods end
+        # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
@@ -343,7 +354,9 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
             app_dic['zipped'],
             app_dic['manifest_file'],
             man_data_dic['perm'],
+            # Cyberspect mods begin
             in_daemon=queue)  # Pass the daemon flag
+            # Cyberspect mods end
         # Get the strings and metadata
         get_strings_metadata(
             app_dic,

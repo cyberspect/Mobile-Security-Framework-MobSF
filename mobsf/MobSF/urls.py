@@ -54,9 +54,10 @@ from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
+# Cyberspect mods begin
 from cyberspect.MobSF.views import home as cs_home
 from cyberspect.MobSF.views.api import api_static_analysis as cs_api_sz
-
+# Cyberspect mods end
 bundle_id_regex = r'(?P<bundle_id>.+)$'
 checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
@@ -115,12 +116,14 @@ urlpatterns = [
     re_path(r'^api/v1/suppress_by_files$', api_sz.api_suppress_by_files),
     re_path(r'^api/v1/list_suppressions$', api_sz.api_list_suppressions),
     re_path(r'^api/v1/delete_suppression$', api_sz.api_delete_suppression),
+    # Cyberspect mods begin
     re_path(r'^api/v1/cyberspect_scan$', cs_api_sz.api_cyberspect_get_scan),
     re_path(r'^api/v1/cyberspect_scans$', cs_api_sz.api_cyberspect_recent_scans),
     re_path(r'^api/v1/cyberspect_completedscans$',
             cs_api_sz.api_cyberspect_completed_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             cs_api_sz.api_update_cyberspect_scan),
+    # Cyberspect mods begin
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),
@@ -224,6 +227,7 @@ if settings.API_ONLY == '0':
         re_path(r'^status/$', home.scan_status, name='status'),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^zip_format/$', home.zip_format),
+# Cyberspect mods begin
         re_path(r'^app_info$', cs_home.app_info),
         re_path(r'^support$', cs_home.support, name='support'),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
@@ -234,6 +238,7 @@ if settings.API_ONLY == '0':
         re_path(r'^admin/create_api_key$', admin.create_api_key_post),
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
         re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
+# Cyberspect mods end
         re_path(r'^robots.txt$', home.robots_txt),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
         re_path(r'^tasks$',
@@ -435,8 +440,10 @@ if settings.API_ONLY == '0':
         re_path(r'^tests/$', tests.start_test),
     ])
 
-urllib3.disable_warnings()  # Cyberspect mod
 utils.print_version()
-install_jadx(settings.MOBSF_HOME)  # Cyberspect mod
+# Cyberspect mods begin
+urllib3.disable_warnings()
+install_jadx(settings.MOBSF_HOME)
+# Cyberspect mods end
 init_exec_hooks()
 store_exec_hashes_at_first_run()

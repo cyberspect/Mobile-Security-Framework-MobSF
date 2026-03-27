@@ -69,6 +69,7 @@ def permission_transform(perm_mappings):
     return mappings
 
 
+# Cyberspect mods begin
 def code_analysis(
         checksum,
         app_dir,
@@ -76,6 +77,7 @@ def code_analysis(
         manifest_file,
         android_permissions,
         in_daemon=False):  # Cyberspect mod
+# Cyberspect mods end
     """Perform the code analysis."""
     result = {
         'api': {},
@@ -107,7 +109,9 @@ def code_analysis(
             'match_extensions': {'.java', '.kt'},
             'ignore_paths': skp,
         }
-        sast = SastEngine(options, src, in_daemon=in_daemon)  # Cyberspect mod
+        # Cyberspect mods begin
+        sast = SastEngine(options, src, in_daemon=in_daemon)
+        # Cyberspect mods end
         # Read data once and pass it to all the analysis
         file_data = sast.read_files()
 
@@ -128,7 +132,9 @@ def code_analysis(
         msg = 'Android API Analysis Started'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        sast = SastEngine(options, src, in_daemon=in_daemon)  # Cyberspect mod
+        # Cyberspect mods begin
+        sast = SastEngine(options, src, in_daemon=in_daemon)
+        # Cyberspect mods end
         result['api'] = sast.run_rules(
             file_data, api_rules.as_posix())
         msg = 'Android API Analysis Completed'
@@ -142,8 +148,9 @@ def code_analysis(
             msg = 'Android Permission Mapping Started'
             logger.info(msg)
             append_scan_status(checksum, msg)
-            # Cyberspect mod follows: in_daemon=in_daemon
+            # Cyberspect mods begin
             sast = SastEngine(options, src, in_daemon=in_daemon)
+            # Cyberspect mods end
             result['perm_mappings'] = permission_transform(
                 sast.run_rules(file_data, rule_file.name))
             msg = 'Android Permission Mapping Completed'
@@ -152,7 +159,9 @@ def code_analysis(
             os.unlink(rule_file.name)
 
         # Behavior Analysis
-        sast = SastEngine(options, src, in_daemon=in_daemon)  # Cyberspect mod
+        # Cyberspect mods begin
+        sast = SastEngine(options, src, in_daemon=in_daemon)
+        # Cyberspect mods begin
         result['behaviour'] = behaviour_analysis.analyze(
             checksum, sast, file_data)
 
@@ -167,8 +176,10 @@ def code_analysis(
                 'choice_extensions': {'.java', '.xml'},
                 'ignore_paths': skp,
             }
+            # Cyberspect mods begin
             cengine = ChoiceEngine(
                 niap_options, src, in_daemon=in_daemon)  # Cyberspect mod
+            # Cyberspect mods end
             file_data = cengine.read_files()
             result['niap'] = cengine.run_rules(
                 file_data, niap_rules.as_posix())
