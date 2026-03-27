@@ -120,7 +120,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             # Cyberspect mods begin
             '-q', '-r', '--show-bad-code', '-j',
             settings.JADX_THREADS, app_path]
-            # Cyberspect mods end
+        # Cyberspect mods end
         result = run_jadx(args)
         if result.returncode == 0:
             return  # Success

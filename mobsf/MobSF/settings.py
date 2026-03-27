@@ -239,7 +239,7 @@ TEMPLATES = [
             os.path.join(CYBERSPECT_BASE_DIR, 'cyberspect/templates'),
             os.path.join(BASE_DIR, 'templates'),
         ],
-        'OPTIONS': 
+        'OPTIONS':
             {
                 'debug': TEMPLATE_DEBUG,
                 'context_processors': [
@@ -251,7 +251,7 @@ TEMPLATES = [
                     'cyberspect.context_processors.app_versions_processor',
                     'cyberspect.context_processors.recent_scans_processor',
                 ],
-            },
+        },
     },
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')

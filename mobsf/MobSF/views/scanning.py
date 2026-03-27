@@ -85,7 +85,7 @@ def add_to_recent_scan(data):
 
 # Cyberspect mods begin
 def handle_uploaded_file(content, extension, source_content=None):
-# Cyberspect mods begin
+    # Cyberspect mods end
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -100,7 +100,7 @@ def handle_uploaded_file(content, extension, source_content=None):
     md5sum = md5.hexdigest()
     anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
 
-    # Cyberspect mods (local development mode)
+    # Cyberspect mods begin (local development mode)
     if settings.LOCAL_DEV_MODE:
         # Ensure parent upload directory exists
         if not os.path.exists(settings.UPLD_DIR):

@@ -28,9 +28,6 @@ from mobsf.StaticAnalyzer.views.ios.ipa import (
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.views.authentication import (
-    login_required,
-)
 
 # Cyberspect mods begin
 from cyberspect.utils import is_admin, sso_email

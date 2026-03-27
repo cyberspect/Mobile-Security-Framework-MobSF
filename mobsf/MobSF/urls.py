@@ -227,7 +227,7 @@ if settings.API_ONLY == '0':
         re_path(r'^status/$', home.scan_status, name='status'),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^zip_format/$', home.zip_format),
-# Cyberspect mods begin
+        # Cyberspect mods begin
         re_path(r'^app_info$', cs_home.app_info),
         re_path(r'^support$', cs_home.support, name='support'),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
@@ -238,7 +238,7 @@ if settings.API_ONLY == '0':
         re_path(r'^admin/create_api_key$', admin.create_api_key_post),
         re_path(r'^admin/revoke_api_key$', admin.revoke_api_key_post),
         re_path(r'^admin/edit_api_key$', admin.edit_api_key_post),
-# Cyberspect mods end
+        # Cyberspect mods end
         re_path(r'^robots.txt$', home.robots_txt),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
         re_path(r'^tasks$',

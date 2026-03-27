@@ -10,7 +10,6 @@ from mobsf.MobSF.utils import (
     python_dict,
     python_list,
 )
-from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -19,7 +18,7 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
 )
 
 # Cyberspect mods begin
-from cyberspect.utils import update_scan_timestamp  # Cyberspect mod
+from cyberspect.utils import update_scan_timestamp
 # Cyberspect mods begin
 
 """Module holding the functions for the db."""
