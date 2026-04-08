@@ -2871,6 +2871,8 @@ def get_apkid(apkfile: str) -> tuple[str, str, str]:
     hex value that starts with @).
 
     """
+    logger.debug("GET_APKID")
+
     if not os.path.exists(apkfile):
         logger.error("'{apkfile}' does not exist!".format(apkfile=apkfile))
 

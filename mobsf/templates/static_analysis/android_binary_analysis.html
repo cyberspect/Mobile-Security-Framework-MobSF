@@ -184,28 +184,6 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              {% if app_type not in 'so' %}
-              <li class="nav-item">
-                <a href="#malware_lookup" class="nav-link">
-                  <i class="fa fa-ban nav-icon"></i>
-                  <p>Malware Lookup</p>
-                </a>
-              </li>
-              {% if app_type not in 'so' %}
-              <li class="nav-item">
-                <a href="#malware_lookup" class="nav-link">
-                  <i class="fa fa-ban nav-icon"></i>
-                  <p>Malware Lookup</p>
-                </a>
-              </li>
-              {% if app_type not in 'so' %}
-              <li class="nav-item">
-                <a href="#malware_lookup" class="nav-link">
-                  <i class="fa fa-ban nav-icon"></i>
-                  <p>Malware Lookup</p>
-                </a>
-              </li>
-              {% if app_type not in 'so' %}
               <li class="nav-item">
                 <a href="#malware_lookup" class="nav-link">
                   <i class="fa fa-ban nav-icon"></i>
@@ -1162,7 +1140,7 @@
                       <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>
-                        {{item|key:"title" | safe}}
+                        {{item|key:"title"}}
                         </td>
                         <td>
 
