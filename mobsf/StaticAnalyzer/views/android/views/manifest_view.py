@@ -47,6 +47,7 @@ def run(request, checksum):
                 'data': manifest,
                 'type': 'xml',
                 'sqlite': {},
+                'version': settings.MOBSF_VER,
             }
             template = 'general/view.html'
             return render(request, template, context)

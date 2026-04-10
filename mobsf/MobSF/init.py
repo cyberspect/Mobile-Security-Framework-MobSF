@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 # Cyberspect version - a non-emmpty string below will display the
 # Cyberspect version number in the footer and VERSION as the MobSF version
-CYBERSPECT_VERSION = '2026.03'
-VERSION = '4.4.5'
+CYBERSPECT_VERSION = '2026.04'
+VERSION = '4.4.6'
 BANNER = r"""
   __  __       _    ____  _____       _  _   _  _   
  |  \/  | ___ | |__/ ___||  ___|_   _| || | | || |  
@@ -207,6 +207,7 @@ def api_key(home_dir):
             logger.exception('Cannot read API Key from docker secrets')
     # From Environment Variable
     if os.environ.get('MOBSF_API_KEY'):
+        logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
     home_dir = Path(home_dir)
     secret_file = home_dir / 'secret'

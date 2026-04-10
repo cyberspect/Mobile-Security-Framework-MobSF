@@ -75,7 +75,9 @@ def dex_2_smali(checksum, app_dir, tools_dir):
 def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     """Run JADX to decompile APK or all DEX files to Java source code."""
     try:
-        jadx_version = settings.JADX_VERSION  # Cyberspect mod
+        # Cyberspect mods begin
+        jadx_version = settings.JADX_VERSION
+        # Cyberspect mods begin
         jadx_base_path = Path(dwd_tools_dir) / 'jadx' / f'jadx-{jadx_version}' / 'bin'
         msg = f'Decompiling APK to Java with jadx ({jadx_base_path})'
         logger.info(msg)
@@ -115,8 +117,10 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
         # First attempt to decompile APK
         args = [
             str(jadx), '-ds', str(output_dir),
+            # Cyberspect mods begin
             '-q', '-r', '--show-bad-code', '-j',
             settings.JADX_THREADS, app_path]
+        # Cyberspect mods end
         result = run_jadx(args)
         if result.returncode == 0:
             return  # Success

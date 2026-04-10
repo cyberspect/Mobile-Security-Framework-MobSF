@@ -15,7 +15,11 @@ from urllib.request import (
     getproxies,
 )
 
+# Cyberspect mods begin
 from django.conf import settings
+# Cyberspect mods end
+
+from mobsf.MobSF.exceptions import PathTraversalError
 
 logging.basicConfig(
     level=logging.INFO,
@@ -127,17 +131,18 @@ def download_file(url, file_path):
             raise Exception(f'Failed to download file. Status code: {response.status}')
 
 
+# Cyberspect mods begin
 def install_jadx(mobsf_home, version=None):
     """Install JADX dynamically."""
     try:
-        # Cyberspect mod begins - includes version default to None
         if version is None:
             version = settings.JADX_VERSION
-        # Cyberspect mod ends
+# Cyberspect mods end
         url = ('https://github.com/skylot/jadx/releases/download/'
                f'v{version}/jadx-{version}.zip')
         jadx_dir = Path(mobsf_home) / 'tools' / 'jadx'
         extract_dir = jadx_dir / f'jadx-{version}'
+
         if extract_dir.exists():
             logger.info('JADX is already installed at %s', extract_dir)
             return
@@ -157,13 +162,21 @@ def install_jadx(mobsf_home, version=None):
             logger.info('Extracting JADX to %s', extract_dir)
             extract_dir.mkdir(parents=True, exist_ok=True)
             with zipfile.ZipFile(tmp_zip_file.name, 'r') as zip_ref:
+                abs_extract_dir = os.path.realpath(extract_dir)
                 for member in zip_ref.namelist():
+                    member_path = os.path.realpath(
+                        os.path.join(abs_extract_dir, member))
+                    if not (member_path.startswith(abs_extract_dir + os.sep)
+                            or member_path == abs_extract_dir):
+                        raise PathTraversalError('Attempted Path Traversal in Zip File')
                     zip_ref.extract(member, extract_dir)
 
         # Set execute permission
         set_rwxr_xr_x_permission_recursively(extract_dir)
 
+        # Cyberspect mods begin
         logger.info('JADX installed successfully in %s', extract_dir)
+        # Cyberspect mods end
     except Exception:
         logger.exception('Error during JADX installation')
     finally:

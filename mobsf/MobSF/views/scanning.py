@@ -83,8 +83,9 @@ def add_to_recent_scan(data):
         # End Cyberspect mod
 
 
-# Cyberspect adds source_content
+# Cyberspect mods begin
 def handle_uploaded_file(content, extension, source_content=None):
+    # Cyberspect mods end
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -99,7 +100,7 @@ def handle_uploaded_file(content, extension, source_content=None):
     md5sum = md5.hexdigest()
     anal_dir = os.path.join(settings.UPLD_DIR, md5sum + '/')
 
-    # Cyberspect mods (local development mode)
+    # Cyberspect mods begin (local development mode)
     if settings.LOCAL_DEV_MODE:
         # Ensure parent upload directory exists
         if not os.path.exists(settings.UPLD_DIR):
@@ -242,7 +243,9 @@ class Scanning(object):
         md5 = handle_uploaded_file(self.file, '.apk')
         self.data['hash'] = md5
         self.data['scan_type'] = 'apk'
+        # Cyberspect mods begin
         self.scan_type = 'apk'
+        # Cyberspect mods END
         add_to_recent_scan(self.data)
         logger.info('Android APK uploaded')
         return self.data

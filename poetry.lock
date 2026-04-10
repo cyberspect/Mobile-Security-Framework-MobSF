@@ -318,17 +318,17 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.42.75"
+version = "1.42.78"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "boto3-1.42.75-py3-none-any.whl", hash = "sha256:16bc657d16403ee8e11c8b6920c245629e37a36ea60352b919da566f82b4cb4c"},
-    {file = "boto3-1.42.75.tar.gz", hash = "sha256:3c7fd95a50c69271bd7707b7eda07dcfddb30e961a392613010f7ee81d91acb3"},
+    {file = "boto3-1.42.78-py3-none-any.whl", hash = "sha256:480a34a077484a5ca60124dfd150ba3ea6517fc89963a679e45b30c6db614d26"},
+    {file = "boto3-1.42.78.tar.gz", hash = "sha256:cef2ebdb9be5c0e96822f8d3941ac4b816c90a5737a7ffb901d664c808964b63"},
 ]
 
 [package.dependencies]
-botocore = ">=1.42.75,<1.43.0"
+botocore = ">=1.42.78,<1.43.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.16.0,<0.17.0"
 
@@ -337,13 +337,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.42.75"
+version = "1.42.78"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "botocore-1.42.75-py3-none-any.whl", hash = "sha256:915e43b7ac8f50cf3dbc937ba713de5acb999ea48ad8fecd1589d92ad415f787"},
-    {file = "botocore-1.42.75.tar.gz", hash = "sha256:95c8e716b6be903ee1601531caa4f50217400aa877c18fe9a2c3047d2945d477"},
+    {file = "botocore-1.42.78-py3-none-any.whl", hash = "sha256:038ab63c7f898e8b5db58cb6a45e4da56c31dd984e7e995839a3540c735564ea"},
+    {file = "botocore-1.42.78.tar.gz", hash = "sha256:61cbd49728e23f68cfd945406ab40044d49abed143362f7ffa4a4f4bd4311791"},
 ]
 
 [package.dependencies]
@@ -1259,40 +1259,40 @@ dotenv = ["python-dotenv"]
 
 [[package]]
 name = "frida"
-version = "17.8.3"
+version = "17.9.1"
 description = "Dynamic instrumentation toolkit for developers, reverse-engineers, and security researchers"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "frida-17.8.3-cp37-abi3-macosx_10_13_x86_64.whl", hash = "sha256:19f5821ad9959ed9807fba95c82d918c0f0130a529c1508369616523e2e23b64"},
-    {file = "frida-17.8.3-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:eda1f0811779b3199dc72071cebd7cdbaeb413c2885523aec4b12954bbc20af3"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux1_i686.whl", hash = "sha256:fbd176919839b06160df7c650559f2c1bc8dd06cf202cebe680a22b6c4892321"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux1_x86_64.whl", hash = "sha256:c6081ecb6f648fa10153bbc1ad4dd28e65dc9b5cd31337f133148c6bcfcf070d"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:fa1c7d74320e59bf7de27db9725a596cd89b4e74031d33548e31171ec4a73050"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux2014_armv7l.whl", hash = "sha256:99eabfd7035b59dddfb91ca0b9ef194ad42680880cf55c2f55919561b22c3de7"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux_2_17_aarch64.whl", hash = "sha256:c01bb76b76a81a76d2593e51a7a2bcc322944488f7a755a29b64371e0a5a3228"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux_2_17_armv7l.whl", hash = "sha256:cdb240f1fdfbe6ad0740b90802419238354c27560bbd8fd741eaa2764bb18fdf"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux_2_5_i686.whl", hash = "sha256:5bcdb4b7a70ad4c0086df4b77fcaad7fbf99a3a97729635efa24ac0775abbcee"},
-    {file = "frida-17.8.3-cp37-abi3-manylinux_2_5_x86_64.whl", hash = "sha256:b83b8faaa718175d0d76914e7a4fa9db2adb54ad3aa06328e6c2ff61caf68684"},
-    {file = "frida-17.8.3-cp37-abi3-win32.whl", hash = "sha256:a3d702191f6e95a20f38dfe7e75b1dbd6fffb1f8e35650c42e8d3f9ef849ba39"},
-    {file = "frida-17.8.3-cp37-abi3-win_amd64.whl", hash = "sha256:689cae4ac01a16168445204e111d482eeed3c4b639ae3d7ae33f7c4ab1e83a34"},
-    {file = "frida-17.8.3-cp37-abi3-win_arm64.whl", hash = "sha256:59c36782661cba3e47be1de41105e2ba16335ab171a61a277139360272a66399"},
-    {file = "frida-17.8.3.tar.gz", hash = "sha256:52f0992d20971e9fc70d5b447805f04869fb98ce29a913f11b52905cbe5c163a"},
+    {file = "frida-17.9.1-cp37-abi3-macosx_10_13_x86_64.whl", hash = "sha256:21ed514da56a3cf6bd6064b117334528c9dd902512887f3f17032a3ba96aa1c7"},
+    {file = "frida-17.9.1-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:bbc552e2afb220f284719039bd061a39648ee39b58316e3d75226657c3b57404"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux1_i686.whl", hash = "sha256:4c46c43f130d2c3b40f3c0c52e33d7455027c726a6e6d7c430710ffb851330f0"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux1_x86_64.whl", hash = "sha256:d24df260e79ba354404f7307de55f80e9d0d50c393ba6d1255adfcea08c6bd62"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:a4461839e19769e4b3b799c0536dcdbb12ee46e26c37a9a6bf93cbd96efed717"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux2014_armv7l.whl", hash = "sha256:3772b7b24731a64f5d13a8ac660d9e7d4a00ea07e2b461b242963c75b555e3fe"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux_2_17_aarch64.whl", hash = "sha256:0d1fb3ed3aeb265368a1f68fe4a4371b4a2eb2e7bd7cf9ab179611657da4ab8a"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux_2_17_armv7l.whl", hash = "sha256:e132df555925f1b0079d922d7f0c71011855b82e0925cc0a99caaeeff9d0b5bb"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux_2_5_i686.whl", hash = "sha256:430d393501c68fc3413fe0b02dc3ded672f29a668264949c325bd90793b6a9e9"},
+    {file = "frida-17.9.1-cp37-abi3-manylinux_2_5_x86_64.whl", hash = "sha256:00114569655a0884ce6f590f053512b537392756d8830361001552492906c613"},
+    {file = "frida-17.9.1-cp37-abi3-win32.whl", hash = "sha256:8bcbf74167b7b6fd3810e939f416600a1e19ef09cb1cbe4282bab2058ff46d94"},
+    {file = "frida-17.9.1-cp37-abi3-win_amd64.whl", hash = "sha256:edb881085c686987cffb0503bc13b795f694de2ca4eed0a7526e22e5f16a8d14"},
+    {file = "frida-17.9.1-cp37-abi3-win_arm64.whl", hash = "sha256:519564df2f65ec6960387d190d02cad25784b093910d888488030cbea760015a"},
+    {file = "frida-17.9.1.tar.gz", hash = "sha256:93294cc26925dfcd8a54ff25bf5d1746e0bf1b9fadb1af106047e945000759e4"},
 ]
 
 [[package]]
 name = "frida-tools"
-version = "14.6.1"
+version = "14.8.0"
 description = "Frida CLI tools"
 optional = false
 python-versions = "*"
 files = [
-    {file = "frida_tools-14.6.1.tar.gz", hash = "sha256:130a684411d3e8dc91d6c1d5e28117aaee51fd672e7789f70d6c4491e6577733"},
+    {file = "frida_tools-14.8.0.tar.gz", hash = "sha256:7a8abd9eebdad810bf9ee74554f61aabcb073583ee1d798b7f553ad5107af936"},
 ]
 
 [package.dependencies]
 colorama = ">=0.2.7,<1.0.0"
-frida = ">=17.8.0,<18.0.0"
+frida = ">=17.9.0,<18.0.0"
 prompt-toolkit = ">=2.0.0,<4.0.0"
 pygments = ">=2.0.2,<3.0.0"
 websockets = ">=13.0.0,<14.0.0"
@@ -1310,13 +1310,13 @@ files = [
 
 [[package]]
 name = "gunicorn"
-version = "25.2.0"
+version = "25.3.0"
 description = "WSGI HTTP Server for UNIX"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "gunicorn-25.2.0-py3-none-any.whl", hash = "sha256:88f5b444d0055bf298435384af7294f325e2273fd37ba9f9ff7b98e0a1e5dfdc"},
-    {file = "gunicorn-25.2.0.tar.gz", hash = "sha256:10bd7adb36d44945d97d0a1fdf9a0fb086ae9c7b39e56b4dece8555a6bf4a09c"},
+    {file = "gunicorn-25.3.0-py3-none-any.whl", hash = "sha256:cacea387dab08cd6776501621c295a904fe8e3b7aae9a1a3cbb26f4e7ed54660"},
+    {file = "gunicorn-25.3.0.tar.gz", hash = "sha256:f74e1b2f9f76f6cd1ca01198968bd2dd65830edc24b6e8e4d78de8320e2fe889"},
 ]
 
 [package.dependencies]
@@ -1324,7 +1324,7 @@ packaging = "*"
 
 [package.extras]
 eventlet = ["eventlet (>=0.40.3)"]
-fast = ["gunicorn_h1c (>=0.4.1)"]
+fast = ["gunicorn_h1c (>=0.6.3)"]
 gevent = ["gevent (>=24.10.1)"]
 http2 = ["h2 (>=4.1.0)"]
 setproctitle = ["setproctitle"]
@@ -2551,13 +2551,13 @@ six = ">=1.5"
 
 [[package]]
 name = "python-discovery"
-version = "1.2.0"
+version = "1.2.1"
 description = "Python interpreter discovery"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "python_discovery-1.2.0-py3-none-any.whl", hash = "sha256:1e108f1bbe2ed0ef089823d28805d5ad32be8e734b86a5f212bf89b71c266e4a"},
-    {file = "python_discovery-1.2.0.tar.gz", hash = "sha256:7d33e350704818b09e3da2bd419d37e21e7c30db6e0977bb438916e06b41b5b1"},
+    {file = "python_discovery-1.2.1-py3-none-any.whl", hash = "sha256:b6a957b24c1cd79252484d3566d1b49527581d46e789aaf43181005e56201502"},
+    {file = "python_discovery-1.2.1.tar.gz", hash = "sha256:180c4d114bff1c32462537eac5d6a332b768242b76b69c0259c7d14b1b680c9e"},
 ]
 
 [package.dependencies]
@@ -3154,13 +3154,13 @@ files = [
 
 [[package]]
 name = "tox"
-version = "4.50.3"
+version = "4.51.0"
 description = "tox is a generic virtualenv management and test command line tool"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "tox-4.50.3-py3-none-any.whl", hash = "sha256:5e788a512bfe6f7447e0c8d7c1b666eb2e56e5e676c65717490423bec37d1a07"},
-    {file = "tox-4.50.3.tar.gz", hash = "sha256:c745641de6cc4f19d066bd9f98c1c25f7affb005b381b7f3694a1f142ea0946b"},
+    {file = "tox-4.51.0-py3-none-any.whl", hash = "sha256:df848c4d9864ec6333c6e2b427fdc182b9f1d840d2bed072997bd48104269182"},
+    {file = "tox-4.51.0.tar.gz", hash = "sha256:e3967c0c2d7318d0b14a38d8cbb6ec2d12008574d612c1774fd00d376c7d5e6a"},
 ]
 
 [package.dependencies]
@@ -3171,6 +3171,7 @@ packaging = ">=26"
 platformdirs = ">=4.9.4"
 pluggy = ">=1.6"
 pyproject-api = ">=1.10"
+python-discovery = ">=1.2.1"
 tomli-w = ">=1.2"
 virtualenv = ">=21.1"
 

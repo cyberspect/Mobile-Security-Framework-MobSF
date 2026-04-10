@@ -29,7 +29,9 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
+# Cyberspect mods begin
 from cyberspect.utils import is_admin, sso_email
+# Cyberspect mods end
 
 logger = logging.getLogger(__name__)
 register.filter('relative_path', relative_path)

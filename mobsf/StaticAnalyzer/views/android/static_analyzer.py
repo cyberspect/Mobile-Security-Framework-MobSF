@@ -39,7 +39,9 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
+# Cyberspect mods begin
 from cyberspect.utils import is_admin, sso_email
+# Cyberspect mods begin
 
 APK_TYPE = 'apk'
 logger = logging.getLogger(__name__)

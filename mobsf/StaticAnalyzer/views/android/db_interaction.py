@@ -17,7 +17,9 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression_manifest,
 )
 
-from cyberspect.utils import update_scan_timestamp  # Cyberspect mod
+# Cyberspect mods begin
+from cyberspect.utils import update_scan_timestamp
+# Cyberspect mods begin
 
 """Module holding the functions for the db."""
 
@@ -93,10 +95,13 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'sbom': python_dict(db_entry[0].SBOM),
         }
         return context
+    # Cyberspect mods begin
     except Exception as exp:
         msg = 'Fetching data from the DB failed.'
         logger.exception(msg)
         append_scan_status(db_entry[0].MD5, msg, repr(exp))  # Cyberspect addition
+    # Cyberspect mods end
+        return None
 
 
 def get_context_from_analysis(app_dic,

@@ -25,9 +25,11 @@ from mobsf.MobSF.views.authentication import (
     login_required,
 )
 
+# Cyberspect mods begin
 from cyberspect.utils import (
     is_admin,
 )
+# Cyberspect mods end
 
 logger = logging.getLogger(__name__)
 
@@ -390,8 +392,10 @@ def appsec_dashboard(request, checksum, api=False):
             else:
                 msg = 'Report not found or supported'
                 return print_n_send_error_response(request, msg, api)
-        context['version'] = settings.MOBSF_VER  # Context Processor?
+        context['version'] = settings.MOBSF_VER
+        # Cyberspect mods begin
         context['cversion'] = settings.CYBERSPECT_VER  # Context Processor?
+        # Cyberspect mods end
         context['title'] = 'AppSec Scorecard'
         context['efr01'] = True if settings.EFR_01 == '1' else False
         if api:

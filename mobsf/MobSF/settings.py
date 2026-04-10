@@ -125,7 +125,7 @@ ANDROID_EXTS = (
     'aab', 'so', 'jar', 'aar',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
-WINDOWS_EXTS = ()  # ('appx',)
+WINDOWS_EXTS = ()  # ('appx',) Cyberspect change
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
@@ -211,6 +211,7 @@ MIDDLEWARE_CLASSES = (
     'django_ratelimit.middleware.RatelimitMiddleware',
 )
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.RemoteUserBackend',)
+# Cyberspect mods begin
 MIDDLEWARE = (
     'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
@@ -218,6 +219,7 @@ MIDDLEWARE = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
+# Cyberspect mods end
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
 LANGUAGE_CODE = 'en-us'
@@ -237,17 +239,18 @@ TEMPLATES = [
             os.path.join(CYBERSPECT_BASE_DIR, 'cyberspect/templates'),
             os.path.join(BASE_DIR, 'templates'),
         ],
-        'OPTIONS': {
-            'debug': TEMPLATE_DEBUG,
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'cyberspect.context_processors.is_admin_processor',
-                'cyberspect.context_processors.app_versions_processor',
-                'cyberspect.context_processors.recent_scans_processor',
-            ],
+        'OPTIONS':
+            {
+                'debug': TEMPLATE_DEBUG,
+                'context_processors': [
+                    'django.template.context_processors.debug',
+                    'django.template.context_processors.request',
+                    'django.contrib.auth.context_processors.auth',
+                    'django.contrib.messages.context_processors.messages',
+                    'cyberspect.context_processors.is_admin_processor',
+                    'cyberspect.context_processors.app_versions_processor',
+                    'cyberspect.context_processors.recent_scans_processor',
+                ],
         },
     },
 ]
@@ -286,9 +289,11 @@ else:
 
 # WhiteNoise configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Cyberspect mods begin
 # Configure WhiteNoise to serve from the correct root
 # This tells WhiteNoise where to find the static files
-WHITENOISE_ROOT = STATIC_ROOT  # Cyberspect mod
+WHITENOISE_ROOT = STATIC_ROOT
+# Cyberspect mods end
 # 256MB limit for file uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
 # 400MB per file limit for uncompressed files
@@ -413,7 +418,9 @@ MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
+# Cyberspect mods begin
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION', '1')
+# Cyberspect mods end
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
 USE_X_FORWARDED_HOST = bool(
     os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')

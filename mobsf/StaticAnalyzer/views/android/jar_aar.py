@@ -72,11 +72,13 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        # Cyberspect mods begin
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(
                 app_dic['app_path'],
                 app_dic['md5'])
+        # Cyberspect mods begin
     else:
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(

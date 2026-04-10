@@ -15,7 +15,9 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
 )
 
-from cyberspect.utils import update_scan_timestamp  # Cyberspect mod
+# Cyberspect mods begin
+from cyberspect.utils import update_scan_timestamp
+# Cyberspect mods end
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +82,7 @@ def get_context_from_db_entry(db_entry):
     except Exception:
         msg = 'Fetching data from the DB failed.'
         logger.exception(msg)
+        return None
 
 
 def get_context_from_analysis(app_dict,
@@ -145,7 +148,9 @@ def get_context_from_analysis(app_dict,
         msg = 'Rendering to Template'
         logger.exception(msg)
         append_scan_status(app_dict['md5_hash'], msg, repr(exp))
-        return None  # Cyberspect added
+        # Cyberspect mods begin
+        return None
+        # Cyberspect mods end
 
 
 def save_or_update(update_type,
