@@ -17,11 +17,8 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
 
 # Cyberspect mods begin
 from cyberspect.utils import update_scan_timestamp
-# Cyberspect mods end
 
 logger = logging.getLogger(__name__)
-
-
 def get_context_from_db_entry(db_entry):
     """Return the context for IPA/ZIP from DB."""
     try:
