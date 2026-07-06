@@ -606,8 +606,8 @@ class StaticAnalyzerAndAPI(TestCase):
     def test_static_analyzer(self):
         resp = self.http_client.get(
             '/tests/?module=static',
-            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com',
-               'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'})
+            HTTP_X_MOBSF_EMAIL='test@cyberspect.com',
+            HTTP_X_MOBSF_ROLE='FULL_ACCESS')
         # Test should verify the endpoint is accessible and returns valid JSON
         # Status code may be 200 (all tests passed) or 403 (some tests failed)
         self.assertIn(resp.status_code, [200, 403])
@@ -619,8 +619,8 @@ class StaticAnalyzerAndAPI(TestCase):
     def test_rest_api(self):
         resp = self.http_client.get(
             '/tests/?module=api',
-            **{'HTTP_X_MOBSF_EMAIL': 'test@cyberspect.com',
-               'HTTP_X_MOBSF_ROLE': 'FULL_ACCESS'})
+            HTTP_X_MOBSF_EMAIL='test@cyberspect.com',
+            HTTP_X_MOBSF_ROLE='FULL_ACCESS')
         # Test should verify the endpoint is accessible and returns valid JSON
         # Status code may be 200 (all tests passed) or 403 (some tests failed)
         self.assertIn(resp.status_code, [200, 403])
