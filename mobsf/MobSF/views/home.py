@@ -32,13 +32,12 @@ from mobsf.MobSF.utils import (
     is_dir_exists,
     is_file_exists,
     is_md5,
-    is_safe_path,
     key,
     print_n_send_error_response,
     python_dict,
 )
 from mobsf.MobSF.init import api_key
-from mobsf.MobSF.security import sanitize_filename, sanitize_svg
+from mobsf.MobSF.security import is_safe_path, sanitize_filename, sanitize_svg
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -428,10 +427,12 @@ def recent_scans(request, page_size=20, page_number=1):
         'entries': entries,
         'version': settings.MOBSF_VER,
         'page_obj': page_obj,
+        # Cyberspect mods begin
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
         'paginator_range': paginator_range,
+        # Cyberspect mods end
         'async_scans': settings.ASYNC_ANALYSIS,
     }
     template = 'general/recent.html'
@@ -622,19 +623,19 @@ def generate_download(request, api=False):
         # Cyberspect add begins
         exts = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a',
                 'zip', 'apk.src', 'ipa.src')
-        # Cyberspect add ends
         source = ('smali', 'java')
         logger.info('Generating Downloads')
+        # Cyberspect add ends
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
+        # Cyberspect add begins
         match = re.match('^[0-9a-f]{32}$', md5)
         if (not match
-            # Cyberspect add begins
                 or file_type not in exts + source):
-            # Cyberspect add ends
             msg = 'Invalid download type or hash'
             logger.exception(msg)
             return print_n_send_error_response(request, msg)
+        # Cyberspect add ends
         app_dir = Path(settings.UPLD_DIR) / md5
         dwd_dir = Path(settings.DWD_DIR)
         file_name = ''
@@ -652,6 +653,7 @@ def generate_download(request, api=False):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
+        # Cyberspect add begins
         elif file_type == 'binary':
             # Binaries
             file_name = f'{md5}.{file_type}'
@@ -714,6 +716,7 @@ def delete_scan(request, api=False):
         StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
         StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
         # Delete Upload Dir Contents
+        # Cyberspect mods begin
         try:
             app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
             if is_dir_exists(app_upload_dir):
@@ -734,6 +737,7 @@ def delete_scan(request, api=False):
             msg = f'Failed to delete scan files: {excmsg} - '
             f'{app_upload_dir} - {dw_dir} - {item_path} - {valid_item} - {item}'
             logger.error(msg)
+        # Cyberspect mods end
         return send_response({'deleted': 'yes'}, api)
     except Exception as exp:
         msg = str(exp)
@@ -766,7 +770,7 @@ class RecentScans(object):
                     'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
-                # Cyberspect mods end
+            # Cyberspect mods end
         except Exception as exp:
             # Cyberspect mods begin
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))

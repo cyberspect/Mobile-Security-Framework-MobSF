@@ -47,8 +47,8 @@ def add_to_recent_scan(data):
                 DIVISION=data.get('division', ''),
                 ENVIRONMENT=data.get('environment', ''),
                 COUNTRY=data.get('country', ''),
-                EMAIL=data.get('email', ''),
-                USER_GROUPS=data.get('user_groups', ''),
+                EMAIL=data.get('email') or '',
+                USER_GROUPS=data.get('user_groups') or '',
                 RELEASE=data.get('release', False),
                 DATA_PRIVACY_CLASSIFICATION=classification,
                 DATA_PRIVACY_ATTRIBUTES=attributes)  # End Cyberspect mods
@@ -57,10 +57,11 @@ def add_to_recent_scan(data):
         else:
             # Cyberspect mods
             scan = db_obj.first()
-            if data.get('email') and (data['email'] not in scan.EMAIL):
-                scan.EMAIL = scan.EMAIL + ',' + data['email']
-            if (not data['user_groups'] in scan.USER_GROUPS):
-                scan.USER_GROUPS = (scan.USER_GROUPS + ','
+            if data.get('email') and (data['email'] not in (scan.EMAIL or '')):
+                scan.EMAIL = (scan.EMAIL or '') + ',' + data['email']
+            if (data.get('user_groups')
+                    and data['user_groups'] not in (scan.USER_GROUPS or '')):
+                scan.USER_GROUPS = ((scan.USER_GROUPS or '') + ','
                                     + data['user_groups'])
             scan.FILE_NAME = data['file_name']
             scan.TIMESTAMP = utcnow()
@@ -155,7 +156,6 @@ def handle_uploaded_file(content, extension, source_content=None):
                 for chunk in content.chunks():
                     destination.write(chunk)
 
-    # Cyberspect mods
     if (source_content):
         bfr = isinstance(source_content, io.BufferedReader)
         with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:

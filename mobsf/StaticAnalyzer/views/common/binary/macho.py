@@ -23,7 +23,14 @@ def objdump_is_debug_symbol_stripped(macho_file):
     out = subprocess.check_output(
         [shutil.which('objdump'), '--syms', macho_file],
         stderr=subprocess.STDOUT)
-    return b' d  ' not in out
+    out = out.decode('utf-8', 'ignore')
+    # radr://5614542 symbol is added back for
+    # debug symbols stripped binaries
+    stripped_sym = 'radr://5614542'
+    for line in out.splitlines():
+        if ' d  ' in line and stripped_sym not in line:
+            return False
+    return True
 
 
 class MachOChecksec:
@@ -83,7 +90,9 @@ class MachOChecksec:
                 'Oriented Programming (ROP) attacks much more difficult '
                 'to execute reliably.')
         else:
+            # Cyberspect mods begin
             severity = 'warning'
+            # Cyberspect mods begin
             ext = Path(self.macho_name).suffix
             # PIE check not applicable for static and dynamic libraries
             # https://github.com/MobSF/Mobile-Security-Framework-MobSF/
@@ -121,7 +130,9 @@ class MachOChecksec:
                 'This binary has debug symbols stripped. We cannot identify '
                 'whether stack canary is enabled or not.')
         else:
+            # Cyberspect mods begin
             severity = 'warning'
+            # Cyberspect mods begin
             sw_msg = ''
             if 'libswift' in self.macho_name:
                 severity = 'warning'
@@ -153,7 +164,9 @@ class MachOChecksec:
                 'This binary has debug symbols stripped. We cannot identify '
                 'whether ARC is enabled or not.')
         else:
+            # Cyberspect mods begin
             severity = 'warning'
+            # Cyberspect mods end
             desc = (
                 'The binary is not compiled with Automatic '
                 'Reference Counting (ARC) flag. ARC is a compiler '
