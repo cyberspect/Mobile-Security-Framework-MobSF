@@ -77,7 +77,7 @@ def code_analysis(
         manifest_file,
         android_permissions,
         in_daemon=False):
-# Cyberspect mods end
+    # Cyberspect mods end
     """Perform the code analysis."""
     result = {
         'api': {},

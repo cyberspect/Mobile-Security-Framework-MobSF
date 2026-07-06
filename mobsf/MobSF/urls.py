@@ -29,7 +29,7 @@ from mobsf.MobSF.security import (
 # Cyberspect mods begin
 from mobsf.MobSF.views import (
     admin,
-# Cyberspect mods end
+    # Cyberspect mods end
     authentication,
     authorization,
     home,

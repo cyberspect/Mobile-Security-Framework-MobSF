@@ -264,7 +264,7 @@ def ipa_analysis(request, app_dic, rescan, api):
         # Add check for async worker to prevent nested async
         in_async_worker = request.META.get('_in_async_worker', False)
         if settings.ASYNC_ANALYSIS and not in_async_worker:
-        # Cyberspect mods end
+            # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
@@ -357,7 +357,7 @@ def ios_analysis(request, app_dic, rescan, api):
         # Add check for async worker to prevent nested async
         in_async_worker = request.META.get('_in_async_worker', False)
         if settings.ASYNC_ANALYSIS and not in_async_worker:
-        # Cyberspect mods end
+            # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
