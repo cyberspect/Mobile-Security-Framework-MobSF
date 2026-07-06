@@ -27,7 +27,6 @@ from mobsf.MobSF.security import (
     store_exec_hashes_at_first_run,
 )
 # Cyberspect mods begin
-from mobsf.MobSF.tools_download import install_jadx
 from mobsf.MobSF.views import (
     admin,
 # Cyberspect mods end
