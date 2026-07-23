@@ -200,9 +200,10 @@ INSTALLED_APPS = (
     'mobsf.MalwareAnalyzer',
 )
 MIDDLEWARE = (
-    # Cyberspect mods begin
+# Cyberspect mods begin
     'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
-    # Cyberspect mods end
+    'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
+# Cyberspect mods end
     'django.middleware.security.SecurityMiddleware',
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
