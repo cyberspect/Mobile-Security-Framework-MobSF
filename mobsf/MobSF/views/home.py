@@ -278,6 +278,7 @@ def about(request):
     """About Route."""
     context = {
         'title': 'About',
+        'version': settings.MOBSF_VER,
     }
     template = 'general/about.html'
     return render(request, template, context)

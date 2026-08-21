@@ -202,6 +202,7 @@ INSTALLED_APPS = (
 MIDDLEWARE = (
     # Cyberspect mods begin
     'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
     # Cyberspect mods end
     'django.middleware.security.SecurityMiddleware',
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',

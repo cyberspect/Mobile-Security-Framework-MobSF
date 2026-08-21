@@ -4,6 +4,102 @@ MobSF is a security analysis platform. Every code path processes attacker-suppli
 input (APKs, ZIPs, IPAs, manifests) from authenticated but potentially malicious
 users. Security must be the default, not an afterthought.
 
+This repository is Cyberspect's fork of the upstream
+[MobSF](https://github.com/MobSF/Mobile-Security-Framework-MobSF) project. Upstream
+merges land on `master` and Cyberspect-specific code is marked inline with
+`# Cyberspect mods begin` / `# Cyberspect mods end` (or `Cyberspect addition`)
+comments — grep for these markers before changing shared files like `settings.py`
+or `urls.py` so upstream merges don't silently drop local behavior.
+
+---
+
+## Development Commands
+
+Dependencies are managed with Poetry; the dev workflow assumes Docker Compose for
+local runs (see `LOCAL-DEV.md`) and `tox` for lint/test.
+
+```bash
+# Lint (autopep8 autofix + flake8 + codespell) — required before finishing any task
+tox -e lint
+
+# Full test suite (installs deps into a tox env first)
+tox -e test
+
+# Run tests directly against an existing Poetry env (faster iteration)
+poetry run python manage.py test mobsf
+
+# Single test module / class / method
+poetry run python manage.py test mobsf.StaticAnalyzer.tests
+poetry run python manage.py test mobsf.StaticAnalyzer.tests.StaticAnalyzerAndAPI
+poetry run python manage.py test mobsf.StaticAnalyzer.tests.StaticAnalyzerAndAPI.test_method_name
+
+# Remove build artifacts, __pycache__, egg-info
+tox -e clean
+```
+
+Local dev environment (Postgres + MobSF + Django Q cluster containers):
+
+```bash
+docker compose -f docker-compose-dev.yml up --build          # first run
+docker compose -f docker-compose-dev.yml rm -s mobsf qcluster --force   # stop app containers, keep Postgres
+docker compose -f docker-compose-dev.yml up --build mobsf qcluster -d  # bring app containers back up after code changes
+```
+
+`docker-compose-dev.yml` expects `cyberspect.env` and `qcluster.env` in the project
+root (sourced from the separate AWS config repo) — see `LOCAL-DEV.md`.
+
+`manage.py` deliberately disables `runserver`; MobSF is always served through
+gunicorn (`run.sh`) or the Docker Compose setup above.
+
+---
+
+## Architecture Overview
+
+### Django apps
+
+The project is a single Django project (`mobsf.MobSF.settings`) composed of several
+apps under `mobsf/`, plus the `cyberspect/` overlay:
+
+- **`mobsf/MobSF`** — core: settings, URL routing, auth/authorization, the shared
+  `security.py` helpers, and generic views (home, recent scans, dashboards).
+- **`mobsf/StaticAnalyzer`** — static analysis, split by platform under
+  `views/android`, `views/ios`, `views/windows`, with shared logic in `views/common`
+  (report generation, PDF export, suppressions, app-sec scoring). Binary (APK/IPA)
+  and source-ZIP uploads are separate code paths that converge on the same report
+  pipeline — see the Incomplete Fix Anti-Pattern note above.
+- **`mobsf/DynamicAnalyzer`** — instrumented runtime analysis (Android emulator/device,
+  iOS via Corellium), again split by platform under `views/android` and `views/ios`,
+  with Frida-based instrumentation in `tools/frida_scripts` and `views/common/frida`.
+- **`mobsf/MalwareAnalyzer`** — malware/reputation checks (e.g. domain/IP lookups)
+  invoked from the static/dynamic analysis pipelines.
+
+### Cyberspect overlay
+
+`cyberspect/` is not a Django app in `INSTALLED_APPS`; it layers on top of `mobsf.MobSF`
+in two ways, both configured in `mobsf/MobSF/settings.py`:
+
+- **Templates**: `TEMPLATES[0]['DIRS']` lists `cyberspect/templates` *before*
+  `mobsf/templates`, so a Cyberspect template of the same name silently shadows the
+  upstream one. When a page looks unmodified after an edit, check whether a
+  same-named template exists under `cyberspect/templates/` first.
+- **Views/middleware**: `cyberspect/MobSF/views/` (e.g. `home.py`,
+  `api/api_static_analysis.py`, `api/api_middleware.py`) provides Cyberspect-specific
+  view logic wired in directly from `mobsf/MobSF/urls.py` and
+  `MIDDLEWARE`/`AUTHENTICATION_BACKENDS` in `settings.py` (SSO via ALB, REST API auth
+  middleware). Treat these as first-class call sites, not optional extensions — they
+  run in front of the upstream views they wrap.
+
+### Data and async processing
+
+- Uploads/downloads live under `MOBSF_HOME` (`downloads/`, `downloads/screen/`, etc.),
+  resolved in `settings.py` — never assume a hardcoded path.
+- Cyberspect deployments use PostgreSQL (`psycopg2-binary`) rather than upstream's
+  default SQLite; see the `postgres` service in `docker-compose-dev.yml`.
+- Background/long-running work (e.g. batch scans) runs through `django-q2`, executed
+  by the separate `qcluster` process/container — code that enqueues tasks and code
+  that processes them run in different processes, so don't assume synchronous
+  execution.
+
 ---
 
 ## Code Quality — Mandatory Before Every Commit
