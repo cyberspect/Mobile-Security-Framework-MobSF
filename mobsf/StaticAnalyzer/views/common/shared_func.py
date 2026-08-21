@@ -119,10 +119,12 @@ def unzip(checksum, app_path, ext_path):
     append_scan_status(checksum, msg)
     files = []
     original_ext_path = ext_path
-    # Cyberspect mod begins - fixes issue handling corrupt files
-    # Moved the stop_fallback_extraction flag outside the try block to ensure it's always defined
+    # Cyberspect mod begins
+    # Fixes issue handling corrupt files by moving the
+    # stop_fallback_extraction flag outside the try block to ensure it's
+    # always defined.
     stop_fallback_extraction = False
-    # Cyberspect mod ends 
+    # Cyberspect mod ends
     try:
         with zipfile.ZipFile(app_path, 'r') as zipptr:
             files = zipptr.namelist()
