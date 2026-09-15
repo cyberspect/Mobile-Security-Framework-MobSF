@@ -380,4 +380,4 @@ class Scanning(object):
             'cyberspect_scan_id': self.cyberspect_scan_id,
             'rescan': self.rescan,
         }
-    # Cyberspect add begins
+    # Cyberspect add ends

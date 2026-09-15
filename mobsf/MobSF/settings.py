@@ -133,11 +133,9 @@ API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
 
 # -----External URLS--------------------------
 MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
-MALTRAIL_DB_URL = (
-    'https://raw.githubusercontent.com/stamparm/aux/'
-    'master/maltrail-malware-domains.txt'
-)
-VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
+MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
+                   'master/maltrail-malware-domains.txt')
+VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
 ITUNES_URL = 'https://itunes.apple.com/lookup'
@@ -205,7 +203,6 @@ MIDDLEWARE = (
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
     # Cyberspect mods end
     'django.middleware.security.SecurityMiddleware',
-    'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -461,29 +458,15 @@ if not CONFIG_HOME:
     # during static analysis
     import os
     SKIP_CLASS_PATH = {
-        'com/google/',
-        'androidx',
-        'okhttp2/',
-        'okhttp3/',
-        'com/android/',
-        'com/squareup',
-        'okhttp/' 'android/content/',
-        'com/twitter/',
-        'twitter4j/',
-        'android/support/',
-        'org/apache/',
-        'oauth/signpost',
-        'android/arch',
-        'org/chromium/',
-        'com/facebook',
-        'org/spongycastle',
-        'org/bouncycastle',
-        'com/amazon/identity/',
-        'io/fabric/sdk',
-        'com/instabug',
-        'com/crashlytics/android',
-        'kotlinx/',
-        'kotlin/',
+        'com/google/', 'androidx', 'okhttp2/', 'okhttp3/',
+        'com/android/', 'com/squareup', 'okhttp/',
+        'android/content/', 'com/twitter/', 'twitter4j/',
+        'android/support/', 'org/apache/', 'oauth/signpost',
+        'android/arch', 'org/chromium/', 'com/facebook',
+        'org/spongycastle', 'org/bouncycastle',
+        'com/amazon/identity/', 'io/fabric/sdk',
+        'com/instabug', 'com/crashlytics/android',
+        'kotlinx/', 'kotlin/',
     }
     # Disable CVSSV2 Score by default
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
@@ -579,7 +562,7 @@ if not CONFIG_HOME:
     # ========DISABLED BY DEFAULT COMPONENTS=========
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = os.getenv('MOBSF_APPMONSTA_API', '')
-    # ----------VirusTotal--------------------------
+    # ----------VirusTotal (API v3)-----------------
     VT_ENABLED = bool(os.getenv('MOBSF_VT_ENABLED', ''))
     VT_API_KEY = os.getenv('MOBSF_VT_API_KEY', '')
     VT_UPLOAD = bool(os.getenv('MOBSF_VT_UPLOAD', ''))
@@ -587,9 +570,10 @@ if not CONFIG_HOME:
     # Make sure VT_API_KEY is set to your VirusTotal API key
     # register at: https://www.virustotal.com/#/join-us
     # You can get your API KEY from:
-    # https://www.virustotal.com/en/user/<username>/apikey/
-    # Files will be uploaded to VirusTotal
-    # if VT_UPLOAD is set to True.
+    # https://www.virustotal.com/gui/user/<username>/apikey/
+    # Files will be uploaded to VirusTotal if VT_UPLOAD is True.
+    # Files <=32MB use /files; larger files use /files/upload_url
+    # (up to 650MB).
     # ===============================================
     # =======IOS DYNAMIC ANALYSIS SETTINGS===========
     # Should be SSH IP:PORT, example: 192.168.1.100:22

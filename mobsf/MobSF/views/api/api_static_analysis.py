@@ -1,7 +1,5 @@
 # -*- coding: utf_8 -*-
 """MobSF REST API V 1."""
-import logging
-
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -36,9 +34,6 @@ from mobsf.StaticAnalyzer.views.common.suppression import (
 from mobsf.StaticAnalyzer.views.common.pdf import pdf
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_dashboard
 from mobsf.StaticAnalyzer.views.windows import windows
-
-
-logger = logging.getLogger(__name__)
 
 
 @request_method(['POST'])

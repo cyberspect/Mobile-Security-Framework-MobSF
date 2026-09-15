@@ -92,7 +92,7 @@ class MachOChecksec:
         else:
             # Cyberspect mods begin
             severity = 'warning'
-            # Cyberspect mods begin
+            # Cyberspect mods end
             ext = Path(self.macho_name).suffix
             # PIE check not applicable for static and dynamic libraries
             # https://github.com/MobSF/Mobile-Security-Framework-MobSF/
@@ -132,7 +132,7 @@ class MachOChecksec:
         else:
             # Cyberspect mods begin
             severity = 'warning'
-            # Cyberspect mods begin
+            # Cyberspect mods end
             sw_msg = ''
             if 'libswift' in self.macho_name:
                 severity = 'warning'

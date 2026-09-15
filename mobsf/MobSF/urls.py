@@ -129,7 +129,7 @@ urlpatterns = [
             cs_api_sz.api_cyberspect_completed_scans),
     re_path(r'^api/v1/update_cyberspect_scan$',
             cs_api_sz.api_update_cyberspect_scan),
-    # Cyberspect mods begin
+    # Cyberspect mods end
     # Dynamic Analysis
     re_path(r'^api/v1/dynamic/get_apps$', api_dz.api_get_apps),
     re_path(r'^api/v1/dynamic/start_analysis$', api_dz.api_start_analysis),

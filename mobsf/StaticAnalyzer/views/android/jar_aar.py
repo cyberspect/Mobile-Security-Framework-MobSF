@@ -78,7 +78,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             context['virus_total'] = vt.get_result(
                 app_dic['app_path'],
                 app_dic['md5'])
-        # Cyberspect mods begin
+        # Cyberspect mods end
     else:
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
