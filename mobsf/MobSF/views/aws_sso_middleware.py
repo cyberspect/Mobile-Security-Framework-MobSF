@@ -55,6 +55,13 @@ def public_key_endpoint(region, key_id):
 
 def verify(data: str, region: str, kid: str, alg: str) -> dict:
     pubkey = get_public_key(region, kid)
+    # AWS ALB pads all three JWT segments with base64 '=', which PyJWT >= 2.14
+    # rejects outright. Only the signature segment is safe to strip: the
+    # header/payload text is used verbatim as the signing input during
+    # verification, so stripping padding there would change the bytes being
+    # verified and break tokens whose header or payload happens to need it.
+    header_b64, payload_b64, sig_b64 = data.split('.')
+    data = f'{header_b64}.{payload_b64}.{sig_b64.rstrip("=")}'
     return jwt.decode(data, pubkey, algorithms=[alg])
 
 
