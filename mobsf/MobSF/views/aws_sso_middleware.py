@@ -55,9 +55,6 @@ def public_key_endpoint(region, key_id):
 
 def verify(data: str, region: str, kid: str, alg: str) -> dict:
     pubkey = get_public_key(region, kid)
-    # AWS ALB includes non-RFC-7515-compliant '=' padding on JWT segments;
-    # PyJWT >= 2.14.0 strictly rejects padded segments, so strip it first.
-    data = '.'.join(part.rstrip('=') for part in data.split('.'))
     return jwt.decode(data, pubkey, algorithms=[alg])
 
 
