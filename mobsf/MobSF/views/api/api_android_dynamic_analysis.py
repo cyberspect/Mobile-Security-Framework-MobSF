@@ -15,7 +15,7 @@ from mobsf.DynamicAnalyzer.views.common.frida import views as frida
 
 # Cyberspect mods begin
 from cyberspect.utils import make_api_response
-# Cyberspect mods begin
+# Cyberspect mods end
 
 
 # Dynamic Analyzer APIs

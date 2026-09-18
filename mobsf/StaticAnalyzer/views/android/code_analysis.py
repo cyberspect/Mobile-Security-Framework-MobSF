@@ -161,7 +161,7 @@ def code_analysis(
         # Behavior Analysis
         # Cyberspect mods begin
         sast = SastEngine(options, src, in_daemon=in_daemon)
-        # Cyberspect mods begin
+        # Cyberspect mods end
         result['behaviour'] = behaviour_analysis.analyze(
             checksum, sast, file_data)
 
